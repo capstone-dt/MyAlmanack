@@ -121,6 +121,6 @@ STATIC_URL = '/static/'
 # Possibly important overrides: SECRET_KEY, ALLOWED_HOSTS, DATABASES
 
 try:
-    from local_settings import *
-except ImportError, exp:
+    from .local_settings import *
+except:
     pass
