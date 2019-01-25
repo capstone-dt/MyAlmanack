@@ -25,7 +25,9 @@ SECRET_KEY = 'p3o_%w%(ctbn5%j*$_ks9pb=%s21@)b)o3gd#+#px3!g$hedp-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+	'capstonedt.pythonanywhere.com'
+]
 
 
 # Application definition
