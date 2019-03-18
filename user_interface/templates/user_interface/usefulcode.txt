@@ -1,0 +1,53 @@
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<div class="nav-wrapper">
+  
+  <div class="row">
+    <!-- Home Button Adjustment -->
+    <div class="col-1 d-block d-md-none">
+        <a href="#"><i class="material-icons left">home</i>
+    </div>
+      <div class="col-3 d-none d-md-block">
+        <a href="#"><i class="material-icons left">home</i>
+          <div class="navbar-text" style="font-size:20px">
+          MyAlmanack</div>
+        </a>
+      </div>
+      <!-- Notification Button -->
+      <div class="col-1  px-3">
+        <a href="#"><i class="material-icons left">notification_important</i>
+        </a>
+      </div>
+      <!-- Search Bar Adjustment -->
+      <div class="col-7 d-block d-md-none">
+        <form>
+          <div class="input-field">
+            <input id="search" type="search" required>
+            <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+            <i class="material-icons">close</i>
+          </div>
+        </form>
+      </div>
+      <div class="col-4 d-none d-md-block px-0 pl-0">
+        <form>
+          <div class="input-field">
+            <input id="search" type="search" required>
+            <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+            <i class="material-icons">close</i>
+          </div>
+        </form>
+      </div>
+      <!-- Friends Button -->
+      <div class="col-1 pl-0">
+        <a href="#"><i class="material-icons right">person_add</i>
+        </a>
+      </div>
+      <!-- Groups Button -->
+      <div class="col-1 pl-0" >
+        <a href="#"><i class="material-icons right">people</i>
+        </a>
+      </div>
+      <!-- Menu Button -->
+      <div class="col-1 pl-0">
+        <a href="#"><i class="material-icons right">menu</i>
+        </a>
+      </div>
