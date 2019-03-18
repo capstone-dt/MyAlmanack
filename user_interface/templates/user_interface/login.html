@@ -1,0 +1,67 @@
+{% extends "user_interface/pwheader.html"%}
+
+{% block content %}
+
+<div class="container">
+
+	<div class="d-flex justify-content-center">
+		<div class = "row">
+			<div class="col">
+				MyAlmanack
+			</div>
+		</div>
+	</div>
+
+	<br>
+	<br>
+
+	<div class="d-flex justify-content-center">
+		<div class = "row">
+			<div class="col">
+				Login to an Existing Account.
+			</div>
+		</div>
+	</div>
+	<br>
+	<br>
+
+
+	<div class="d-flex justify-content-center">
+		<div class = "row">
+			<div class="col align-self-center">
+				Email Address:
+			</div>
+		</div>
+	</div>
+
+
+	<div class="d-flex justify-content-center">
+		<div class = "row">
+			<div class="col-5">
+	  		<input type="email" name="email" pattern="^([\w\-\.]+)@((\[([0-9]{1,3}\.){3}[0-9]{1,3}\])|(([\w\-]+\.)+)([a-zA-Z]{2,4}))$" title="Please enter a valid first name.">
+			</div>
+		</div>
+	</div>
+
+	<br>
+
+	<div class="d-flex justify-content-center">
+		<div class = "row">
+			<div class="col-12">
+				<button type="button" onclick="submitLoginData()">Login With Firebase</button>
+			</div>
+		</div>
+	</div>
+
+	<br>
+	<div class="d-flex justify-content-center">
+		<div class = "row">
+			<div class="col-12">
+				<button type="button" onclick="location.href = 'http://localhost:8000/register'; ">Register a New Account</button>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+{% endblock %}

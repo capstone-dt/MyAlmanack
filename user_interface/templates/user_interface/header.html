@@ -1,0 +1,36 @@
+<head>
+	{% load static %}
+	 <!-- Comes from open-source https://materializecss.com/getting-started.html-->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
+	<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+</head>
+
+<body>
+	<nav class="navbar navbar-expand-sm navbar-expand-xs navbar-dark bg-dark mb-4">
+      <a class="navbar-brand" href="#">MyAlmanack</a>
+        <div class="mr-auto">
+        	<a class="nav-link disabled" href="#">  <span class="sr-only">(current)</span></a>
+        </div>
+        <div  style="padding-right: 20px;">
+	        <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#registerModal">
+				  Register
+				</button>
+        	<button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#loginModal">
+				  Login
+				</button>
+		</div>
+	</nav>
+	{% block content %}
+	{% endblock %}
+
+	<style type="text/css">
+		.reqField:before{
+			content:"*" ;
+     color:red;
+		}
+	</style>
+
+
+</body>
