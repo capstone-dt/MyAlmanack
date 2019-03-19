@@ -202,13 +202,23 @@
 				genGrid(year, month){
 					var grid = [...Array(6)].map(e => Array(7).fill(null));
 					var date = new Date(year, month);
+					var month = date.getMonth();
 					console.log(date);
+					console.log("month "+month);
 					this.grid = grid;
 					var i = date.getDay();
 					var tempDateB = date;
 					for (; i >= 0 ; i--){ //backwards
-						
-						grid[0][i] = tempDateB.getDate().toString(); 
+						grid[0][i] = {};
+						var curr_date = tempDateB.getDate().toString(); 
+						var is_curr_month = false;
+						var month2 = tempDateB.getMonth();
+						console.log("month2 "+month2);
+						if (month == month2){
+							is_curr_month = true;
+						}
+						grid[0][i].date = curr_date;
+						grid[0][i].is_curr = is_curr_month;
 						tempDateB = new Date(tempDateB.setDate(tempDateB.getDate()-1));
 						
 					}
@@ -219,7 +229,17 @@
 						for (y =0; y <7; y++){
 							if (grid[x][y] == null){
 								tempDateF = new Date(tempDateF.setDate(tempDateF.getDate()+1));
-								grid[x][y] = tempDateF.getDate().toString(); 
+								grid[x][y] = {};
+								var curr_date = tempDateF.getDate().toString();
+								var is_curr_month = false;
+								var month2 = tempDateF.getMonth();
+								console.log("month3 "+month2);
+								
+								if (month == month2){
+									is_curr_month = true;
+								}
+								grid[x][y].date = curr_date;
+								grid[x][y].is_curr = is_curr_month;
 								
 							}
 						}
