@@ -1,0 +1,266 @@
+<html>
+<head>
+  </head>
+  <body>
+  
+
+    <script type="text/javascript">
+			class Event{
+				//c has to be greater that 0
+				//
+				//dateformat : '03/15/1996-21:30 | 03/15/1996-22:30'
+				constructor(name, desc,timerange){
+					this.name= name;
+					this.desc = desc;
+					this.list(timerange);
+				}
+				list(timerange){
+					var stringStart = timerange.substring(0,16);
+					var stringEnd = timerange.substring(19, timerange.length);
+					var starttime = new Date(stringStart);
+					var endtime = new Date(stringEnd);
+					var concat = [Math.round((starttime) / 1000) ,Math.round((endtime) / 1000)];
+					var list = [concat];
+					this.list=list;
+				}
+				
+				rep(sa, su, mo, tu, we, th, fr, c, timerange){
+					var stringStart = timerange.substring(0,16);
+					var stringEnd = timerange.substring(19, timerange.length);
+					var starttime = new Date(stringStart);
+					var endtime = new Date(stringEnd);
+					var concat = [Math.floor((starttime) / 1000) ,Math.floor((endtime) / 1000)];
+					var list = [concat];
+					var pattern = sa+su+mo+tu+we+th+fr; //pattern
+					console.log("pattern :"+pattern);
+					var i, j, indexS, indexE;
+					var w = parseInt(c, 10) -1;
+					//console.log("w is "+w);
+					for (i = 0; i < c ; i++){// how many occurances of the pattern
+						for (j = 0; j < pattern.length; j++){
+							if (pattern.charAt(j)== 1){
+								switch(j) {
+								  case 0:
+								    var tempdateS = new Date(starttime.setDate(starttime.getDate()+((7*i)+1)));
+									var tempdateE = new Date(endtime.setDate(endtime.getDate()+((7*i)+1)));
+									//console.log("is it making it in?" + tempdateS.getDay());
+									while(tempdateS.getDay() != 0){
+										//console.log("did it make it in?" + tempdateS.getDay());
+										
+										//console.log("before "+tempdateS);
+										tempdateS.setDate(tempdateS.getDate()+1);
+										tempdateE.setDate(tempdateE.getDate()+1);
+										//console.log("after "+tempdateS);
+									}
+									if (tempdateS.getDay() == 0){
+										//console.log("Is a sunday");
+										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
+										list.push(concat);
+										//console.log("list UPDATED: "+list);
+									}
+									
+									break;
+								  case 1:
+									var tempdateS = new Date(starttime.setDate(starttime.getDate()+((7*i)+1)));
+									var tempdateE = new Date(endtime.setDate(endtime.getDate()+((7*i)+1)));
+									//console.log("is it making it in?" + tempdateS.getDay());
+									while(tempdateS.getDay() != 1){
+										//console.log("did it make it in?" + tempdateS.getDay());
+										
+										//console.log("before "+tempdateS);
+										tempdateS.setDate(tempdateS.getDate()+1);
+										tempdateE.setDate(tempdateE.getDate()+1);
+										//console.log("after "+tempdateS);
+									}
+									if (tempdateS.getDay() == 1){
+										//console.log("Is a sunday");
+										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
+										list.push(concat);
+										//console.log("list UPDATED: "+list);
+									}
+									
+									break;
+								  case 2:
+									var tempdateS = new Date(starttime.setDate(starttime.getDate()+((7*i)+1)));
+									var tempdateE = new Date(endtime.setDate(endtime.getDate()+((7*i)+1)));
+									//console.log("is it making it in?" + tempdateS.getDay());
+									while(tempdateS.getDay() != 2){
+										//console.log("did it make it in?" + tempdateS.getDay());
+										
+										//console.log("before "+tempdateS);
+										tempdateS.setDate(tempdateS.getDate()+1);
+										tempdateE.setDate(tempdateE.getDate()+1);
+										//console.log("after "+tempdateS);
+									}
+									if (tempdateS.getDay() == 2){
+										//console.log("Is a sunday");
+										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
+										list.push(concat);
+										//console.log("list UPDATED: "+list);
+									}
+									
+									break;
+								  case 3:
+									var tempdateS = new Date(starttime.setDate(starttime.getDate()+((7*i)+1)));
+									var tempdateE = new Date(endtime.setDate(endtime.getDate()+((7*i)+1)));
+									//console.log("is it making it in?" + tempdateS.getDay());
+									while(tempdateS.getDay() != 3){
+										//console.log("did it make it in?" + tempdateS.getDay());
+										
+										//console.log("before "+tempdateS);
+										tempdateS.setDate(tempdateS.getDate()+1);
+										tempdateE.setDate(tempdateE.getDate()+1);
+										//console.log("after "+tempdateS);
+									}
+									if (tempdateS.getDay() == 3){
+										//console.log("Is a sunday");
+										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
+										list.push(concat);
+										//console.log("list UPDATED: "+list);
+									}
+									
+									break;
+								  case 4:
+									var tempdateS = new Date(starttime.setDate(starttime.getDate()+((7*i)+1)));
+									var tempdateE = new Date(endtime.setDate(endtime.getDate()+((7*i)+1)));
+									//console.log("is it making it in?" + tempdateS.getDay());
+									while(tempdateS.getDay() != 4){
+										//console.log("did it make it in?" + tempdateS.getDay());
+										
+										//console.log("before "+tempdateS);
+										tempdateS.setDate(tempdateS.getDate()+1);
+										tempdateE.setDate(tempdateE.getDate()+1);
+										//console.log("after "+tempdateS);
+									}
+									if (tempdateS.getDay() == 4){
+										//console.log("Is a sunday");
+										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
+										list.push(concat);
+										//console.log("list UPDATED: "+list);
+									}
+									
+									break;
+								  case 5:
+									var tempdateS = new Date(starttime.setDate(starttime.getDate()+((7*i)+1)));
+									var tempdateE = new Date(endtime.setDate(endtime.getDate()+((7*i)+1)));
+									//console.log("is it making it in?" + tempdateS.getDay());
+									while(tempdateS.getDay() != 5){
+										//console.log("did it make it in?" + tempdateS.getDay());
+										
+										//console.log("before "+tempdateS);
+										tempdateS.setDate(tempdateS.getDate()+1);
+										tempdateE.setDate(tempdateE.getDate()+1);
+										//console.log("after "+tempdateS);
+									}
+									if (tempdateS.getDay() == 5){
+										//console.log("Is a sunday");
+										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
+										list.push(concat);
+										//console.log("list UPDATED: "+list);
+									}
+									
+									break;
+								  case 6:
+									var tempdateS = new Date(starttime.setDate(starttime.getDate()+((7*i)+1)));
+									var tempdateE = new Date(endtime.setDate(endtime.getDate()+((7*i)+1)));
+									//console.log("is it making it in?" + tempdateS.getDay());
+									while(tempdateS.getDay() != 6){
+										//console.log("did it make it in?" + tempdateS.getDay());
+										
+										//console.log("before "+tempdateS);
+										tempdateS.setDate(tempdateS.getDate()+1);
+										tempdateE.setDate(tempdateE.getDate()+1);
+										//console.log("after "+tempdateS);
+									}
+									if (tempdateS.getDay() == 6){
+										//console.log("Is a sunday");
+										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
+										list.push(concat);
+										//console.log("list UPDATED: "+list);
+									}
+									
+									break;
+									
+								}
+								
+							}
+						
+						}
+					
+					
+					}
+					this.list = list;
+				
+				}
+				
+			}
+			
+			class Calendar{
+				constructor(name){ 
+					this.name = name;
+				}
+				genGrid(year, month){
+					var grid = [...Array(6)].map(e => Array(7).fill(null));
+					var date = new Date(year, month);
+					console.log(date);
+					this.grid = grid;
+					var i = date.getDay();
+					var tempDateB = date;
+					for (; i >= 0 ; i--){ //backwards
+						
+						grid[0][i] = tempDateB.getDate().toString(); 
+						tempDateB = new Date(tempDateB.setDate(tempDateB.getDate()-1));
+						
+					}
+					var x, y; //[x][y]
+					var tempDateF = date;
+					tempDateF = new Date(tempDateF.setDate(tempDateF.getDate()+1));
+					for (x =0; x <6; x++){ //forwards
+						for (y =0; y <7; y++){
+							if (grid[x][y] == null){
+								tempDateF = new Date(tempDateF.setDate(tempDateF.getDate()+1));
+								grid[x][y] = tempDateF.getDate().toString(); 
+								
+							}
+						}
+					}
+				}
+				freeTime(list){
+					console.log(list);
+					var first = list[0];
+					var second = list[1];
+					//console.log(first);
+					//console.log(second);
+					var Event1P1 = first[0];
+						var Event1P1S = Event1P1[0];
+						var Event1P1E = Event1P1[1];
+					var Event2P1 = first[1];
+						var Event2P1S = Event2P1[0];
+						var Event2P1E = Event2P1[1];
+					var Event1P2 = second[0];
+						var Event1P2S = Event1P2[0];
+						var Event1P2E = Event1P2[1];
+					var Event2P2 = second[1];
+						var Event1P2S = Event2P2[0];
+						var Event1P2E = Event2P2[1];
+					console.log(Event1P2E);
+					//console.log(endF);
+					//console.log(startS);
+					//console.log(endS);
+
+				}
+			}
+			
+			let soccer = new Event('soccer','soccer practice', '03/15/1996-21:30 | 03/15/1996-22:30');
+			console.log(soccer);
+			soccer.rep('1','0','1','1','0','1','1','1', '03/15/1996-21:30 | 03/15/1996-22:30');
+			//Fri Mar 15 1996 21:30:00 GMT-0500 (Eastern Standard Time) | Fri Mar 15 1996 22:30:00 GMT-0500 (Eastern Standard Time)
+			let cal = new Calendar('my calendar');
+			cal.genGrid('2019', '02');
+			console.log(cal);
+			var temp = [];
+			temp = [[[826876800, 826880400],[826887600, 826848000]],[[826878600,826882200],[826889400,826849800]]];
+			cal.freeTime(temp);
+	 </script>
+	</body>
+</html>
