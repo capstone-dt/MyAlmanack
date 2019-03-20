@@ -19,8 +19,11 @@
 					var stringEnd = timerange.substring(19, timerange.length);
 					var starttime = new Date(stringStart);
 					var endtime = new Date(stringEnd);
-					var concat = [Math.round((starttime) / 1000) ,Math.round((endtime) / 1000)];
-					var list = [concat];
+					var list = [];
+					var cap = {};
+					cap.start = Math.floor((starttime) / 1000);
+					cap.end = Math.floor((endtime) / 1000);
+					list.push(cap);
 					this.list=list;
 				}
 				
@@ -29,8 +32,11 @@
 					var stringEnd = timerange.substring(19, timerange.length);
 					var starttime = new Date(stringStart);
 					var endtime = new Date(stringEnd);
-					var concat = [Math.floor((starttime) / 1000) ,Math.floor((endtime) / 1000)];
-					var list = [concat];
+					var list = [];
+					var cap = {};
+					cap.start = Math.floor((starttime) / 1000);
+					cap.end = Math.floor((endtime) / 1000);
+					list.push(cap);
 					var pattern = sa+su+mo+tu+we+th+fr; //pattern
 					console.log("pattern :"+pattern);
 					var i, j, indexS, indexE;
@@ -54,8 +60,10 @@
 									}
 									if (tempdateS.getDay() == 0){
 										//console.log("Is a sunday");
-										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
-										list.push(concat);
+										var cap = {};
+										cap.start = Math.floor((tempdateS) / 1000);
+										cap.end = Math.floor((tempdateE) / 1000);
+										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
 									
@@ -74,8 +82,10 @@
 									}
 									if (tempdateS.getDay() == 1){
 										//console.log("Is a sunday");
-										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
-										list.push(concat);
+										var cap = {};
+										cap.start = Math.floor((tempdateS) / 1000);
+										cap.end = Math.floor((tempdateE) / 1000);
+										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
 									
@@ -94,8 +104,10 @@
 									}
 									if (tempdateS.getDay() == 2){
 										//console.log("Is a sunday");
-										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
-										list.push(concat);
+										var cap = {};
+										cap.start = Math.floor((tempdateS) / 1000);
+										cap.end = Math.floor((tempdateE) / 1000);
+										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
 									
@@ -114,8 +126,10 @@
 									}
 									if (tempdateS.getDay() == 3){
 										//console.log("Is a sunday");
-										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
-										list.push(concat);
+										var cap = {};
+										cap.start = Math.floor((tempdateS) / 1000);
+										cap.end = Math.floor((tempdateE) / 1000);
+										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
 									
@@ -134,8 +148,10 @@
 									}
 									if (tempdateS.getDay() == 4){
 										//console.log("Is a sunday");
-										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
-										list.push(concat);
+										var cap = {};
+										cap.start = Math.floor((tempdateS) / 1000);
+										cap.end = Math.floor((tempdateE) / 1000);
+										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
 									
@@ -154,8 +170,10 @@
 									}
 									if (tempdateS.getDay() == 5){
 										//console.log("Is a sunday");
-										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
-										list.push(concat);
+										var cap = {};
+										cap.start = Math.floor((tempdateS) / 1000);
+										cap.end = Math.floor((tempdateE) / 1000);
+										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
 									
@@ -174,8 +192,10 @@
 									}
 									if (tempdateS.getDay() == 6){
 										//console.log("Is a sunday");
-										var concat = [Math.floor((tempdateS) / 1000) ,Math.floor((tempdateE) / 1000)];
-										list.push(concat);
+										var cap = {};
+										cap.start = Math.floor((tempdateS) / 1000);
+										cap.end = Math.floor((tempdateE) / 1000);
+										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
 									
@@ -190,7 +210,7 @@
 					
 					}
 					this.list = list;
-				
+					return list;
 				}
 				
 			}
@@ -203,8 +223,6 @@
 					var grid = [...Array(6)].map(e => Array(7).fill(null));
 					var date = new Date(year, month);
 					var month = date.getMonth();
-					console.log(date);
-					console.log("month "+month);
 					this.grid = grid;
 					var i = date.getDay();
 					var tempDateB = date;
@@ -213,7 +231,6 @@
 						var curr_date = tempDateB.getDate().toString(); 
 						var is_curr_month = false;
 						var month2 = tempDateB.getMonth();
-						console.log("month2 "+month2);
 						if (month == month2){
 							is_curr_month = true;
 						}
@@ -233,7 +250,6 @@
 								var curr_date = tempDateF.getDate().toString();
 								var is_curr_month = false;
 								var month2 = tempDateF.getMonth();
-								console.log("month3 "+month2);
 								
 								if (month == month2){
 									is_curr_month = true;
@@ -245,42 +261,52 @@
 						}
 					}
 				}
-				freeTime(list){
+				freeTime(list, threshold){
 					console.log(list);
-					var first = list[0];
-					var second = list[1];
-					//console.log(first);
-					//console.log(second);
-					var Event1P1 = first[0];
-						var Event1P1S = Event1P1[0];
-						var Event1P1E = Event1P1[1];
-					var Event2P1 = first[1];
-						var Event2P1S = Event2P1[0];
-						var Event2P1E = Event2P1[1];
-					var Event1P2 = second[0];
-						var Event1P2S = Event1P2[0];
-						var Event1P2E = Event1P2[1];
-					var Event2P2 = second[1];
-						var Event1P2S = Event2P2[0];
-						var Event1P2E = Event2P2[1];
-					console.log(Event1P2E);
-					//console.log(endF);
+					var i, j;	
+					var newList = [];
+					for (i = 0; i< list.length ; i++){
+						for (j = 0; j < list[i].length; j++){
+							newList.push(list[i][j]);
+						}
+						
+					}
+					newList.sort((elemA, elemB) => elemA.start - elemB.start);
+					var free = [];
+					for (i =0; i< newList.length-1;i++){
+						if (newList[i].end < newList[i+1].start){
+							var difference = newList[i+1].start - newList[i].end;
+							console.log("difference: " + difference);
+							if (difference > threshold){
+								var newTime = {};
+								newTime.start = newList[i].end;
+								newTime.end = newList[i+1].start;
+								free.push(newTime);
+							}
+							
+						}
+					}
+					console.log(newList);
+					console.log(free);
 					//console.log(startS);
 					//console.log(endS);
 
 				}
 			}
 			
-			let soccer = new Event('soccer','soccer practice', '03/15/1996-21:30 | 03/15/1996-22:30');
+			let soccer = new Event('soccer','soccer practice', '03/15/2019-21:30 | 03/15/2019-22:30');
 			console.log(soccer);
-			soccer.rep('1','0','1','1','0','1','1','1', '03/15/1996-21:30 | 03/15/1996-22:30');
+			var x = soccer.rep('1','0','1','1','0','1','0','1', '03/15/2019-21:30 | 03/15/2019-22:30');
+			var y = soccer.rep('1','0','1','1','0','1','0','1', '03/15/2019-20:00 | 03/15/2019-21:00');
+			console.log(x);
+			console.log(y);
+			var list = [x,y];
 			//Fri Mar 15 1996 21:30:00 GMT-0500 (Eastern Standard Time) | Fri Mar 15 1996 22:30:00 GMT-0500 (Eastern Standard Time)
 			let cal = new Calendar('my calendar');
 			cal.genGrid('2019', '02');
 			console.log(cal);
-			var temp = [];
-			temp = [[[826876800, 826880400],[826887600, 826848000]],[[826878600,826882200],[826889400,826849800]]];
-			cal.freeTime(temp);
+			var threshold = 3600;
+			cal.freeTime(list ,threshold);
 	 </script>
 	</body>
 </html>
