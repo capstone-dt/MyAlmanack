@@ -28,8 +28,8 @@
 		  		<div class="col left-block text-left">
 					<div>
 						<button type="button"> < </button>
-						<button type="button"> Today </button>
 						<button type="button"> > </button>
+						<button type="button"> Today </button>
 		  			</div>
 		  		</div>
 			  	<div class="col center-block text-center" id="cal_head_text">
@@ -49,6 +49,11 @@
 					<div class="form-check-inline disabled">
 			  		<label class="form-check-label">
 			   		 <input type="radio" class="form-check-input" id="dayRadio" name="optradio" onclick="switchCalendarView('cal_grid_cont', 'day');">Day
+			  		</label>
+					</div>
+					<div class="form-check-inline disabled">
+			  		<label class="form-check-label">
+			   		 <input type="radio" class="form-check-input" id="listRadio" name="optradio" onclick="">List
 			  		</label>
 					</div>
 		  		</div>
@@ -177,7 +182,6 @@
 
 		}
 		.calWeek{
-			min-height: 10%;
 			object-fit: cover;
 		}
 		.calWeek:hover{
@@ -200,7 +204,7 @@
 <script type="text/javascript">
 	//Adds numbers based on the dimensions passed
 	var _cont_id = "cal_grid_cont";
-	var _switchType = "";
+	var _switchType = "month";
 	var _select_class = "calSelect";
 	var _select_id = "";
 	var headerArray_top = [];
@@ -210,15 +214,15 @@
 	var divRowsArray =[];
 	var eventDivArray = [];
 	var populatedEvents = [];
+	var populatedEvents_w = [];
+	var populatedEvents_d = [];
 	var x_offset = 0, y_offset = 0;
 	var _days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 	var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 	var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 	function windowResized(){
-		console.log("window resized");
 		var breakpoint = getResponsiveBreakpoint();
-		console.log("breakpoint:" + breakpoint);
 		switch(breakpoint){
 			case "xs":
 				elongateHeader();
@@ -240,7 +244,13 @@
 		switch(_switchType){
 			case "month":
 				// change height of each row to be the width of one column
-
+				var curr_width;
+				var dayBound = calArray[0][0].getBoundingClientRect();
+				var rows = document.getElementsByClassName("calWeek");
+				for(var i = 0; i < rows.length; i++){
+					rows[i].style.height = dayBound.width 
+					+ "px";
+				}
 				break;
 			default:
 		}
@@ -361,13 +371,18 @@
 			divRowsArray.push(curr_row);
 		}
 		// console.log(gridArray);
-		console.log(headerArray_top);
 		windowResized();
 		addEvents();
 	}
 	function switchCalendarView(cont_id, switchType){
 		var cont_div = document.getElementById(cont_id);
 		cont_div.innerHTML = "";
+		var doFocus = false;
+		if(switchType === _switchType){
+			doFocus = false;
+		}else{
+			doFocus = true;
+		}
 		_switchType = switchType;
 		clearEvents();
 		switch(switchType){
@@ -381,7 +396,10 @@
 			default:
 				makeGrid(cont_id, "calWeek", "defStyle calDay", "M", 7, 6, dayClickM, weekDaysHeader, noLeftHeader);
 				fillMonthViewNumbers();
-		}
+			}
+			if(doFocus == true){
+				focusCalendar();
+			}
 	}
 	function clearEvents(){
 		for(var i = 0; i < eventDivArray.length; i++){
@@ -422,12 +440,56 @@
 		}
 		return retArr;
 	}
+	function focusCalendar(){
+		var cal_head = document.getElementById("cal_head_text");
+		var bound = cal_head.getBoundingClientRect();
+		if(_switchType === "month"){
+			window.scrollTo(0, bound.top);
+			return;
+		}
+		window.scrollTo(0, bound.top + 100);
+
+
+	}
+
 	function eventClicked(event_id){
 		console.log("eventClicked:" + event_id);
 	}
 
 	function getWeek(dateArg){
 		return Math.floor(dateArg / 7.0);
+	}
+	function drawEventSafe_d(time_start, length, event_id){
+		if(containsID_d(event_id)){
+			console.log("Event already exists. Try modifying it instead.");
+			return;
+		}
+		if(time_start < 0){
+			time_start = 0;
+		}
+		var c_length = length;
+		if(length + time_start > 24){
+			c_length = 24 - time_start;
+		}
+		drawEventUnsafe_d(time_start, c_length, event_id);
+	}
+	function drawEventSafe_w(start_col, end_col, time_start, length, event_id){
+		if(containsID_w(event_id)){
+			console.log("Event already exists. Try modifying it instead.");
+			return;
+		}
+		var c_length = length;
+		if(length + time_start > 24){
+			c_length = 24 - time_start;
+		}
+		var d_length = end_col - start_col;
+		if(d_length < 0){
+			d_length = 1;
+		}
+		if(d_length + start_col > 7){
+			d_length = 7 - start_col;
+		}
+		drawEventUnsafe_w(start_col, d_length, time_start, c_length, event_id);
 	}
 	function drawEventSafe_m(start, end, event_id){
 		if(containsID(event_id)){
@@ -443,35 +505,80 @@
 			drawEventUnsafe_m(curr_start, width, curr_struct.flags, event_id);
 		}
 	}
-	function containsID(event_id){
-		var contains = false;
-		for(var i = 0; i < populatedEvents.length; i++){
-			if(populatedEvents[i].event_id == event_id){
-				contains = true;
-				break;
-			}
-		}
-		return contains;
+	function drawEventUnsafe_d_s(curr_struct){
+		drawEventUnsafe_d(curr_struct.start_time, curr_struct.length, curr_struct.event_id);
 	}
-	function containsStruct(curr_struct){
-		var contains = false;
-		for(var i = 0; i < populatedEvents.length; i++){
-			if(populatedEvents[i].event_id == curr_struct.event_id && 
-				populatedEvents[i].start == curr_struct.start && 
-				populatedEvents[i].day_width == curr_struct.day_width){
-				contains = true;
-				break;
-			}
-		}
-		return contains;
-	}
-	function getRowCol(dateVal){
-		var _row = Math.floor(dateVal/7);
-		var _col = Math.floor(dateVal % 7);
-		return {row:_row, col:_col};
+	function drawEventUnsafe_w_s(curr_struct){
+		drawEventUnsafe_w(curr_struct.start, curr_struct.day_width, curr_struct.start_time, curr_struct.length, curr_struct.event_id);
 	}
 	function drawEventUnsafe_m_s(curr_struct){
 		drawEventUnsafe_m(curr_struct.start, curr_struct.day_width, curr_struct.flags, curr_struct.event_id);
+	}
+	function drawEventUnsafe_d(start_time, length, event_id){
+		var start = 0;
+		var day_width = 1;
+		var day_div = calArray[0][start];
+		var rect = day_div.getBoundingClientRect();
+		var col_width = rect.width;
+		var row_height = rect.height;
+		var x_offset_px_l = 10;
+		var x_offset_px_r = 10;
+		var y_perc = 0.30;
+		var y_offset_px = start_time*row_height;
+		var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
+		var height = row_height*length;
+		var divToAdd = document.createElement('div');
+		divToAdd.style = "position:absolute; background-color:blue; z-index:2; height:20px; cursor:pointer;"
+		+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
+		+ "left:" + (rect.left + x_offset_px_l) + "px;" 
+		+ "width:" + width + "px;" 
+		+ "height:" + height + "px;";
+		divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_id + ");" );
+		document.body.appendChild(divToAdd);
+		eventDivArray.push(divToAdd);
+		var new_struct = {
+			start_time:start_time,
+			length:length, 
+			event_id:event_id
+		};
+		var contains = containsStruct_d(new_struct);
+		if(contains == false){
+			populatedEvents_d.push(new_struct);
+			console.log(populatedEvents_d);
+		}
+	}
+	function drawEventUnsafe_w(start, day_width, start_time, length, event_id){
+		var day_div = calArray[0][start];
+		var rect = day_div.getBoundingClientRect();
+		var col_width = rect.width;
+		var row_height = rect.height;
+		var x_offset_px_l = 10;
+		var x_offset_px_r = 10;
+		var y_perc = 0.30;
+		var y_offset_px = start_time*row_height;
+		var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
+		var height = row_height*length;
+		var divToAdd = document.createElement('div');
+		divToAdd.style = "position:absolute; background-color:blue; z-index:2; height:20px; cursor:pointer;"
+		+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
+		+ "left:" + (rect.left + x_offset_px_l) + "px;" 
+		+ "width:" + width + "px;" 
+		+ "height:" + height + "px;";
+		divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_id + ");" );
+		document.body.appendChild(divToAdd);
+		eventDivArray.push(divToAdd);
+		var new_struct = {
+			start:start, 
+			day_width:day_width,
+			start_time:start_time,
+			length:length, 
+			event_id:event_id
+		};
+		var contains = containsStruct_w(new_struct);
+		if(contains == false){
+			populatedEvents_w.push(new_struct);
+			console.log(populatedEvents_w);
+		}
 	}
 	function drawEventUnsafe_m(start, day_width, flags, event_id){
 		var coords = getRowCol(start);
@@ -513,24 +620,118 @@
 		}
 		console.log(divToAdd);
 	}
+	function containsID_d(event_id){
+		var contains = false;
+		for(var i = 0; i < populatedEvents_d.length; i++){
+			if(populatedEvents_d[i].event_id == event_id){
+				contains = true;
+				break;
+			}
+		}
+		return contains;
+	}
+	function containsID_w(event_id){
+		var contains = false;
+		for(var i = 0; i < populatedEvents_w.length; i++){
+			if(populatedEvents_w[i].event_id == event_id){
+				contains = true;
+				break;
+			}
+		}
+		return contains;
+	}
+	function containsID(event_id){
+		var contains = false;
+		for(var i = 0; i < populatedEvents.length; i++){
+			if(populatedEvents[i].event_id == event_id){
+				contains = true;
+				break;
+			}
+		}
+		return contains;
+	}
+	function containsStruct(curr_struct){
+		var contains = false;
+		for(var i = 0; i < populatedEvents.length; i++){
+			if(populatedEvents[i].event_id == curr_struct.event_id && 
+				populatedEvents[i].start == curr_struct.start && 
+				populatedEvents[i].day_width == curr_struct.day_width){
+				contains = true;
+				break;
+			}
+		}
+		return contains;
+	}
+	function containsStruct_w(curr_struct){
+		var contains = false;
+		for(var i = 0; i < populatedEvents_w.length; i++){
+			if(populatedEvents_w[i].event_id == curr_struct.event_id && 
+				populatedEvents_w[i].start == curr_struct.start && 
+				populatedEvents_w[i].day_width == curr_struct.day_width){
+				contains = true;
+				break;
+			}
+		}
+		return contains;
+	}
+	function containsStruct_d(curr_struct){
+		var contains = false;
+		for(var i = 0; i < populatedEvents_d.length; i++){
+			if(populatedEvents_d[i].event_id == curr_struct.event_id && 
+				populatedEvents_d[i].start_time == curr_struct.start_time && 
+				populatedEvents_d[i].length == curr_struct.length){
+				contains = true;
+				break;
+			}
+		}
+		return contains;
+	}
+	function getRowCol(dateVal){
+		var _row = Math.floor(dateVal/7);
+		var _col = Math.floor(dateVal % 7);
+		return {row:_row, col:_col};
+	}
+	
 
 	function addEvents(){
-		if(_switchType === "month"){
-
-		}else{
-			return;
+		switch(_switchType){
+			case "day":
+				addEventsD();
+				break;
+			case "week":
+				addEventsW();
+				break;
+			case "month":
+				addEventsM();
+				break;
+			default:
+				return;
 		}
-		var count = 0;
-		var populatedEvents_c = populatedEvents.slice(0);
-		console.log("populatedEvents prior:");
-		console.log(populatedEvents);
-		console.log("populatedEvents after:");
-		console.log(populatedEvents_c);
-		for (var i = 0; i < populatedEvents_c.length; i++) {
-			drawEventUnsafe_m_s(populatedEvents_c[i]);
-			}
 
 	}
+	function addEventsD(){
+		var count = 0;
+		var populatedEvents_c = populatedEvents_d.slice(0);
+		for (var i = 0; i < populatedEvents_c.length; i++) {
+			drawEventUnsafe_d_s(populatedEvents_c[i]);
+		}
+	}
+	function addEventsW(){
+		var count = 0;
+		var populatedEvents_c = populatedEvents_w.slice(0);
+		for (var i = 0; i < populatedEvents_c.length; i++) {
+			drawEventUnsafe_w_s(populatedEvents_c[i]);
+		}
+	}
+
+	function addEventsM(){
+		var count = 0;
+		var populatedEvents_c = populatedEvents.slice(0);
+		for (var i = 0; i < populatedEvents_c.length; i++) {
+			drawEventUnsafe_m_s(populatedEvents_c[i]);
+		}
+	}
+
 	function dayTopHeader(col_index){
 		var ret_div = document.createElement('div');
 		ret_div.className = "col text-center defTopHeaderClass";
@@ -624,6 +825,7 @@
 		// console.log("week selected");
 		selectUnique(_cont_id, click_id)
 		// switchCalendarView(_cont_id, "week");
+			focusCalendar();
 	}
 	function hourClickW(click_id){
 		console.log("hourClickW:" + click_id);
@@ -639,7 +841,7 @@
 		window.addEventListener("resize", windowResized);
 		switchCalendarView(_cont_id, "month");
 	}
-	main();
+		main();
 </script>
 
 {% endblock %}
