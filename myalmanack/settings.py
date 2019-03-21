@@ -77,8 +77,12 @@ WSGI_APPLICATION = 'myalmanack.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'dc8s5l5c25c6on',
+	'USER': 'chvhhlrivrtbwm',
+	'PASSWORD': '2c4843febfc8edad1f22234aac8200243943a9de5f9720318d64522ca27da7c8',
+	'HOST': 'ec2-54-221-243-211.compute-1.amazonaws.com',
+	'PORT': '',
     }
 }
 
