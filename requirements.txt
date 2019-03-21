@@ -5,4 +5,4 @@ gunicorn
 django-heroku
 requests
 dj-database-url
-psycopg2==2.5.4
+psycopg2
