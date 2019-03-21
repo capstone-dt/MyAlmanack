@@ -62,7 +62,7 @@
 			}
 
 			.notnav a::before {
-				content: ''; /* To generate the box */
+				content: '';
 				position: absolute;
 				top: 0; right: 0; bottom: .5em; left: 0;
 				z-index: -1;
@@ -112,14 +112,8 @@
 			}
 		</style>
 		<script type="text/javascript">
-			var _tabSelect = "friends_tab";
+			var _tabSelect = "";
 			var _searchElements = {
-				friends : [],
-				groups : [],
-				events : [],
-				users : []
-			};
-			var _searchDiv = {
 				friends : [],
 				groups : [],
 				events : [],
@@ -130,14 +124,79 @@
 				console.log("window resized");
 				updateSearch();
 			}
-			function clearLists(){
+
+			function clearDivLists(){
 				var list_div = document.getElementById("height_list");
 				while(list_div.children.length > 0){
 					list_div.removeChild(list_div.children[0]);
 				}
 			}
 
-			function createFriendElement(image_url, name, alias){
+			function generateDummyData(){
+				generateUserDummyData(0, 20);
+				generateFriendDummyData(0, 20);
+				generateGroupDummyData(0, 20);
+				generateEventDummyData(0, 20);
+			}
+
+			function generateUserDummyData(min, max){
+				for(var i = min; i < max; i++){
+					_searchElements.users.push(
+						userStruct(null, "User:" + i, i*i)
+					);
+				}
+			}
+
+			function generateFriendDummyData(min, max){
+				for(var i = min; i < max; i++){
+					_searchElements.friends.push(
+						userStruct(null, "Friend:" + i, i*i)
+					);
+				}
+			}
+
+			function generateGroupDummyData(min, max){
+				for(var i = min; i < max; i++){
+					_searchElements.groups.push(
+						groupStruct("Group:" + i, i*i, "tempDesc:" + i)
+					);
+				}
+			}
+
+			function generateEventDummyData(min, max){
+				for(var i = min; i < max; i++){
+					_searchElements.events.push(
+						eventStruct("Event:" + i)
+					);
+				}
+			}
+
+
+			function userStruct(image_url, name, alias){
+				var ret_struct = {};
+				ret_struct.image_url = image_url;
+				ret_struct.name = name;
+				ret_struct.alias = alias;
+				return ret_struct;
+			}
+
+			function groupStruct(name, alias, description){
+				var ret_struct = {};
+				ret_struct.description = description;
+				ret_struct.name = name;
+				ret_struct.alias = alias;
+				return ret_struct;
+			}
+			function eventStruct(name){
+				var ret_struct = {};
+				ret_struct.name = name;
+				return ret_struct;
+			}
+
+			function drawFriendElement(struct){
+				var image_url = struct.image_url;
+				var name = struct.name;
+				var alias = struct.alias;
 				if(image_url == null){
 					image_url = "https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg";
 				}
@@ -152,23 +211,77 @@
 				return list_div;
 			}
 
+			function drawUserElement(struct){
+				var image_url = struct.image_url;
+				var name = struct.name;
+				var alias = struct.alias;
+				if(image_url == null){
+					image_url = "https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg";
+				}
+				var list_elem = document.createElement('li');
+				list_elem.className = "nav-item w-fill";
+				var a_elem = document.createElement('a');
+				a_elem.className = "nav-link active";
+				a_elem.innerHTML = name;
+				var list_div = document.getElementById("height_list");
+				list_elem.appendChild(a_elem);
+				list_div.appendChild(list_elem);
+				return list_div;
+			}
+
+			function drawGroupElement(struct){
+				var name = struct.name;
+				var alias = struct.alias;
+				var description = struct.description;
+				var list_elem = document.createElement('li');
+				list_elem.className = "nav-item w-fill";
+				var a_elem = document.createElement('a');
+				a_elem.className = "nav-link active";
+				a_elem.innerHTML = name;
+				var list_div = document.getElementById("height_list");
+				list_elem.appendChild(a_elem);
+				list_div.appendChild(list_elem);
+				return list_div;
+			}
+			function drawEventElement(struct){
+				var name = struct.name;
+				var list_elem = document.createElement('li');
+				list_elem.className = "nav-item w-fill";
+				var a_elem = document.createElement('a');
+				a_elem.className = "nav-link active";
+				a_elem.innerHTML = name;
+				var list_div = document.getElementById("height_list");
+				list_elem.appendChild(a_elem);
+				list_div.appendChild(list_elem);
+				return list_div;
+			}
+
 			function populateFriends(){
-				for(var i = 0; i < _searchDiv.friends.length; i++){
-					var curr_struct = _searchDiv[i];
-					createFriendElement(curr_struct.image_url, curr_struct.name, curr_struct.alias);
+				for(var i = 0; i < _searchElements.friends.length; i++){
+					var curr_struct = _searchElements.friends[i];
+					drawFriendElement(curr_struct);
 				}
 			}
 
 			function populateUsers(){
-
+				for(var i = 0; i < _searchElements.users.length; i++){
+					var curr_struct = _searchElements.users[i];
+					drawUserElement(curr_struct);
+				}
 			}
 
 			function populateEvents(){
-
+				for(var i = 0; i < _searchElements.events.length; i++){
+					var curr_struct = _searchElements.events[i];
+					drawEventElement(curr_struct);
+				}
 			}
 
 			function populateGroups(){
-
+				for(var i = 0; i < _searchElements.groups.length; i++){
+					var curr_struct = _searchElements.groups[i];
+					drawGroupElement(curr_struct);
+				}
 			}
 
 			function updateSearch(){
@@ -184,7 +297,7 @@
 				var def_width = window.innerWidth - 2*def_left;
 				def_width = Math.max(def_width, 370);
 				cont_div.style = "position:absolute; border-color: black;"
-				+ "border-style: solid; border-width: 0.5px; padding-top: 20px; top:" 
+				+ "border-style: solid; border-width: 0.5px; padding-bottom: 20px; top:" 
 				+ (friend_rect.bottom - 7) + "px;"
 				+ "height:" + (50) + "%;"
 				+ "width:" + (def_width) + "px;"
@@ -192,12 +305,15 @@
 				console.log(rect);
 				console.log(cont_div);
 			}
+
 			function selectTab(sel_id){
 				if(_tabSelect === sel_id){
 					return;
 				}
 				_tabSelect = sel_id;
-				clearLists();
+				clearDivLists();
+				var scroll_div_cont = document.getElementById("scroll_div_cont");
+				scroll_div_cont.scrollTop = 0;
 				var trap_cont = document.getElementById("trap_cont");
 				var children = trap_cont.children;
 				console.log("selected:" + sel_id);
@@ -228,18 +344,24 @@
 			}
 			function selectFriends(){
 				console.log("select:friends");
+				populateFriends();
 			}
 			function selectUsers(){
 				console.log("select:users");
+				populateUsers();
 			}
 			function selectEvents(){
 				console.log("select:events");
+				populateEvents();
 			}
 			function selectGroups(){
 				console.log("select:groups");
+				populateGroups();
 			}
 			function main(){
 				window.addEventListener("resize", windowResized);
+				generateDummyData();
+				selectTab("friends_tab");
 				windowResized();
 			}
 			main();
