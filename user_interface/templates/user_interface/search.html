@@ -3,7 +3,7 @@
 {% block content %}
 	<div class="container">
 	    <h1>Search Results:</h1>
-		<hr>
+	    <hr>
 		<section>
 			<div class="tabs tabs-style-tzoid">
 				<div class="row">
@@ -17,26 +17,16 @@
 				</div><!-- /content -->
 				</div>
 			</div>
+		</section>
 				<div class="row boxed" id="scroll_div_cont_row">
-					<div class="col">
-						<div class="anyclass" id="scroll_div_cont" >
+					<div class="col" style="height:100%;">
+						<div class="anyclass" id="scroll_div_cont" style="height:100%;">
 							<div class=" col">
-							  <ul class="nav nav-pills nav-stacked">
-							    <li class="nav-item w-fill" style="background-color: lightblue;">
-							      <a class="nav-link active" href="#">Active</a>
-							    </li>
-							    <li class="nav-item w-fill" style="background-color: red;">
-							      <a class="nav-link active" href="#">Teesssst</a>
-							    </li>
-							    <li class="nav-item w-fill" style="background-color: gold;">
-							      <a class="nav-link active" href="#">Fressshhh</a>
-							    </li>
-							  </ul>
+							  <ul class="nav nav-pills nav-stacked" id="height_list">
 							</div>
 						</div>
 					</div>
 				</div>
-		</section>
 		<style type="text/css">
 			.w-fill{
 				width: 100%;
@@ -48,7 +38,6 @@
 				border-width: 0.5px; 
 			}
 			.anyClass {
-			  height:50%;
 			  overflow-y: scroll;
 			  padding-top: 20px;
 			}
@@ -124,11 +113,64 @@
 		</style>
 		<script type="text/javascript">
 			var _tabSelect = "friends_tab";
+			var _searchElements = {
+				friends : [],
+				groups : [],
+				events : [],
+				users : []
+			};
+			var _searchDiv = {
+				friends : [],
+				groups : [],
+				events : [],
+				users : []
+			};
 
 			function windowResized(){
 				console.log("window resized");
 				updateSearch();
 			}
+			function clearLists(){
+				var list_div = document.getElementById("height_list");
+				while(list_div.children.length > 0){
+					list_div.removeChild(list_div.children[0]);
+				}
+			}
+
+			function createFriendElement(image_url, name, alias){
+				if(image_url == null){
+					image_url = "https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg";
+				}
+				var list_elem = document.createElement('li');
+				list_elem.className = "nav-item w-fill";
+				var a_elem = document.createElement('a');
+				a_elem.className = "nav-link active";
+				a_elem.innerHTML = name;
+				var list_div = document.getElementById("height_list");
+				list_elem.appendChild(a_elem);
+				list_div.appendChild(list_elem);
+				return list_div;
+			}
+
+			function populateFriends(){
+				for(var i = 0; i < _searchDiv.friends.length; i++){
+					var curr_struct = _searchDiv[i];
+					createFriendElement(curr_struct.image_url, curr_struct.name, curr_struct.alias);
+				}
+			}
+
+			function populateUsers(){
+
+			}
+
+			function populateEvents(){
+
+			}
+
+			function populateGroups(){
+
+			}
+
 			function updateSearch(){
 				var trap_cont_id = "trap_cont";
 				var trap_cont_div = document.getElementById(trap_cont_id);
@@ -155,6 +197,7 @@
 					return;
 				}
 				_tabSelect = sel_id;
+				clearLists();
 				var trap_cont = document.getElementById("trap_cont");
 				var children = trap_cont.children;
 				console.log("selected:" + sel_id);
@@ -202,7 +245,6 @@
 			main();
 
 		</script>
-	  	<hr>
 	</div>
 
 	
