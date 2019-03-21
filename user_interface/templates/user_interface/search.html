@@ -9,15 +9,15 @@
 				<div class="row">
 				<div class="col left-block content-wrap">
 					<div class="notnav left" id="trap_cont">
-						<a href="#" class="selected">Friends</a>
-						<a href="#">Groups</a>
-						<a href="#">Events</a>
-						<a href="#">Users</a>
+						<a href="#" class="selected" id="friends_tab" onclick="selectTab('friends_tab')">Friends</a>
+						<a href="#" id="group_tab" onclick="selectTab('group_tab')">Groups</a>
+						<a href="#" id="events_tab" onclick="selectTab('events_tab')">Events</a>
+						<a href="#" id="users_tab" onclick="selectTab('users_tab')">Users</a>
 					</div>
 				</div><!-- /content -->
 				</div>
 			</div>
-				<div class="row boxed">
+				<div class="row boxed" id="scroll_div_cont_row">
 					<div class="col">
 						<div class="anyclass" id="scroll_div_cont" >
 							<div class=" col">
@@ -123,6 +123,7 @@
 			}
 		</style>
 		<script type="text/javascript">
+			var _tabSelect = "friends_tab";
 
 			function windowResized(){
 				console.log("window resized");
@@ -132,16 +133,71 @@
 				var trap_cont_id = "trap_cont";
 				var trap_cont_div = document.getElementById(trap_cont_id);
 				var trap_rect = trap_cont_div.getBoundingClientRect();
-				var cont_id = "scroll_div_cont";
+				var cont_id = "scroll_div_cont_row";
 				var cont_div = document.getElementById(cont_id);
 				var rect = cont_div.getBoundingClientRect();
+				var friends_tab_div = document.getElementById("friends_tab");
+				var friend_rect = friends_tab_div.getBoundingClientRect();
+				var def_left = friend_rect.left +15;
+				var def_width = window.innerWidth - 2*def_left;
+				def_width = Math.max(def_width, 370);
 				cont_div.style = "position:absolute; border-color: black;"
 				+ "border-style: solid; border-width: 0.5px; padding-top: 20px; top:" 
-				+ (trap_rect.bottom) + "px;";
+				+ (friend_rect.bottom - 7) + "px;"
+				+ "height:" + (50) + "%;"
+				+ "width:" + (def_width) + "px;"
+				+ "left:" + (def_left) + "px;";
 				console.log(rect);
 				console.log(cont_div);
 			}
+			function selectTab(sel_id){
+				if(_tabSelect === sel_id){
+					return;
+				}
+				_tabSelect = sel_id;
+				var trap_cont = document.getElementById("trap_cont");
+				var children = trap_cont.children;
+				console.log("selected:" + sel_id);
+				console.log(children);
+				for(var i = 0; i < children.length; i++){
+					if(children[i].id === sel_id){
+						children[i].className = "selected";
+						continue;
+					}
+					children[i].className = "";
+				}
+				switch(sel_id){
+					case "friends_tab":
+						selectFriends();
+						break;
+					case "events_tab":
+						selectEvents();
+						break;
+					case "group_tab":
+						selectGroups();
+						break;
+					case "users_tab":
+						selectUsers();
+						break;
+					default:
+						return;
+				}
+			}
+			function selectFriends(){
+				console.log("select:friends");
+			}
+			function selectUsers(){
+				console.log("select:users");
+			}
+			function selectEvents(){
+				console.log("select:events");
+			}
+			function selectGroups(){
+				console.log("select:groups");
+			}
 			function main(){
+				window.addEventListener("resize", windowResized);
+				windowResized();
 			}
 			main();
 
