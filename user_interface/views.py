@@ -33,6 +33,15 @@ def profile(request):
 		# Pass in variable 'people' using Person.objects.all
 		context={}
 	)
+def group(request):
+	return render(
+		# Pass the request
+		request=request,
+		# Where to find template
+		template_name="user_interface/group.html",
+		# Pass in variable 'people' using Person.objects.all
+		context={}
+	)
 
 def register(request):
 	return render(

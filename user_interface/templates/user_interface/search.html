@@ -101,7 +101,7 @@
 
 			.notnav a.selected::before,
 			main {
-				background: #eee;
+				background: white;
 			}
 
 			main {
@@ -312,6 +312,7 @@
 				}
 				_tabSelect = sel_id;
 				clearDivLists();
+				updateSearch();
 				var scroll_div_cont = document.getElementById("scroll_div_cont");
 				scroll_div_cont.scrollTop = 0;
 				var trap_cont = document.getElementById("trap_cont");
