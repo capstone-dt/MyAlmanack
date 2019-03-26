@@ -121,6 +121,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+# Authorization
+
+INSTALLED_APPS += ["authorization.App"]
+
+MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
+
+
 # Activate Django-Heroku.
 django_heroku.settings(locals())
 
