@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'user_interface.apps.MyalmanackConfig'
+    'user_interface'
 ]
 
 MIDDLEWARE = [
@@ -120,6 +120,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = BASE_DIR
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface\\static")]
+
+print(STATIC_ROOT)
+print(STATICFILES_DIRS)
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())
