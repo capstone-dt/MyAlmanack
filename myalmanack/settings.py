@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'user_interface.apps.MyalmanackConfig'
+    'user_interface'
 ]
 
 MIDDLEWARE = [
@@ -149,6 +149,16 @@ LOGOUT_URL = "/authentication/logout"
 LOGIN_REDIRECT_URL = "/"
 
 LOGOUT_REDIRECT_URL = "/"
+
+
+# User interface
+
+STATIC_ROOT = BASE_DIR
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface\\static")]
+
+print(STATIC_ROOT)
+print(STATICFILES_DIRS)
 
 
 # Activate Django-Heroku.
