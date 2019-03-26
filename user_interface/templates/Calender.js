@@ -330,6 +330,7 @@ class Event{
 								event.end = eventtimeE;
 								event.event_id = list[i][j].event_id;
 								event.user_id = list[i][j].user_id;
+								event.canView = false;
 								tempList.push(event);
 								if (arr[distance] == null){
 									arr[distance] = [];
