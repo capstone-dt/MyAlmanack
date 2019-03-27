@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -134,6 +133,16 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
+# User interface
+
+STATIC_ROOT = BASE_DIR
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface\\static")]
+
+print(STATIC_ROOT)
+print(STATICFILES_DIRS)
+
+
 # Authentication
 
 INSTALLED_APPS += ["authentication.App"]
@@ -151,17 +160,16 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
 
-# User interface
+# Authorization
 
-STATIC_ROOT = BASE_DIR
+INSTALLED_APPS += ["authorization.App"]
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface\\static")]
-
-print(STATIC_ROOT)
-print(STATICFILES_DIRS)
+MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
 
 
-# Activate Django-Heroku.
+# Django-Heroku.
+
+import django_heroku
 django_heroku.settings(locals())
 
 import dj_database_url
