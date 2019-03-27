@@ -20,13 +20,25 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '0s2*j4+)j&j1m)&ri#0z0p^xs$+bd^h&kfa)3vao9++c$4mlyf'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Security settings
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = None
 
 ALLOWED_HOSTS = []
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_BROWSER_XSS_FILTER = True
+
+SECURE_SSL_REDIRECT = True
+
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SECURE = True
+
+X_FRAME_OPTIONS = 'DENY'
 
 
 # Application definition
@@ -121,6 +133,26 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+
+# Authentication
+
+INSTALLED_APPS += ["authentication.App"]
+
+MIDDLEWARE += ["authentication.middleware.FirebaseSessionMiddleware"]
+
+AUTHENTICATION_BACKENDS = ["authentication.backends.FirebaseAuthenticationBackend"]
+
+LOGIN_URL = "/authentication/login"
+
+LOGOUT_URL = "/authentication/logout"
+
+LOGIN_REDIRECT_URL = "/"
+
+LOGOUT_REDIRECT_URL = "/"
+
+
+# User interface
+
 STATIC_ROOT = BASE_DIR
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface\\static")]
@@ -128,8 +160,18 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface\\static")]
 print(STATIC_ROOT)
 print(STATICFILES_DIRS)
 
+
 # Activate Django-Heroku.
 django_heroku.settings(locals())
 
 import dj_database_url
 DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+
+
+# Override default settings with local settings for development environments
+# Possibly important overrides: SECRET_KEY, ALLOWED_HOSTS, DATABASES
+
+try:
+    from .local_settings import *
+except:
+    pass
