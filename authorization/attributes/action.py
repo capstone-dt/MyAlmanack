@@ -11,11 +11,12 @@ class Action:
         for policy in cls.policies:
             print("Evaluating policy:", policy)
             try:
-                if not policy.evaluate(request):
+                if policy.evaluate(request):
+                    return AuthorizationResult.PERMIT
+                else:
                     return AuthorizationResult.DENY
             except Exception as error:
-                print("Inapplicable action authorization:", error)
-                return AuthorizationResult.NOT_APPLICABLE
+                print("Skipping inapplicable action authorization:", error)
         
-        # If we get to this point, every policy has authorized the action.
-        return AuthorizationResult.PERMIT
+        # If we get to this point, then none of the policies were applicable.
+        return AuthorizationResult.NOT_APPLICABLE
