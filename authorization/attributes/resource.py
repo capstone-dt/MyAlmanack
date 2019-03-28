@@ -1,5 +1,5 @@
 from .attribute import Attribute
 
 
-class Object(Attribute):
+class Resource(Attribute):
     pass
