@@ -14,9 +14,12 @@ class AuthorizationRequest:
         self.resource = wrap_attribute(Resource, resource, "resources")
         self.context = wrap_attribute(Context, context, "contexts")
         
-        # Check the action's constraints if available.
-        # Check if the Action class requires certain Subject, Resource, or Context classes.
-        
+        # Assert the action's attribute class constraints.
+        action.assert_attribute_classes(
+            subject=self.subject,
+            resource=self.resource,
+            context=self.context
+        )
     
     def authorize(self):
         return DecisionAuthority.authorize(self)
