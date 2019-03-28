@@ -1,12 +1,8 @@
-<<<<<<< HEAD
 Django==2.1.7
 django-bootstrap4==0.0.7
-mysqlclient==1.4.2
 pytz==2018.9
-=======
-django
 gunicorn
 django-heroku
 requests
 dj-database-url
->>>>>>> 933066fa8dc231d8f39c4b99ae6ef07ca5fdfa18
+psycopg2
