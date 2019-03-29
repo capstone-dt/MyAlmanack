@@ -361,12 +361,25 @@ class Event{
 					
 					newList.sort((elemA, elemB) => elemA.start - elemB.start);
 					var free = [];
-					var struc = [user_list,free]
+					
 					for (i =0; i< newList.length-1;i++){
+						
+						if (i==0){
+							var newTime = {};
+								newTime.start = 0;
+								newTime.end = newList[i].start;
+								free.push(newTime);
+						}
+						if (i== newList.length-2){
+							var newTime = {};
+								newTime.start = newList[i].end;
+								newTime.end = 999999999999999;
+								free.push(newTime);
+						}
 						if (newList[i].end < newList[i+1].start){
 							var difference = newList[i+1].start - newList[i].end;
 							//console.log("difference: " + difference);
-							if (difference > threshold){
+							if (difference > threshold){               // 0 == no threshold so return any
 								var newTime = {};
 								newTime.start = newList[i].end;
 								newTime.end = newList[i+1].start;
@@ -375,12 +388,56 @@ class Event{
 							
 						}
 					}
+					var struc = [user_list,free]
 					//console.log(newList);
 					console.log(struc);
 					//console.log(startS);
 					//console.log(endS);
-
+					return struc;
 				}
+				
+				conflict (event, list){//make sure event is not before the list's start date
+										//to avoid conflicts 
+					var freetime_user_list = this.freeTime(list, 0)[0];
+					var freetime_list = this.freeTime(list, 0)[1];
+					console.log("this the freetime conflict ");
+					console.log(freetime_list);
+					var start = event.start;
+					var end = event.end;
+					var index1=0, index2=0;
+					var i, Scheck=false, Echeck=false;
+					for (i = 0; i < freetime_list.length; i++){//start checker
+					console.log(i);
+					console.log("in list S: "+new Date (freetime_list[i].start));
+					console.log("in list E: "+new Date (freetime_list[i].end));
+					console.log(" given S : "+new Date (start));
+					console.log(" given E : "+new Date (end));
+					
+					
+						if (start >= freetime_list[i].start && start <= freetime_list[i].end){
+							Scheck = true;
+							index1 = i;
+							console.log("here "+index1);
+						}
+					}
+					for (i = 0; i < freetime_list.length; i++){//end checker
+					console.log(i);
+						if (end >= freetime_list[i].start && end <= freetime_list[i].end){
+							Echeck = true;
+							index2 = i;
+							console.log("here "+index2);
+						}
+					}
+					if (Scheck == true && Echeck == true && index1 == index2){
+						return false; //not conflicting
+					}
+					return true; //is conflicting
+					console.log(freetime_user_list);
+					console.log(freetime_list);
+					
+					
+				}
+				
 			}
 			
 			let soccer = new Event('soccer','soccer practice', '03/15/2019-21:30 | 03/15/2019-22:30');
@@ -399,5 +456,13 @@ class Event{
 			cal.genGrid('2019', '02', list);
 			cal.events_per_day(list,1551416400000, 1554091200000);
 			console.log(cal);
-			var threshold = 3600; //1hr
-			cal.freeTime(list ,threshold);
+			var event = {};
+			//1552862056000
+			//1552867159500
+			event.start = 1551416400000;
+			event.end = 1552684400000;
+			var bool = cal.conflict (event, list);
+			console.log(bool);
+			var threshold = 12323600; //1hr
+			var freetime = cal.freeTime(list ,threshold);
+			console.log(freetime);
