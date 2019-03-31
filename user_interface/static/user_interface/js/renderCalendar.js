@@ -16,6 +16,22 @@ var x_offset = 0, y_offset = 0;
 var _days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+var _month_selected = "April";
+var _year_selected = "2019";
+var _day_selected = "1";
+
+
+/*
+JS OUTLINE:
+RESIZING
+CALENDAR
+EVENTS
+MAIN
+*/
+
+
+// -----------------------------------------------------------------
+// RESIZING
 
 function windowResized(){
 	var breakpoint = getResponsiveBreakpoint();
@@ -51,42 +67,6 @@ function ensureBoxSize(){
 		default:
 	}
 }
-function abbreviateHeader_xs(){
-	for (var i = 0; i < headerArray_top.length; i++) {
-		var curr_head = headerArray_top[i];
-		if(curr_head.innerHTML.includes(_days_of_week[i])){
-			var new_inner = curr_head.innerHTML.replace(_days_of_week[i], _days_of_week_abv_abv[i]);
-			curr_head.innerHTML = new_inner;
-		}
-		// console.log(curr_head);
-	}
-}
-function abbreviateHeader(){
-	for (var i = 0; i < headerArray_top.length; i++) {
-		var curr_head = headerArray_top[i];
-		if(curr_head.innerHTML.includes(_days_of_week[i])){
-			var new_inner = curr_head.innerHTML.replace(_days_of_week[i], _days_of_week_abv[i]);
-			curr_head.innerHTML = new_inner;
-		}
-		// console.log(curr_head);
-	}
-}
-function elongateHeader(){
-	for (var i = 0; i < headerArray_top.length; i++) {
-		var curr_head = headerArray_top[i];
-		if(curr_head.innerHTML.includes(_days_of_week[i]) == false){
-			if(curr_head.innerHTML.includes(_days_of_week_abv[i])){
-				var new_inner = curr_head.innerHTML.replace(_days_of_week_abv[i], _days_of_week[i]);
-				curr_head.innerHTML = new_inner;
-			}else if(curr_head.innerHTML.includes(_days_of_week_abv_abv[i])){
-				var new_inner = curr_head.innerHTML.replace(_days_of_week_abv_abv[i], _days_of_week[i]);
-				curr_head.innerHTML = new_inner;
-			}
-		}
-		// console.log(curr_head);
-	}
-}
-// Gets what size the screen is at.
 function getResponsiveBreakpoint() {
     var envs = ["xs", "sm", "md", "lg"];
     var env = "";
@@ -104,6 +84,14 @@ function getResponsiveBreakpoint() {
     $el.remove();
     return env;
 }
+// -----------------------------------------------------------------
+
+// DRAW CALENDAR
+
+function makeList(cont_id){
+	console.log("makeList");
+}
+
 function makeGrid(cont_id, rowClass, colClass, name, dim_x, dim_y, onclick_func, generateTopHeader_func, generateSideHeader_func){
 	var cont_div = document.getElementById(cont_id);
 	var children = cont_div.childNodes;
@@ -182,6 +170,9 @@ function switchCalendarView(cont_id, switchType){
 	_switchType = switchType;
 	clearEvents();
 	switch(switchType){
+		case "list":
+			makeList(cont_id);
+			break;
 		case "day":
 			makeGrid(cont_id, "calDayD", "defStyle calHour", "D", 1, 24, hourClickD, dayTopHeader, hourLeftHeader);
 			break;
@@ -204,7 +195,6 @@ function clearEvents(){
 	}
 	eventDivArray = [];
 }
-// Returns a 2d array of dates in the valid range.
 function splitEvent(start, end){
 	var start_week = getWeek(start);
 	var end_week = getWeek(end);
@@ -244,17 +234,171 @@ function focusCalendar(){
 		return;
 	}
 	window.scrollTo(0, bound.top + 100);
-
-
 }
 
-function eventClicked(event_id){
-	console.log("eventClicked:" + event_id);
+// CALENDAR HEADERS
+
+function dayTopHeader(col_index){
+	var ret_div = document.createElement('div');
+	ret_div.className = "col text-center defTopHeaderClass";
+	ret_div.id = ret_div.className + ":" + col_index;
+	ret_div.innerHTML = "Tempday ##/##/####";
+	return ret_div;
+}
+function weekDatesHeader(col_index){
+	var ret_div = document.createElement('div');
+	ret_div.className = "col text-center defTopHeaderClass";
+	ret_div.id = ret_div.className + ":" + col_index;
+	ret_div.innerHTML = _days_of_week[col_index] + "<br/>##";
+	return ret_div;
+}
+function weekDaysHeader(col_index){
+	var ret_div = document.createElement('div');
+	ret_div.className = "col text-center defTopHeaderClass";
+	ret_div.id = ret_div.className + ":" + col_index;
+	ret_div.innerHTML = _days_of_week[col_index];
+	return ret_div;
+}
+function noLeftHeader(row_index){
+	return null;
+}
+function hourLeftHeader(row_index){
+	var ret_div = document.createElement('div');
+	ret_div.className = "col-1 defLeftHeaderClass";
+	ret_div.id = ret_div.className + ":" + row_index;
+	var str_to = row_index + "";
+	if(str_to.length != 2){
+		str_to = "0" + str_to;
+	}
+	ret_div.innerHTML = str_to;
+		return ret_div;
 }
 
+// HEADER ABBREVIATION
+
+function abbreviateHeader_xs(){
+	for (var i = 0; i < headerArray_top.length; i++) {
+		var curr_head = headerArray_top[i];
+		if(curr_head.innerHTML.includes(_days_of_week[i])){
+			var new_inner = curr_head.innerHTML.replace(_days_of_week[i], _days_of_week_abv_abv[i]);
+			curr_head.innerHTML = new_inner;
+		}
+		// console.log(curr_head);
+	}
+}
+function abbreviateHeader(){
+	for (var i = 0; i < headerArray_top.length; i++) {
+		var curr_head = headerArray_top[i];
+		if(curr_head.innerHTML.includes(_days_of_week[i])){
+			var new_inner = curr_head.innerHTML.replace(_days_of_week[i], _days_of_week_abv[i]);
+			curr_head.innerHTML = new_inner;
+		}
+		// console.log(curr_head);
+	}
+}
+function elongateHeader(){
+	for (var i = 0; i < headerArray_top.length; i++) {
+		var curr_head = headerArray_top[i];
+		if(curr_head.innerHTML.includes(_days_of_week[i]) == false){
+			if(curr_head.innerHTML.includes(_days_of_week_abv[i])){
+				var new_inner = curr_head.innerHTML.replace(_days_of_week_abv[i], _days_of_week[i]);
+				curr_head.innerHTML = new_inner;
+			}else if(curr_head.innerHTML.includes(_days_of_week_abv_abv[i])){
+				var new_inner = curr_head.innerHTML.replace(_days_of_week_abv_abv[i], _days_of_week[i]);
+				curr_head.innerHTML = new_inner;
+			}
+		}
+		// console.log(curr_head);
+	}
+}
+
+// CALENDAR CLICK
+
+function select_id_to_coordinates(select_id){
+	var retArr = null;
+	for (var i = 0; i < gridArray.length; i++) {
+		for (var j = 0; j < gridArray[i].length; j++) {
+			var curr_div = gridArray[i][j];
+			if(curr_div.id === select_id){
+				retArr = [i - y_offset, j - x_offset];
+				return retArr;
+			}
+		}
+	}
+	return retArr;
+}
+function selectUnique(cont_id, select_id){
+	switchCalendarView(_cont_id, _switchType);
+	select(select_id);
+	var coords = select_id_to_coordinates(select_id);
+	// 
+}
+function select(select_id){
+	var toSelect = document.getElementById(select_id);
+	if(toSelect == null){
+		return;
+	}
+	_select_id = select_id;
+	console.log("select_new:" + select_id);
+	toSelect.className += " " + _select_class;
+	toSelect.setAttribute("selected", "true");
+}
+function dayClickM(click_id){
+	console.log("dayClick:" + click_id);
+	// console.log("week selected");
+	selectUnique(_cont_id, click_id)
+	// switchCalendarView(_cont_id, "week");
+		focusCalendar();
+}
+function hourClickW(click_id){
+	console.log("hourClickW:" + click_id);
+	selectUnique(_cont_id, click_id)
+	// switchCalendarView(_cont_id, "day");
+}
+function hourClickD(click_id){
+	console.log("hourClickD:" + click_id);
+	selectUnique(_cont_id, click_id)
+	// switchCalendarView(_cont_id, "month");
+}
+
+// CALENDAR POS UTILS
+
+function getRowCol(dateVal){
+	var _row = Math.floor(dateVal/7);
+	var _col = Math.floor(dateVal % 7);
+	return {row:_row, col:_col};
+}
 function getWeek(dateArg){
 	return Math.floor(dateArg / 7.0);
 }
+function coordinates_to_div(row_index, col_index){
+	if(row_index + y_offset < 0 || row_index + y_offset > gridArray.length){
+		return null;
+	}
+	if(col_index + x_offset < 0 || col_index + x_offset > gridArray[0].length){
+		return null;
+	}
+	var curr_div = gridArray[row_index + y_offset][col_index + x_offset];
+	return curr_div;
+}
+function fillMonthViewNumbers(){
+	var count = 0;
+	for (var i = 0; i < calArray.length; i++) {
+		for(var j = 0; j < calArray[i].length; j++){
+			textInputCalbox(i, j, count + "");
+			count++;
+		}
+	}
+}
+function textInputCalbox(row_index, col_index, textInput){
+	var curr_div = coordinates_to_div(row_index, col_index);
+	curr_div.innerHTML = textInput;
+	// console.log(curr_div);
+}
+
+// -----------------------------------------------------------------
+// DRAW EVENTS
+
 function drawEventSafe_d(time_start, length, event_id){
 	if(containsID_d(event_id)){
 		console.log("Event already exists. Try modifying it instead.");
@@ -416,6 +560,12 @@ function drawEventUnsafe_m(start, day_width, flags, event_id){
 	}
 	console.log(divToAdd);
 }
+function eventClicked(event_id){
+	console.log("eventClicked:" + event_id);
+}
+
+// CONATINS
+
 function containsID_d(event_id){
 	var contains = false;
 	for(var i = 0; i < populatedEvents_d.length; i++){
@@ -482,13 +632,6 @@ function containsStruct_d(curr_struct){
 	}
 	return contains;
 }
-function getRowCol(dateVal){
-	var _row = Math.floor(dateVal/7);
-	var _col = Math.floor(dateVal % 7);
-	return {row:_row, col:_col};
-}
-
-
 function addEvents(){
 	switch(_switchType){
 		case "day":
@@ -503,7 +646,6 @@ function addEvents(){
 		default:
 			return;
 	}
-
 }
 function addEventsD(){
 	var count = 0;
@@ -519,7 +661,6 @@ function addEventsW(){
 		drawEventUnsafe_w_s(populatedEvents_c[i]);
 	}
 }
-
 function addEventsM(){
 	var count = 0;
 	var populatedEvents_c = populatedEvents.slice(0);
@@ -527,113 +668,10 @@ function addEventsM(){
 		drawEventUnsafe_m_s(populatedEvents_c[i]);
 	}
 }
+// -----------------------------------------------------------------
 
-function dayTopHeader(col_index){
-	var ret_div = document.createElement('div');
-	ret_div.className = "col text-center defTopHeaderClass";
-	ret_div.id = ret_div.className + ":" + col_index;
-	ret_div.innerHTML = "Tempday ##/##/####";
-	return ret_div;
-}
-function weekDatesHeader(col_index){
-	var ret_div = document.createElement('div');
-	ret_div.className = "col text-center defTopHeaderClass";
-	ret_div.id = ret_div.className + ":" + col_index;
-	ret_div.innerHTML = _days_of_week[col_index] + "<br/>##";
-	return ret_div;
-}
-function weekDaysHeader(col_index){
-	var ret_div = document.createElement('div');
-	ret_div.className = "col text-center defTopHeaderClass";
-	ret_div.id = ret_div.className + ":" + col_index;
-	ret_div.innerHTML = _days_of_week[col_index];
-	return ret_div;
-}
-function noLeftHeader(row_index){
-	return null;
-}
-function hourLeftHeader(row_index){
-	var ret_div = document.createElement('div');
-	ret_div.className = "col-1 defLeftHeaderClass";
-	ret_div.id = ret_div.className + ":" + row_index;
-	var str_to = row_index + "";
-	if(str_to.length != 2){
-		str_to = "0" + str_to;
-	}
-	ret_div.innerHTML = str_to;
-		return ret_div;
-}
-function coordinates_to_div(row_index, col_index){
-	if(row_index + y_offset < 0 || row_index + y_offset > gridArray.length){
-		return null;
-	}
-	if(col_index + x_offset < 0 || col_index + x_offset > gridArray[0].length){
-		return null;
-	}
-	var curr_div = gridArray[row_index + y_offset][col_index + x_offset];
-	return curr_div;
-}
-function fillMonthViewNumbers(){
-	var count = 0;
-	for (var i = 0; i < calArray.length; i++) {
-		for(var j = 0; j < calArray[i].length; j++){
-			textInputCalbox(i, j, count + "");
-			count++;
-		}
-	}
-}
-function textInputCalbox(row_index, col_index, textInput){
-	var curr_div = coordinates_to_div(row_index, col_index);
-	curr_div.innerHTML = textInput;
-	// console.log(curr_div);
-}
-function select_id_to_coordinates(select_id){
-	var retArr = null;
-	for (var i = 0; i < gridArray.length; i++) {
-		for (var j = 0; j < gridArray[i].length; j++) {
-			var curr_div = gridArray[i][j];
-			if(curr_div.id === select_id){
-				retArr = [i - y_offset, j - x_offset];
-				return retArr;
-			}
-		}
-	}
-	return retArr;
-}
-function selectUnique(cont_id, select_id){
-	switchCalendarView(_cont_id, _switchType);
-	select(select_id);
-	var coords = select_id_to_coordinates(select_id);
-	// 
-}
-function select(select_id){
-	var toSelect = document.getElementById(select_id);
-	if(toSelect == null){
-		return;
-	}
-	_select_id = select_id;
-	console.log("select_new:" + select_id);
-	toSelect.className += " " + _select_class;
-	toSelect.setAttribute("selected", "true");
-}
-function dayClickM(click_id){
-	console.log("dayClick:" + click_id);
-	// console.log("week selected");
-	selectUnique(_cont_id, click_id)
-	// switchCalendarView(_cont_id, "week");
-		focusCalendar();
-}
-function hourClickW(click_id){
-	console.log("hourClickW:" + click_id);
-	selectUnique(_cont_id, click_id)
-	// switchCalendarView(_cont_id, "day");
-}
-function hourClickD(click_id){
-	console.log("hourClickD:" + click_id);
-	selectUnique(_cont_id, click_id)
-	// switchCalendarView(_cont_id, "month");
-}
-function main(){
+
+function mainProf(){
 	window.addEventListener("resize", windowResized);
 	switchCalendarView(_cont_id, "month");
 }

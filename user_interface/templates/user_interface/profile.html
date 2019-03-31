@@ -58,7 +58,7 @@
 					</div>
 					<div class="form-check-inline disabled">
 			  		<label class="form-check-label">
-			   		 <input type="radio" class="form-check-input" id="listRadio" name="optradio" onclick="">List
+			   		 <input type="radio" class="form-check-input" id="listRadio" name="optradio" onclick="switchCalendarView('cal_grid_cont', 'list');">List
 			  		</label>
 					</div>
 		  		</div>
@@ -207,7 +207,13 @@
 		</style>
 
 <script type="text/javascript">
-		main();
+		function test_image_pass(){
+			var image = base64ToImage("{{temp_image}}");
+			console.log(image);
+			document.body.appendChild(image);
+		}
+		// test_image_pass();
+		mainProf();
 </script>
 
 {% endblock %}

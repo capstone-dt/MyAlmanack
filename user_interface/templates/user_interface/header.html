@@ -7,11 +7,13 @@
 	<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
+	{% load static %}
+	<script src="{% static 'user_interface/js/utilities.js' %}"> </script>
 </head>
 
 <body>
 
-	<nav class="navbar navbar-expand-sm navbar-dark bg-dark" style="z-index: 10;">
+	<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
       <a class="navbar-brand" href="#">MyAlmanack</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsableNav" aria-controls="collapsableNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -26,7 +28,7 @@
           </li>
         </ul>
         <form class="form-inline justify-content-center" style="width:75%;">
-          <input class="form-control" type="text" placeholder="Search" style="width:100%;">
+          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;">
         </form>
         <ul class= "navbar-nav ml-auto">
           <li class="nav-item dropdown">
@@ -55,12 +57,16 @@
 	<style type="text/css">
 		.reqField:before{
 			content:"*" ;
-     color:red;
+     		color:red;
 		}
 		.navbarDropdownClass{
 			height:200px;
 			width: 300px;
 			overflow-y: scroll;
+		}
+		.searchStyle:focus {
+			background-color: #494949;
+			color: white;
 		}
 	</style>
 
