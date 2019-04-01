@@ -1,10 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-import numpy as np 
-import cv2
 import base64
 import os
-import json
 
 # In myalmanack folder
 # In main/views.py in sentdex tutorial
