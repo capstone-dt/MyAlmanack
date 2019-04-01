@@ -16,9 +16,11 @@ var x_offset = 0, y_offset = 0;
 var _days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-var _month_selected = "April";
+var _month_selected = "03";
 var _year_selected = "2019";
 var _day_selected = "1";
+var _curr_month = "currMonth";
+var _curr_month_not = "currMonthNot";
 
 
 /*
@@ -273,6 +275,34 @@ function hourLeftHeader(row_index){
 	ret_div.innerHTML = str_to;
 		return ret_div;
 }
+function fillMonthViewNumbers(){
+	var tempCal = new Calendar('temp_cal');
+	tempCal.genGrid(_year_selected, _month_selected, null);
+	var num_grid = tempCal.grid;
+	var count = 0;
+	for (var i = 0; i < calArray.length; i++) {
+		for(var j = 0; j < calArray[i].length; j++){
+			textInputCalbox(i, j, num_grid[i][j].date);
+			var clazz = _curr_month;
+			if(num_grid[i][j].is_curr == false){
+				clazz = _curr_month_not;
+			}
+			classCalbox(i, j, clazz);
+			count++;
+		}
+	}
+}
+function textInputCalbox(row_index, col_index, textInput){
+	var curr_div = coordinates_to_div(row_index, col_index);
+	curr_div.innerHTML = textInput;
+}
+
+function classCalbox(row_index, col_index, clazz){
+	var curr_div = coordinates_to_div(row_index, col_index);
+	curr_div.className += " "  + clazz;
+	console.log(curr_div);
+}
+
 
 // HEADER ABBREVIATION
 
@@ -380,20 +410,6 @@ function coordinates_to_div(row_index, col_index){
 	}
 	var curr_div = gridArray[row_index + y_offset][col_index + x_offset];
 	return curr_div;
-}
-function fillMonthViewNumbers(){
-	var count = 0;
-	for (var i = 0; i < calArray.length; i++) {
-		for(var j = 0; j < calArray[i].length; j++){
-			textInputCalbox(i, j, count + "");
-			count++;
-		}
-	}
-}
-function textInputCalbox(row_index, col_index, textInput){
-	var curr_div = coordinates_to_div(row_index, col_index);
-	curr_div.innerHTML = textInput;
-	// console.log(curr_div);
 }
 
 // -----------------------------------------------------------------

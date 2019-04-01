@@ -5,6 +5,7 @@
 
 {% load static %}
 <script src="{% static 'user_interface/js/renderCalendar.js' %}"> </script>
+<script src="{% static 'user_interface/js/calendarData.js' %}"> </script>
 
 	<div class="container">
 	    <h1>Jane Doe</h1>
@@ -38,7 +39,7 @@
 		  			</div>
 		  		</div>
 			  	<div class="col center-block text-center" id="cal_head_text">
-			  		January 1970
+			  		April 2019
 			  	</div>
 		  		<div class="col right-block text-right">
 		  			<div class="form-check-inline">
@@ -203,6 +204,13 @@
 		}
 		.calDayD{
 		}
+		.currMonth{
+			color:black;
+		}
+		.currMonthNot{
+			color:grey;
+		}
+
 		
 		</style>
 
