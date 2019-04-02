@@ -121,7 +121,9 @@
 	        </button>
 	      </div>
 	      <div class="modal-body">
-	        <form>
+	        <form action="/profile/" method="post">
+	        	{% csrf_token %}
+				<input type='hidden' name='csrfmiddlewaretoken' value='randomchars' />
 			  	<div class="form-group">
 				    <label class="reqField" for="inputEventName">Event Name</label>
 				    <input type="text" class="form-control" id="inputEventName" pattern="^[a-zA-Z0-9 ]*$" required>

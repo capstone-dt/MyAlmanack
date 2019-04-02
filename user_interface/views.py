@@ -26,6 +26,10 @@ class ProfileView(TemplateView):
 		)
 		return response
 
+	def post(self, request):
+		print("POST REQUESTED")
+		return get(self, request)
+
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
 
