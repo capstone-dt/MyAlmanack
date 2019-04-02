@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from django.http import HttpResponse
+from user_interface.forms import EventForm
 import base64
 import os
 
@@ -19,16 +20,24 @@ class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
 	def get(self, request):
+		event_form = EventForm()
 		response = render(
 			request=request,
 			template_name=self.template_name,
-			context={}
+			context={"event_form" : event_form}
 		)
 		return response
 
 	def post(self, request):
+		event_form = EventForm(request.POST)
 		print("POST REQUESTED")
-		return get(self, request)
+		print(event_form)
+		response = render(
+			request=request,
+			template_name=self.template_name,
+			context={"event_form" : event_form}
+		)
+		return response
 
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
