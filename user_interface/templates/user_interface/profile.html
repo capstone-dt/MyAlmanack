@@ -30,51 +30,86 @@
 	<hr>
 	</div>
 	<div class="container calCont" style="">
-		  	<div class="row calHeader text-xs-center" id="cal_head">
-		  		<div class="col left-block text-left">
-					<div>
-						<button type="button"> < </button>
-						<button type="button"> > </button>
-						<button type="button"> Today </button>
-		  			</div>
-		  		</div>
-			  	<div class="col center-block text-center" id="cal_head_text">
-			  		April 2019
+	  	<div id="cal_control_bar">
+	  		<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
+		      	<ul class= "navbar-nav ml-auto">
+			        <li class="nav-item">
+			          <a class="nav-link" href="#" id="prev_button"><i class="material-icons left">arrow_left</i></a>
+			        </li>
+			        <li class="nav-item">
+			          <a class="nav-link" href="#" id="curr_button"><i class="material-icons left">fiber_manual_record</i></a>
+			        </li>
+			        <li class="nav-item">
+			          <a class="nav-link" href="#" id="next_button"><i class="material-icons left">arrow_right</i></a>
+			        </li>
+		        </ul>
+		      <div class="collapse navbar-collapse" id="collapsableNav">
+		        <ul class="navbar-nav mr-auto">
+		          <li class="nav-item dropdown">
+		            <a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+		            <div class="dropdown-menu  dropdown-menu-left navbarDropdownClass" aria-labelledby="dropdown03" id="n_drop">
+		            </div>
+		          </li>
+		        </ul>
+		        <ul class="navbar-nav">
+		          <li class="nav-item">
+		            <div class="monthBar justify-content-center" style="">
+					  <select class="monthSel" id="month_sel" data-style="monthSel">
+					    <option class="monthOpt">January</option>
+					    <option class="monthOpt">February</option>
+					    <option class="monthOpt">March</option>
+					    <option class="monthOpt">April</option>
+					    <option class="monthOpt">May</option>
+					    <option class="monthOpt">June</option>
+					    <option class="monthOpt">July</option>
+					    <option class="monthOpt">August</option>
+					    <option class="monthOpt">September</option>
+					    <option class="monthOpt">October</option>
+					    <option class="monthOpt">November</option>
+					    <option class="monthOpt">December</option>
+					  </select>
+					</div>
+		          </li>
+		          <li class="nav-item">
+		            <div class="yearBar justify-content-center" style="">
+					  <select class="yearSel" id="year_sel" data-style="yearSel">
+					    <option class="yearOpt">1970</option>
+					  </select>
+					</div>
+		          </li>
+		        </ul>
+		        
+		        <ul class= "navbar-nav ml-auto">
+		          <li class="nav-item">
+		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'month');" id="month_button" aria-expanded="false">Month</a>
+		          </li>
+		          <li class="nav-item">
+		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'week');" id="week_button" aria-expanded="false">Week</a>
+		          </li>
+		          <li class="nav-item">
+		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'day');" id="day_button" aria-expanded="false">Day</a>
+		          </li>
+		          <li class="nav-item">
+		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'list');" id="list_button" aria-expanded="false">List</a>
+		          </li>
+		        </ul>
+		      </div>
+		    </nav>
+	  	<div>
+	  	<div class="row calHeader text-xs-center" id="cal_head">
+	  		<div class="col right-block text-right">
+				<div>
+					<button type="button" data-toggle="modal" data-target="#createEventModal">Create Event</button>
+					<button type="button"  data-toggle="modal" data-target="#editEventModal">Edit Event</button>
+	  			</div>
+	  		</div>
+	  	</div>
+
+	  	<div id="cal_top_head">
+	  	</div>
+	  	<div id="cal_grid_cont" style="padding-top: 20px;">
+	  		
 			  	</div>
-		  		<div class="col right-block text-right">
-		  			<div class="form-check-inline">
-			  		<label class="form-check-label">
-			    		<input type="radio" class="form-check-input" id="monthRadio" name="optradio" onclick="switchCalendarView('cal_grid_cont', 'month');" checked>Month
-			  		</label>
-					</div>
-					<div class="form-check-inline">
-			  		<label class="form-check-label">
-			    		<input type="radio" class="form-check-input" id="weekRadio" name="optradio" onclick="switchCalendarView('cal_grid_cont', 'week');">Week
-			 		 </label>
-					</div>
-					<div class="form-check-inline disabled">
-			  		<label class="form-check-label">
-			   		 <input type="radio" class="form-check-input" id="dayRadio" name="optradio" onclick="switchCalendarView('cal_grid_cont', 'day');">Day
-			  		</label>
-					</div>
-					<div class="form-check-inline disabled">
-			  		<label class="form-check-label">
-			   		 <input type="radio" class="form-check-input" id="listRadio" name="optradio" onclick="switchCalendarView('cal_grid_cont', 'list');">List
-			  		</label>
-					</div>
-		  		</div>
-		  	</div>
-		  	<div class="row calHeader text-xs-center" id="cal_head">
-		  		<div class="col right-block text-right">
-					<div>
-						<button type="button" data-toggle="modal" data-target="#createEventModal">Create Event</button>
-						<button type="button"  data-toggle="modal" data-target="#editEventModal">Edit Event</button>
-		  			</div>
-		  		</div>
-		  	</div>
-		  	<div id="cal_grid_cont" style="padding-top: 20px;">
-		  		
-		  	</div>
 	</div>
 	<div class="modal fade" id="createEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 	  <div class="modal-dialog modal-dialog-centered" role="document">
@@ -210,8 +245,25 @@
 		.currMonthNot{
 			color:grey;
 		}
-
-		
+		select.monthSel{
+			width:100px;
+			text-align: center;
+			text-align-last: center;
+			border-right: none;
+		}
+		.monthSel{
+			color:black;
+			text-align: center;
+		}
+		select.yearSel{
+			width:50px;
+			text-align: center;
+			text-align-last: center;
+		}
+		.yearSel{
+			color:black;
+			text-align: center;
+		}
 		</style>
 
 <script type="text/javascript">
