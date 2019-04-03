@@ -19,7 +19,7 @@ class Event{
 					list.push(cap);
 					this.list=list;
 				}
-				
+
 				rep( su, mo, tu, we, th, fr,sa, c, timerange, event_id, user_id){
 					var stringStart = timerange.substring(0,16);
 					var stringEnd = timerange.substring(19, timerange.length);
@@ -51,10 +51,10 @@ class Event{
 									var tempdateE = new Date(endtime.getTime());
 									tempdateE.setDate((endtime.getDate()+((7*i)+1)));
 									//console.log("is it making it in?" + tempdateS.getDay());
-									
+
 									while(tempdateS.getDay() != 0){
 										//console.log("did it make it in?" + tempdateS.getDay());
-										
+
 										tempdateS.setDate(tempdateS.getDate()+1);
 										tempdateE.setDate(tempdateE.getDate()+1);
 										//console.log("after "+tempdateS);
@@ -69,7 +69,7 @@ class Event{
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
-									
+
 									break;
 								  case 1:
 									var tempdateS = new Date(starttime.getTime());
@@ -79,10 +79,10 @@ class Event{
 									var tempdateE = new Date(endtime.getTime());
 									tempdateE.setDate((endtime.getDate()+((7*i)+1)));
 									//console.log("is it making it in?" + tempdateS.getDay());
-									
+
 									while(tempdateS.getDay() != 1){
 										//console.log("did it make it in?" + tempdateS.getDay());
-										
+
 										//console.log("before "+tempdateS);
 										tempdateS.setDate(tempdateS.getDate()+1);
 										tempdateE.setDate(tempdateE.getDate()+1);
@@ -98,7 +98,7 @@ class Event{
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
-									
+
 									break;
 								  case 2:
 									var tempdateS = new Date(starttime.getTime());
@@ -111,7 +111,7 @@ class Event{
 									//console.log("is it making it in?" + tempdateS.getDay());
 									while(tempdateS.getDay() != 2){
 										//console.log("did it make it in?" + tempdateS.getDay());
-										
+
 										//console.log("before "+tempdateS);
 										tempdateS.setDate(tempdateS.getDate()+1);
 										tempdateE.setDate(tempdateE.getDate()+1);
@@ -127,7 +127,7 @@ class Event{
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
-									
+
 									break;
 								  case 3:
 									var tempdateS = new Date(starttime.getTime());
@@ -136,11 +136,11 @@ class Event{
 									//console.log(starttime);
 									var tempdateE = new Date(endtime.getTime());
 									tempdateE.setDate((endtime.getDate()+((7*i)+1)));
-									
+
 									//console.log("is it making it in?" + tempdateS.getDay());
 									while(tempdateS.getDay() != 3){
 										//console.log("did it make it in?" + tempdateS.getDay());
-										
+
 										//console.log("before "+tempdateS);
 										tempdateS.setDate(tempdateS.getDate()+1);
 										tempdateE.setDate(tempdateE.getDate()+1);
@@ -156,7 +156,7 @@ class Event{
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
-									
+
 									break;
 								  case 4:
 									var tempdateS = new Date(starttime.getTime());
@@ -165,11 +165,11 @@ class Event{
 									//console.log(starttime);
 									var tempdateE = new Date(endtime.getTime());
 									tempdateE.setDate((endtime.getDate()+((7*i)+1)));
-									
+
 									//console.log("is it making it in?" + tempdateS.getDay());
 									while(tempdateS.getDay() != 4){
 										//console.log("did it make it in?" + tempdateS.getDay());
-										
+
 										//console.log("before "+tempdateS);
 										tempdateS.setDate(tempdateS.getDate()+1);
 										tempdateE.setDate(tempdateE.getDate()+1);
@@ -185,7 +185,7 @@ class Event{
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
-									
+
 									break;
 								  case 5:
 									var tempdateS = new Date(starttime.getTime());
@@ -197,7 +197,7 @@ class Event{
 									//console.log("is it making it in?" + tempdateS.getDay());
 									while(tempdateS.getDay() != 5){
 										//console.log("did it make it in?" + tempdateS.getDay());
-										
+
 										//console.log("before "+tempdateS);
 										tempdateS.setDate(tempdateS.getDate()+1);
 										tempdateE.setDate(tempdateE.getDate()+1);
@@ -213,7 +213,7 @@ class Event{
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
-									
+
 									break;
 								  case 6:
 									var tempdateS = new Date(starttime.getTime());
@@ -226,7 +226,7 @@ class Event{
 									//console.log("is it making it in?" + tempdateS.getDay());
 									while(tempdateS.getDay() != 6){
 										//console.log("did it make it in?" + tempdateS.getDay());
-										
+
 										//console.log("before "+tempdateS);
 										tempdateS.setDate(tempdateS.getDate()+1);
 										tempdateE.setDate(tempdateE.getDate()+1);
@@ -242,29 +242,29 @@ class Event{
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
-									
+
 									break;
-									
+
 								}
-								
+
 							}
-						
+
 						}
-					
-					
+
+
 					}
 					list = list.sort((elemA, elemB) => elemA.start - elemB.start);
 					this.list = list;
 					return list;
 				}
-				
+
 			}
-			
+
 			class Calendar{
-				constructor(name){ 
+				constructor(name){
 					this.name = name;
 				}
-				genGrid(year, month, list){
+				genGrid(year, month){
 					var grid = [...Array(6)].map(e => Array(7).fill(null));
 					var date = new Date(year, month);
 					var month = date.getMonth();
@@ -273,16 +273,17 @@ class Event{
 					var tempDateB = date;
 					for (; i >= 0 ; i--){ //backwards
 						grid[0][i] = {};
-						var curr_date = tempDateB.getDate().toString(); 
+						var curr_date = tempDateB.getDate().toString();
 						var is_curr_month = false;
 						var month2 = tempDateB.getMonth();
 						if (month == month2){
 							is_curr_month = true;
 						}
+						grid[0][i].unix = Math.floor((tempDateB));
 						grid[0][i].date = curr_date;
 						grid[0][i].is_curr = is_curr_month;
 						tempDateB = new Date(tempDateB.setDate(tempDateB.getDate()-1));
-						
+
 					}
 					var x, y; //[x][y]
 					var tempDateF = date;
@@ -295,23 +296,24 @@ class Event{
 								var curr_date = tempDateF.getDate().toString();
 								var is_curr_month = false;
 								var month2 = tempDateF.getMonth();
-								
+
 								if (month == month2){
 									is_curr_month = true;
 								}
+								grid[x][y].unix = Math.floor((tempDateF));
 								grid[x][y].date = curr_date;
 								grid[x][y].is_curr = is_curr_month;
-								
+
 							}
 						}
-					}
+					}console.log(grid);
 				}
-				
+
 				events_per_day(list, start, end){
 					var ONE_DAY = 86400000;// milliseconds
 					var startdate = new Date(start);
 					var enddate = new Date(end);
-					
+
 					var arrsize = (Math.abs(end - start)/ONE_DAY);
 					arrsize = Math.floor(arrsize);
 					//console.log("daysss "+arrsize);
@@ -337,16 +339,16 @@ class Event{
 								}
 								arr[distance].push(event);
 							}
-							
-							
+
+
 						}
 					}console.log(arr);
 					//console.log(tempList);
 				}
-				
+
 				freeTime(list, threshold){
 					//console.log(list);
-					var i, j;	
+					var i, j;
 					var newList = [];
 					var user_list = [];
 					for (i = 0; i< list.length ; i++){
@@ -356,14 +358,14 @@ class Event{
 								user_list.push(list[i][j].user_id);
 							}
 						}
-						
+
 					}
-					
+
 					newList.sort((elemA, elemB) => elemA.start - elemB.start);
 					var free = [];
-					
+
 					for (i =0; i< newList.length-1;i++){
-						
+
 						if (i==0){
 							var newTime = {};
 								newTime.start = 0;
@@ -385,7 +387,7 @@ class Event{
 								newTime.end = newList[i+1].start;
 								free.push(newTime);
 							}
-							
+
 						}
 					}
 					var struc = [user_list,free]
@@ -395,9 +397,9 @@ class Event{
 					//console.log(endS);
 					return struc;
 				}
-				
-				conflict (event, list){//make sure event is not before the list's start date
-										//to avoid conflicts 
+
+				conflict (event, list){//make sure event is not before or after the list's start date and end date
+															//to avoid conflicts
 					var freetime_user_list = this.freeTime(list, 0)[0];
 					var freetime_list = this.freeTime(list, 0)[1];
 					console.log("this the freetime conflict ");
@@ -412,8 +414,8 @@ class Event{
 					console.log("in list E: "+new Date (freetime_list[i].end));
 					console.log(" given S : "+new Date (start));
 					console.log(" given E : "+new Date (end));
-					
-					
+
+
 						if (start >= freetime_list[i].start && start <= freetime_list[i].end){
 							Scheck = true;
 							index1 = i;
@@ -434,12 +436,12 @@ class Event{
 					return true; //is conflicting
 					console.log(freetime_user_list);
 					console.log(freetime_list);
-					
-					
+
+
 				}
-				
+
 			}
-			
+
 			let soccer = new Event('soccer','soccer practice', '03/15/2019-21:30 | 03/15/2019-22:30');
 			console.log(soccer);
 			var x = soccer.rep('1','0','1','0','0','0','0','1', '03/15/2019-21:30 | 03/15/2019-22:30', 12345, 56789);
@@ -450,10 +452,10 @@ class Event{
 			//console.log(y);
 			var list = [x,y,z];
 			//console.log(list);
-			
+
 			//Fri Mar 15 1996 21:30:00 GMT-0500 (Eastern Standard Time) | Fri Mar 15 1996 22:30:00 GMT-0500 (Eastern Standard Time)
 			let cal = new Calendar('my calendar');
-			cal.genGrid('2019', '02', list);
+			cal.genGrid('2019', '02');
 			cal.events_per_day(list,1551416400000, 1554091200000);
 			console.log(cal);
 			var event = {};
