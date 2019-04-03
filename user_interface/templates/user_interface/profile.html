@@ -7,22 +7,21 @@
 <script src="{% static 'user_interface/js/calendarData.js' %}"> </script>
 
 	<div class="container">
-	    <h1>Jane Doe</h1>
+	    <h1><div id="name_display"> </div></h1>
 	  	<hr>
 		<div class="row">
 	      <!-- left column -->
 	      <div class="col-md-3">
 	        <div class="text-center">
 	          <img src="//placehold.it/100" class="avatar img-circle" alt="avatar">
-	          <h6>@jane_doe1</h6>
+	          <h6><div id="alias_display"></div></h6>
 	        </div>
 	      </div>
 	      
 	      <!-- edit form column -->
 	      <div class="col-md-9 personal-info">
 	        <h3>Personal info</h3>
-		    <div class="col-lg-8">
-		    	Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		    <div class="col-lg-8" id="description_display">
 		    </div>
 		  </div>
 	  	</div>
@@ -53,26 +52,13 @@
 		        <ul class="navbar-nav">
 		          <li class="nav-item">
 		            <div class="monthBar justify-content-center" style="">
-					  <select class="monthSel" id="month_sel" data-style="monthSel">
-					    <option class="monthOpt">January</option>
-					    <option class="monthOpt">February</option>
-					    <option class="monthOpt">March</option>
-					    <option class="monthOpt">April</option>
-					    <option class="monthOpt">May</option>
-					    <option class="monthOpt">June</option>
-					    <option class="monthOpt">July</option>
-					    <option class="monthOpt">August</option>
-					    <option class="monthOpt">September</option>
-					    <option class="monthOpt">October</option>
-					    <option class="monthOpt">November</option>
-					    <option class="monthOpt">December</option>
+					  <select class="monthSel" id="month_sel" data-style="monthSel" onchange="monthYearUpdate();">
 					  </select>
 					</div>
 		          </li>
 		          <li class="nav-item">
 		            <div class="yearBar justify-content-center" style="">
-					  <select class="yearSel" id="year_sel" data-style="yearSel">
-					    <option class="yearOpt">1970</option>
+					  <select class="yearSel" id="year_sel" data-style="yearSel" onchange="monthYearUpdate();">
 					  </select>
 					</div>
 		          </li>
@@ -300,6 +286,15 @@
 			color:black;
 			text-align: center;
 		}
+		.calListView{
+			overflow-y: scroll;
+			height: 800px;
+			border-top : grey;
+		}
+		.calListElem{
+			width: 100%;
+			height: 100px;
+		}
 		</style>
 
 <script type="text/javascript">
@@ -309,7 +304,9 @@
 			document.body.appendChild(image);
 		}
 		// test_image_pass();
+		loadDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}");
 		mainProf();
+
 </script>
 
 {% endblock %}
