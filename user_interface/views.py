@@ -2,6 +2,7 @@ from django.views.generic import TemplateView
 from django.shortcuts import render
 from django.http import HttpResponse
 from user_interface.forms import EventForm
+from user_interface.forms import EditProfileForm
 import base64
 import os
 
@@ -43,10 +44,20 @@ class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
 
 	def get(self, request):
+		edit_form = EditProfileForm()
 		response = render(
 			request=request,
 			template_name=self.template_name,
-			context={}
+			context={"edit_form" : edit_form}
+		)
+		return response
+
+	def post(self, request):
+		edit_form = EditProfileForm(request.POST)
+		response = render(
+			request=request,
+			template_name=self.template_name,
+			context={"edit_form" : edit_form}
 		)
 		return response
 

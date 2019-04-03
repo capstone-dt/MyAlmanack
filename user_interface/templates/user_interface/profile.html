@@ -1,6 +1,5 @@
 {% extends "user_interface/header.html"%}
 
-
 {% block content %}
 
 {% load static %}
@@ -171,9 +170,6 @@
 				{% csrf_token %}
 				{{ event_form.as_ul }}
 				<script type="text/javascript">
-					function hideForms(){
-
-					}
 					function updateEventForm(){
 						// Event Name
 						var prefix = "id_EI";
@@ -206,9 +202,6 @@
 						var enter_blacklist = document.getElementById("inputBlacklist");
 						var form_blacklist = document.getElementById(prefix + "blacklist");
 						form_blacklist.value = enter_blacklist.value;
-
-
-
 					}
 				</script>
 			  <button type="submit" class="btn btn-primary">Create Event</button>

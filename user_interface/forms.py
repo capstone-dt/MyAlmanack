@@ -10,3 +10,12 @@ class EventForm(forms.Form):
 	EIinvite = forms.CharField(widget=forms.HiddenInput())
 	EIwhitelist = forms.CharField(widget=forms.HiddenInput())
 	EIblacklist = forms.CharField(widget=forms.HiddenInput())
+
+class EditProfileForm(forms.Form):
+	PIfirst = forms.CharField(widget=forms.HiddenInput())
+	PIlast = forms.CharField(widget=forms.HiddenInput())
+	PIemail = forms.CharField(widget=forms.HiddenInput())
+	PIbirthday = forms.DateField(widget=forms.HiddenInput())
+	PIphone = forms.CharField(widget=forms.HiddenInput())
+	PIorganization = forms.CharField(widget=forms.HiddenInput())
+	PIdescription = forms.CharField(widget=forms.HiddenInput())
