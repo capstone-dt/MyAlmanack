@@ -321,8 +321,8 @@ class Event{
 					//console.log(arr.length);
 					var i, j;
 					var tempList = [];
-					for (i =0; i< list.length; i++){
-						for (j =0; j< list[i].length;j++){
+					for (i =0; i< list.length; i++){//iterate through different users
+						for (j =0; j< list[i].length;j++){//iterate through user's events
 							var eventtimeS = (new Date(list[i][j].start)).getTime();
 							var eventtimeE = (new Date(list[i][j].end)).getTime();
 							if ( startdate.getTime() < eventtimeS && eventtimeS < enddate.getTime() ){
@@ -351,8 +351,8 @@ class Event{
 					var i, j;
 					var newList = [];
 					var user_list = [];
-					for (i = 0; i< list.length ; i++){
-						for (j = 0; j < list[i].length; j++){
+					for (i = 0; i< list.length ; i++){//iterate through different users
+						for (j = 0; j < list[i].length; j++){//iterate through user's events
 							newList.push(list[i][j]);
 							if (user_list.includes(list[i][j].user_id)==false){
 								user_list.push(list[i][j].user_id);
