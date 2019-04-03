@@ -36,8 +36,8 @@ class Event(models.Model):
     blacklist = ArrayField(models.CharField(max_length=20))
     start_date = models.BigIntegerField()
     end_date = models.BigIntegerField()
-    event_creator_alias = models.ForeignKey('Profile', models.CASCADE, db_column='alias')
-    event_creator_firebase_id = models.ForeignKey('Profile', models.CASCADE, db_column='firebase_id')
+    event_creator_alias = models.ForeignKey('Profile', models.CASCADE)
+    event_creator_firebase_id = models.ForeignKey('Profile', models.CASCADE)
 
     class Meta:
         managed = False
@@ -45,7 +45,7 @@ class Event(models.Model):
 
 
 class EventInvite(Invite):
-    event_id = models.ForeignKey('Event', models.CASCADE, db_column='event_id')
+    event_id = models.ForeignKey('Event', models.CASCADE)
     invited_users = ArrayField(models.CharField(max_length=20, blank=True, null=True))
 
     class Meta:
@@ -67,7 +67,7 @@ class Group(models.Model):
 
 
 class GroupInvite(Invite):
-    group_name = models.ForeignKey(Group, models.CASCADE, db_column='group_name')
+    group_name = models.ForeignKey(Group, models.CASCADE)
     invitee_list = ArrayField(models.CharField(max_length=20, blank=True, null=True))
 
     class Meta:
