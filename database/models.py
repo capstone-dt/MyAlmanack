@@ -7,19 +7,20 @@ C:\Users\oakle\MyAlmanack
 #   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
 class ContactList(models.Model):
     contact_list_id = models.SmallIntegerField(primary_key=True)
-    contact_names = models.TextField(blank=True, null=True)  # This field type is a guess.
-    memberships = models.TextField(blank=True, null=True)  # This field type is a guess.
-    sent_friend_requests = models.TextField(blank=True, null=True)  # This field type is a guess.
-    received_friend_requests = models.TextField(blank=True, null=True)  # This field type is a guess.
-    sent_group_requests = models.TextField(blank=True, null=True)  # This field type is a guess.
-    received_group_requests = models.TextField(blank=True, null=True)  # This field type is a guess.
-    sent_event_invites = models.TextField(blank=True, null=True)  # This field type is a guess.
-    received_event_invites = models.TextField(blank=True, null=True)  # This field type is a guess.
+    contact_names = ArrayField(models.CharField(max_length=20, blank=True, null=True))
+    memberships = ArrayField(models.CharField(max_length=20, blank=True, null=True))
+    sent_event_invites = ArrayField(models.SmallIntegerField(blank=True, null=True))
+    received_event_invites = ArrayField(models.SmallIntegerField(blank=True, null=True))
+    sent_friend_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
+    received_friend_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
+    sent_group_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
+    received_group_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
 
     class Meta:
         managed = False
@@ -29,40 +30,35 @@ class ContactList(models.Model):
 class Event(models.Model):
     event_id = models.CharField(primary_key=True, max_length=300)
     description = models.TextField(blank=True, null=True)
-    participating_users = models.TextField(blank=True, null=True)  # This field type is a guess.
-    event_admins = models.TextField()  # This field type is a guess.
-    whitelist = models.TextField(blank=True, null=True)  # This field type is a guess.
-    blacklist = models.TextField(blank=True, null=True)  # This field type is a guess.
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    event_creator_alias = models.ForeignKey('Profile', models.DO_NOTHING, db_column='event_creator_alias')
-    event_creator_firebase_id = models.CharField(max_length=128)
+    participating_users = ArrayField(models.CharField(max_length=20, blank=True, null=True))
+    event_admins = ArrayField(models.CharField(max_length=20))
+    whitelist = ArrayField(models.CharField(max_length=20))
+    blacklist = ArrayField(models.CharField(max_length=20))
+    start_date = models.BigIntegerField()
+    end_date = models.BigIntegerField()
+    event_creator_alias = models.ForeignKey('Profile', models.CASCADE, db_column='alias')
+    event_creator_firebase_id = models.ForeignKey('Profile', models.CASCADE, db_column='firebase_id')
 
     class Meta:
         managed = False
         db_table = 'Event'
 
 
-class EventInvite(models.Model):
-    invite_id = models.SmallIntegerField()
-    time_sent = models.DateTimeField()
-    event = models.ForeignKey(Event, models.DO_NOTHING)
-    invited_users = models.TextField(blank=True, null=True)  # This field type is a guess.
-    event_creator_alias = models.ForeignKey('Profile', models.DO_NOTHING, db_column='event_creator_alias')
-    event_creator_firebase_id = models.CharField(max_length=128)
+class EventInvite(Invite):
+    event_id = models.ForeignKey('Event', models.CASCADE, db_column='event_id')
+    invited_users = ArrayField(models.CharField(max_length=20, blank=True, null=True))
 
     class Meta:
         managed = False
         db_table = 'Event_Invite'
-        unique_together = (('invite_id', 'event', 'event_creator_alias', 'event_creator_firebase_id'),)
 
 
 class Group(models.Model):
     group_name = models.CharField(primary_key=True, max_length=20)
-    group_admin = models.TextField()  # This field type is a guess.
-    group_members = models.TextField()  # This field type is a guess.
-    incoming_requests = models.TextField(blank=True, null=True)  # This field type is a guess.
-    outgoing_requests = models.TextField(blank=True, null=True)  # This field type is a guess.
+    group_admin = ArrayField(models.CharField(max_length=20))
+    group_members = ArrayField(models.CharField(max_length=20))
+    incoming_requests = ArrayField(models.CharField(max_length=20, blank=True, null=True))
+    outgoing_requests = ArrayField(models.CharField(max_length=20, blank=True, null=True))
     group_desc = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -70,11 +66,9 @@ class Group(models.Model):
         db_table = 'Group'
 
 
-class GroupInvite(models.Model):
-    invite_id = models.SmallIntegerField()
-    time_sent = models.DateTimeField()
-    group_name = models.ForeignKey(Group, models.DO_NOTHING, db_column='group_name')
-    invitee_list = models.TextField(blank=True, null=True)  # This field type is a guess.
+class GroupInvite(Invite):
+    group_name = models.ForeignKey(Group, models.CASCADE, db_column='group_name')
+    invitee_list = ArrayField(models.CharField(max_length=20, blank=True, null=True))
 
     class Meta:
         managed = False
@@ -83,7 +77,7 @@ class GroupInvite(models.Model):
 
 class Invite(models.Model):
     invite_id = models.SmallIntegerField(primary_key=True)
-    time_sent = models.DateTimeField()
+    time_sent = models.BigIntegerField()
 
     class Meta:
         managed = False
@@ -92,49 +86,36 @@ class Invite(models.Model):
 
 class Profile(models.Model):
     alias = models.CharField(primary_key=True, max_length=20)
-    phone_num = models.TextField()  # This field type is a guess.
+    phone_num = ArrayField(models.CharField(max_length=11, blank=True, null=True))
     last_name = models.CharField(max_length=20)
     first_name = models.CharField(max_length=20)
-    email = models.TextField(blank=True, null=True)  # This field type is a guess.
-    contact_list = models.ForeignKey(ContactList, models.DO_NOTHING)
-    birth_date = models.DateField()
+    email = ArrayField(models.CharField(max_length=50, blank=True, null=True))
+    contact_list = models.ForeignKey(ContactList, models.CASCADE)
+    birth_date = models.BigIntegerField()
     firebase_id = models.CharField(unique=True, max_length=128)
     organization = models.CharField(max_length=255, blank=True, null=True)
     user_desc = models.TextField(blank=True, null=True)
-    user_events = models.TextField(blank=True, null=True)  # This field type is a guess.
+    user_events = ArrayField(models.CharField(max_length=300, blank=True, null=True))
 
     class Meta:
         managed = False
         db_table = 'Profile'
-        unique_together = (('alias', 'contact_list'), ('alias', 'firebase_id'),)
+        unique_together = ('alias', 'firebase_id')
 
 
-class RepeatEvent(models.Model):
-    event_id = models.CharField(max_length=300)
-    description = models.TextField(blank=True, null=True)
-    participating_users = models.TextField(blank=True, null=True)  # This field type is a guess.
-    event_admins = models.TextField()  # This field type is a guess.
-    whitelist = models.TextField(blank=True, null=True)  # This field type is a guess.
-    blacklist = models.TextField(blank=True, null=True)  # This field type is a guess.
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    event_creator_alias = models.CharField(max_length=20)
+class RepeatEvent(Event):
     rep_event_id = models.SmallIntegerField(primary_key=True)
     rep_type = models.CharField(max_length=7)
-    week_arr = models.TextField()  # This field type is a guess.
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    event_creator_firebase_id = models.CharField(max_length=128)
+    start_time = models.BigIntegerField()
+    end_time = models.BigIntegerField()
+	week_arr = ArrayField(models.CharField(max_length=300, blank=True, null=True))
 
     class Meta:
         managed = False
         db_table = 'Repeat_Event'
-        unique_together = (('event_id', 'rep_event_id'),)
 
 
-class UserRequest(models.Model):
-    invite_id = models.SmallIntegerField()
-    time_sent = models.DateTimeField()
+class UserRequest(Invite):
     sender_alias = models.CharField(max_length=20)
     receiver_alias = models.CharField(max_length=20)
 
