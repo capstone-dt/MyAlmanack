@@ -59,7 +59,7 @@ class ProfileView(TemplateView):
 		profilejson = str(json.dumps(profilestructs))
 		contactstructs = getDummyData("contact_list_table")
 		contactjson = str(json.dumps(contactstructs))
-		currentuserjson = str(json.dumps(getCurrUser(profilestructs, "88")))
+		currentuserjson = str(json.dumps(getCurrUser(profilestructs, "99")))
 		response = render(
 			request=request,
 			template_name=self.template_name,

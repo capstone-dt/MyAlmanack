@@ -913,10 +913,10 @@ function validateEvents(){
 	}
 }
 function loadDummyData(event_data, profile_data, contact_data, user){
-	_dummy_events_json = JSON.parse(event_data.replace(/&quot;/g,'\"'));
-	_dummy_profiles_json = JSON.parse(profile_data.replace(/&quot;/g,'\"'));
-	_dummy_contacts_json = JSON.parse(contact_data.replace(/&quot;/g,'\"'));
-	_dummy_user_json = JSON.parse(user.replace(/&quot;/g,'\"'))[0];
+	_dummy_events_json = JSON.parse(event_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
+	_dummy_profiles_json = JSON.parse(profile_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
+	_dummy_contacts_json = JSON.parse(contact_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
+	_dummy_user_json = JSON.parse(user.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"))[0];
 	console.log(_dummy_events_json, _dummy_profiles_json, _dummy_contacts_json, _dummy_user_json);
 	loadUserData();
 	validateEvents();
