@@ -8,7 +8,7 @@ from . import views
 app_name = "WEBSITECORE"
 
 urlpatterns = [
-	path("", views.DefaultView.as_view(), name="default"),
+	path("", views.ProfileView.as_view(), name="profile"),
 	path("profile/edit", views.EditProfileView.as_view(), name="editProfile"),
 	path("profile", views.ProfileView.as_view(), name="profile"),
 	path("profile/", views.ProfileView.as_view(), name="profile"),
