@@ -3,4 +3,5 @@ gunicorn
 django-heroku
 requests
 dj-database-url
+psycopg2
 firebase_admin
