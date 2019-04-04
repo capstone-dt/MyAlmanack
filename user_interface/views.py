@@ -52,15 +52,14 @@ def getCurrUser(profile_json, firebase_id):
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
-	def get(self, request):
-		event_form = EventForm()
+	def dummy(self, event_form, request):
 		eventstructs = getDummyData("event_table")
 		eventjson = str(json.dumps(eventstructs))
 		profilestructs = getDummyData("profile_table")
 		profilejson = str(json.dumps(profilestructs))
 		contactstructs = getDummyData("contact_list_table")
 		contactjson = str(json.dumps(contactstructs))
-		currentuserjson = str(json.dumps(getCurrUser(profilestructs, "222")))
+		currentuserjson = str(json.dumps(getCurrUser(profilestructs, "88")))
 		response = render(
 			request=request,
 			template_name=self.template_name,
@@ -74,16 +73,15 @@ class ProfileView(TemplateView):
 		)
 		return response
 
+	def get(self, request):
+		event_form = EventForm()
+		return self.dummy(event_form, request)
+
 	def post(self, request):
 		event_form = EventForm(request.POST)
 		print("POST REQUESTED")
 		print(event_form)
-		response = render(
-			request=request,
-			template_name=self.template_name,
-			context={"event_form" : event_form}
-		)
-		return response
+		return self.dummy(event_form, request)
 
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
