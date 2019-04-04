@@ -9,7 +9,7 @@ def index(request):
     authorization_request = AuthorizationRequest(
         subject=request.user,
         action=actions.user.profile.ViewProfile,
-        object=request.user,
+        resource=request.user,
         context=request
     )
     
