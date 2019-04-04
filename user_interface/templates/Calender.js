@@ -442,29 +442,31 @@ class Event{
 
 			}
 
-			let soccer = new Event('soccer','soccer practice', '03/15/2019-21:30 | 03/15/2019-22:30');
-			console.log(soccer);
-			var x = soccer.rep('1','0','1','0','0','0','0','1', '03/15/2019-21:30 | 03/15/2019-22:30', 12345, 56789);
-			var y = soccer.rep('1','0','1','1','0','1','0','1', '03/15/2019-20:00 | 03/15/2019-21:00', 32415, 51231);
-			var z = soccer.rep('1','1','1','1','1','1','1','1', '03/15/2019-20:00 | 03/15/2019-21:00', 98992, 56273);
-			//var z = soccer.rep('0','0','0','1','1','1','1','1', '03/15/2019-16:30 | 03/15/2019-23:00');
-			//console.log(x);
-			//console.log(y);
-			var list = [x,y,z];
-			//console.log(list);
+			function test(){
+				let soccer = new Event('soccer','soccer practice', '03/15/2019-21:30 | 03/15/2019-22:30');
+				console.log(soccer);
+				var x = soccer.rep('1','0','1','0','0','0','0','1', '03/15/2019-21:30 | 03/15/2019-22:30', 12345, 56789);
+				var y = soccer.rep('1','0','1','1','0','1','0','1', '03/15/2019-20:00 | 03/15/2019-21:00', 32415, 51231);
+				var z = soccer.rep('1','1','1','1','1','1','1','1', '03/15/2019-20:00 | 03/15/2019-21:00', 98992, 56273);
+				//var z = soccer.rep('0','0','0','1','1','1','1','1', '03/15/2019-16:30 | 03/15/2019-23:00');
+				//console.log(x);
+				//console.log(y);
+				var list = [x,y,z];
+				//console.log(list);
 
-			//Fri Mar 15 1996 21:30:00 GMT-0500 (Eastern Standard Time) | Fri Mar 15 1996 22:30:00 GMT-0500 (Eastern Standard Time)
-			let cal = new Calendar('my calendar');
-			cal.genGrid('2019', '02');
-			cal.events_per_day(list,1551416400000, 1554091200000);
-			console.log(cal);
-			var event = {};
-			//1552862056000
-			//1552867159500
-			event.start = 1551416400000;
-			event.end = 1552684400000;
-			var bool = cal.conflict (event, list);
-			console.log(bool);
-			var threshold = 12323600; //1hr
-			var freetime = cal.freeTime(list ,threshold);
-			console.log(freetime);
+				//Fri Mar 15 1996 21:30:00 GMT-0500 (Eastern Standard Time) | Fri Mar 15 1996 22:30:00 GMT-0500 (Eastern Standard Time)
+				let cal = new Calendar('my calendar');
+				cal.genGrid('2019', '02');
+				cal.events_per_day(list,1551416400000, 1554091200000);
+				console.log(cal);
+				var event = {};
+				//1552862056000
+				//1552867159500
+				event.start = 1551416400000;
+				event.end = 1552684400000;
+				var bool = cal.conflict (event, list);
+				console.log(bool);
+				var threshold = 12323600; //1hr
+				var freetime = cal.freeTime(list ,threshold);
+				console.log(freetime);
+			}
