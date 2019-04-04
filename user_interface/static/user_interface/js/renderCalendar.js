@@ -16,6 +16,30 @@ var x_offset = 0, y_offset = 0;
 var _days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+var _months_of_year = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+var _month_selected = "03";
+var _year_selected = "2019";
+var _day_selected = "1";
+var _curr_month = "currMonth";
+var _curr_month_not = "currMonthNot";
+var _dummy_events_json;
+var _dummy_profiles_json;
+var _dummy_contacts_json;
+var _dummy_user_json;
+// Friends enabled test
+
+
+/*
+JS OUTLINE:
+RESIZING
+CALENDAR
+EVENTS
+MAIN
+*/
+
+
+// -----------------------------------------------------------------
+// RESIZING
 
 function windowResized(){
 	var breakpoint = getResponsiveBreakpoint();
@@ -51,42 +75,6 @@ function ensureBoxSize(){
 		default:
 	}
 }
-function abbreviateHeader_xs(){
-	for (var i = 0; i < headerArray_top.length; i++) {
-		var curr_head = headerArray_top[i];
-		if(curr_head.innerHTML.includes(_days_of_week[i])){
-			var new_inner = curr_head.innerHTML.replace(_days_of_week[i], _days_of_week_abv_abv[i]);
-			curr_head.innerHTML = new_inner;
-		}
-		// console.log(curr_head);
-	}
-}
-function abbreviateHeader(){
-	for (var i = 0; i < headerArray_top.length; i++) {
-		var curr_head = headerArray_top[i];
-		if(curr_head.innerHTML.includes(_days_of_week[i])){
-			var new_inner = curr_head.innerHTML.replace(_days_of_week[i], _days_of_week_abv[i]);
-			curr_head.innerHTML = new_inner;
-		}
-		// console.log(curr_head);
-	}
-}
-function elongateHeader(){
-	for (var i = 0; i < headerArray_top.length; i++) {
-		var curr_head = headerArray_top[i];
-		if(curr_head.innerHTML.includes(_days_of_week[i]) == false){
-			if(curr_head.innerHTML.includes(_days_of_week_abv[i])){
-				var new_inner = curr_head.innerHTML.replace(_days_of_week_abv[i], _days_of_week[i]);
-				curr_head.innerHTML = new_inner;
-			}else if(curr_head.innerHTML.includes(_days_of_week_abv_abv[i])){
-				var new_inner = curr_head.innerHTML.replace(_days_of_week_abv_abv[i], _days_of_week[i]);
-				curr_head.innerHTML = new_inner;
-			}
-		}
-		// console.log(curr_head);
-	}
-}
-// Gets what size the screen is at.
 function getResponsiveBreakpoint() {
     var envs = ["xs", "sm", "md", "lg"];
     var env = "";
@@ -104,6 +92,26 @@ function getResponsiveBreakpoint() {
     $el.remove();
     return env;
 }
+// -----------------------------------------------------------------
+
+// DRAW CALENDAR
+
+function friendsEnabled(){
+	return false;
+}
+
+function makeList(cont_id){
+	console.log("makeList");
+}
+
+function makeSharedGrid(cont_id, rowClass, colClass, name, ){
+	// Overflow x scroll
+	// Different tabs for different people
+	// Header for each tab
+	// Select friends from a list of friends (selective selection)
+	// 
+}
+
 function makeGrid(cont_id, rowClass, colClass, name, dim_x, dim_y, onclick_func, generateTopHeader_func, generateSideHeader_func){
 	var cont_div = document.getElementById(cont_id);
 	var children = cont_div.childNodes;
@@ -182,6 +190,9 @@ function switchCalendarView(cont_id, switchType){
 	_switchType = switchType;
 	clearEvents();
 	switch(switchType){
+		case "list":
+			makeList(cont_id);
+			break;
 		case "day":
 			makeGrid(cont_id, "calDayD", "defStyle calHour", "D", 1, 24, hourClickD, dayTopHeader, hourLeftHeader);
 			break;
@@ -204,7 +215,6 @@ function clearEvents(){
 	}
 	eventDivArray = [];
 }
-// Returns a 2d array of dates in the valid range.
 function splitEvent(start, end){
 	var start_week = getWeek(start);
 	var end_week = getWeek(end);
@@ -237,296 +247,64 @@ function splitEvent(start, end){
 	return retArr;
 }
 function focusCalendar(){
-	var cal_head = document.getElementById("cal_head_text");
+	var cal_head = document.getElementById("cal_top_head");
 	var bound = cal_head.getBoundingClientRect();
 	if(_switchType === "month"){
 		window.scrollTo(0, bound.top);
 		return;
 	}
 	window.scrollTo(0, bound.top + 100);
-
-
 }
-
-function eventClicked(event_id){
-	console.log("eventClicked:" + event_id);
-}
-
-function getWeek(dateArg){
-	return Math.floor(dateArg / 7.0);
-}
-function drawEventSafe_d(time_start, length, event_id){
-	if(containsID_d(event_id)){
-		console.log("Event already exists. Try modifying it instead.");
-		return;
-	}
-	if(time_start < 0){
-		time_start = 0;
-	}
-	var c_length = length;
-	if(length + time_start > 24){
-		c_length = 24 - time_start;
-	}
-	drawEventUnsafe_d(time_start, c_length, event_id);
-}
-function drawEventSafe_w(start_col, end_col, time_start, length, event_id){
-	if(containsID_w(event_id)){
-		console.log("Event already exists. Try modifying it instead.");
-		return;
-	}
-	var c_length = length;
-	if(length + time_start > 24){
-		c_length = 24 - time_start;
-	}
-	var d_length = end_col - start_col;
-	if(d_length < 0){
-		d_length = 1;
-	}
-	if(d_length + start_col > 7){
-		d_length = 7 - start_col;
-	}
-	drawEventUnsafe_w(start_col, d_length, time_start, c_length, event_id);
-}
-function drawEventSafe_m(start, end, event_id){
-	if(containsID(event_id)){
-		console.log("Event already exists. Try modifying it instead.");
-		return;
-	}
-	var event_split = splitEvent(start, end);
-	for(var index = 0; index < event_split.length; index++){
-		var curr_struct = event_split[index];
-		var curr_start = curr_struct.range[0];
-		var width = curr_struct.range[1] - curr_start + 1;
-		// console.log(curr_struct);
-		drawEventUnsafe_m(curr_start, width, curr_struct.flags, event_id);
-	}
-}
-function drawEventUnsafe_d_s(curr_struct){
-	drawEventUnsafe_d(curr_struct.start_time, curr_struct.length, curr_struct.event_id);
-}
-function drawEventUnsafe_w_s(curr_struct){
-	drawEventUnsafe_w(curr_struct.start, curr_struct.day_width, curr_struct.start_time, curr_struct.length, curr_struct.event_id);
-}
-function drawEventUnsafe_m_s(curr_struct){
-	drawEventUnsafe_m(curr_struct.start, curr_struct.day_width, curr_struct.flags, curr_struct.event_id);
-}
-function drawEventUnsafe_d(start_time, length, event_id){
-	var start = 0;
-	var day_width = 1;
-	var day_div = calArray[0][start];
-	var rect = day_div.getBoundingClientRect();
-	var col_width = rect.width;
-	var row_height = rect.height;
-	var x_offset_px_l = 10;
-	var x_offset_px_r = 10;
-	var y_perc = 0.30;
-	var y_offset_px = start_time*row_height;
-	var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
-	var height = row_height*length;
-	var divToAdd = document.createElement('div');
-	divToAdd.style = "position:absolute; background-color:blue; z-index:2; height:20px; cursor:pointer;"
-	+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
-	+ "left:" + (rect.left + x_offset_px_l) + "px;" 
-	+ "width:" + width + "px;" 
-	+ "height:" + height + "px;";
-	divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_id + ");" );
-	document.body.appendChild(divToAdd);
-	eventDivArray.push(divToAdd);
-	var new_struct = {
-		start_time:start_time,
-		length:length, 
-		event_id:event_id
-	};
-	var contains = containsStruct_d(new_struct);
-	if(contains == false){
-		populatedEvents_d.push(new_struct);
-		console.log(populatedEvents_d);
-	}
-}
-function drawEventUnsafe_w(start, day_width, start_time, length, event_id){
-	var day_div = calArray[0][start];
-	var rect = day_div.getBoundingClientRect();
-	var col_width = rect.width;
-	var row_height = rect.height;
-	var x_offset_px_l = 10;
-	var x_offset_px_r = 10;
-	var y_perc = 0.30;
-	var y_offset_px = start_time*row_height;
-	var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
-	var height = row_height*length;
-	var divToAdd = document.createElement('div');
-	divToAdd.style = "position:absolute; background-color:blue; z-index:2; height:20px; cursor:pointer;"
-	+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
-	+ "left:" + (rect.left + x_offset_px_l) + "px;" 
-	+ "width:" + width + "px;" 
-	+ "height:" + height + "px;";
-	divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_id + ");" );
-	document.body.appendChild(divToAdd);
-	eventDivArray.push(divToAdd);
-	var new_struct = {
-		start:start, 
-		day_width:day_width,
-		start_time:start_time,
-		length:length, 
-		event_id:event_id
-	};
-	var contains = containsStruct_w(new_struct);
-	if(contains == false){
-		populatedEvents_w.push(new_struct);
-		console.log(populatedEvents_w);
-	}
-}
-function drawEventUnsafe_m(start, day_width, flags, event_id){
-	var coords = getRowCol(start);
-	var ref_week = divRowsArray[coords.row];
-	var rect = ref_week.children[coords.col].getBoundingClientRect();
-	console.log("ref_week");
-	console.log(ref_week);
-	var col_width = rect.width;
-	var x_perc = 0.10;
-	var x_offset_px = x_perc * col_width;
-	var x_offset_px_l = 0;
-	var x_offset_px_r = 0;
-	var y_perc = 0.30;
-	var y_offset_px = y_perc * rect.height;
-	if(flags.includes("l")){
-		x_offset_px_l = 0;
-	}else{
-		x_offset_px_l = x_offset_px;
-	}
-	if(flags.includes("r")){
-		x_offset_px_r = 0;
-	}else{
-		x_offset_px_r = x_offset_px;
-	}
-	var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
-	var divToAdd = document.createElement('div');
-	divToAdd.style = "position:absolute; background-color:blue; z-index:2; height:20px; cursor:pointer;"
-	+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
-	+ "left:" + (rect.left + x_offset_px_l) + "px;" 
-	+ "width:" + width + "px;";
-	divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_id + ");" );
-	document.body.appendChild(divToAdd);
-	eventDivArray.push(divToAdd);
-	var new_struct = {start:start, day_width:day_width, flags:flags, event_id:event_id};
-	var contains = containsStruct(new_struct);
-	if(contains == false){
-		populatedEvents.push(new_struct);
-		console.log(populatedEvents);
-	}
-	console.log(divToAdd);
-}
-function containsID_d(event_id){
-	var contains = false;
-	for(var i = 0; i < populatedEvents_d.length; i++){
-		if(populatedEvents_d[i].event_id == event_id){
-			contains = true;
-			break;
+function filterAlias(array, alias){
+	var filtered = [];
+	for(var i = 0; i < array.length; i++){
+		var curr = array[i];
+		if(curr.event_creator_alias == alias){
+			filtered.push(curr);
 		}
 	}
-	return contains;
+	return filtered;
 }
-function containsID_w(event_id){
-	var contains = false;
-	for(var i = 0; i < populatedEvents_w.length; i++){
-		if(populatedEvents_w[i].event_id == event_id){
-			contains = true;
-			break;
+function getAllEventStructsCurrMonthAlias(alias){
+	var allCurr = getAllEventStructsCurrMonth();
+	return filterAlias(allCurr, alias);
+}
+function getAllEventStructsCurrMonth(){
+	var retArr = [];
+	var month_start = new Date(_year_selected, _month_selected, 1);
+	month_start.setHours(0,0,0);
+	var start_unix = month_start.getTime();
+	var month_end = new Date(_year_selected, _month_selected + 1, 0);
+	month_end.setHours(23,59,59);
+	var end_unix = month_end.getTime();
+	for(var i = 0; i < _dummy_events_json.length; i++){
+		var curr_event = _dummy_events_json[i];
+		if((curr_event.start_date >= start_unix  &&curr_event.start_date <= end_unix) || 
+			(curr_event.end_date <= end_unix && curr_event.end_date >= end_unix)){
+			retArr.push(curr_event);
 		}
 	}
-	return contains;
+	return retArr;
 }
-function containsID(event_id){
-	var contains = false;
+function getEventsCurrMonth(){
+	var retArr = [];
+	var month_start = new Date(_year_selected, _month_selected, 1);
+	month_start.setHours(0,0,0);
+	var start_unix = month_start.getTime();
+	var month_end = new Date(_year_selected, _month_selected + 1, 0);
+	month_end.setHours(23,59,59);
+	var end_unix = month_end.getTime();
 	for(var i = 0; i < populatedEvents.length; i++){
-		if(populatedEvents[i].event_id == event_id){
-			contains = true;
-			break;
+		var curr_event = populatedEvents[i].event_object;
+		if((curr_event.start_date >= start_unix  &&curr_event.start_date <= end_unix) || 
+			(curr_event.end_date <= end_unix && curr_event.end_date >= end_unix)){
+			retArr.push(populatedEvents[i]);
 		}
 	}
-	return contains;
-}
-function containsStruct(curr_struct){
-	var contains = false;
-	for(var i = 0; i < populatedEvents.length; i++){
-		if(populatedEvents[i].event_id == curr_struct.event_id && 
-			populatedEvents[i].start == curr_struct.start && 
-			populatedEvents[i].day_width == curr_struct.day_width){
-			contains = true;
-			break;
-		}
-	}
-	return contains;
-}
-function containsStruct_w(curr_struct){
-	var contains = false;
-	for(var i = 0; i < populatedEvents_w.length; i++){
-		if(populatedEvents_w[i].event_id == curr_struct.event_id && 
-			populatedEvents_w[i].start == curr_struct.start && 
-			populatedEvents_w[i].day_width == curr_struct.day_width){
-			contains = true;
-			break;
-		}
-	}
-	return contains;
-}
-function containsStruct_d(curr_struct){
-	var contains = false;
-	for(var i = 0; i < populatedEvents_d.length; i++){
-		if(populatedEvents_d[i].event_id == curr_struct.event_id && 
-			populatedEvents_d[i].start_time == curr_struct.start_time && 
-			populatedEvents_d[i].length == curr_struct.length){
-			contains = true;
-			break;
-		}
-	}
-	return contains;
-}
-function getRowCol(dateVal){
-	var _row = Math.floor(dateVal/7);
-	var _col = Math.floor(dateVal % 7);
-	return {row:_row, col:_col};
+	return retArr;
 }
 
-
-function addEvents(){
-	switch(_switchType){
-		case "day":
-			addEventsD();
-			break;
-		case "week":
-			addEventsW();
-			break;
-		case "month":
-			addEventsM();
-			break;
-		default:
-			return;
-	}
-
-}
-function addEventsD(){
-	var count = 0;
-	var populatedEvents_c = populatedEvents_d.slice(0);
-	for (var i = 0; i < populatedEvents_c.length; i++) {
-		drawEventUnsafe_d_s(populatedEvents_c[i]);
-	}
-}
-function addEventsW(){
-	var count = 0;
-	var populatedEvents_c = populatedEvents_w.slice(0);
-	for (var i = 0; i < populatedEvents_c.length; i++) {
-		drawEventUnsafe_w_s(populatedEvents_c[i]);
-	}
-}
-
-function addEventsM(){
-	var count = 0;
-	var populatedEvents_c = populatedEvents.slice(0);
-	for (var i = 0; i < populatedEvents_c.length; i++) {
-		drawEventUnsafe_m_s(populatedEvents_c[i]);
-	}
-}
+// CALENDAR HEADERS
 
 function dayTopHeader(col_index){
 	var ret_div = document.createElement('div');
@@ -563,21 +341,19 @@ function hourLeftHeader(row_index){
 	ret_div.innerHTML = str_to;
 		return ret_div;
 }
-function coordinates_to_div(row_index, col_index){
-	if(row_index + y_offset < 0 || row_index + y_offset > gridArray.length){
-		return null;
-	}
-	if(col_index + x_offset < 0 || col_index + x_offset > gridArray[0].length){
-		return null;
-	}
-	var curr_div = gridArray[row_index + y_offset][col_index + x_offset];
-	return curr_div;
-}
 function fillMonthViewNumbers(){
+	var tempCal = new Calendar('temp_cal');
+	tempCal.genGrid(_year_selected, _month_selected, null);
+	var num_grid = tempCal.grid;
 	var count = 0;
 	for (var i = 0; i < calArray.length; i++) {
 		for(var j = 0; j < calArray[i].length; j++){
-			textInputCalbox(i, j, count + "");
+			textInputCalbox(i, j, num_grid[i][j].date);
+			var clazz = _curr_month;
+			if(num_grid[i][j].is_curr == false){
+				clazz = _curr_month_not;
+			}
+			classCalbox(i, j, clazz);
 			count++;
 		}
 	}
@@ -585,8 +361,153 @@ function fillMonthViewNumbers(){
 function textInputCalbox(row_index, col_index, textInput){
 	var curr_div = coordinates_to_div(row_index, col_index);
 	curr_div.innerHTML = textInput;
+}
+
+function classCalbox(row_index, col_index, clazz){
+	var curr_div = coordinates_to_div(row_index, col_index);
+	curr_div.className += " "  + clazz;
 	// console.log(curr_div);
 }
+
+function setCurrTime(){
+	var month_sel = document.getElementById("month_sel");
+	var year_sel = document.getElementById("year_sel");
+	month_sel.value = parseMonthi(new Date().getMonth());
+	year_sel.value = new Date().getFullYear();
+	_month_selected = new Date().getMonth();
+	_year_selected = new Date().getFullYear();
+	console.log(_month_selected, _year_selected);
+}
+
+function parseMonthi(int_val){
+	return _months_of_year[int_val];
+}
+
+function parseMonth(sel_value){
+	for(var i = 0; i < _months_of_year.length; i++){
+		if(_months_of_year[i] == sel_value){
+			return i;
+		}
+	}
+	return -1;
+}
+
+function monthYearUpdate(){
+	var month_sel = document.getElementById("month_sel");
+	var year_sel = document.getElementById("year_sel");
+	_month_selected = parseMonth(month_sel.value);
+	_year_selected = year_sel.value;
+	console.log(_month_selected, _year_selected);
+	clearEvents();
+	switchCalendarView(_cont_id, _switchType);
+	addEvents();
+}
+function updateMonthYear(new_month, new_year){
+	var month_sel = document.getElementById("month_sel");
+	var year_sel = document.getElementById("year_sel");
+	month_sel.value = parseMonthi(new_month);
+	year_sel.value = new_year;
+	_month_selected = new_month;
+	_year_selected = new_year;
+	clearEvents();
+	switchCalendarView(_cont_id, _switchType);
+	addEvents();
+}
+
+
+function populateMonthYear(){
+	var month_sel = document.getElementById("month_sel");
+	for(var i=0; i < _months_of_year.length; i++){
+		var curr_opt = document.createElement('option');
+		curr_opt.className = "monthOpt";
+		curr_opt.innerText = _months_of_year[i];
+		month_sel.appendChild(curr_opt);
+	}
+	var year_sel = document.getElementById("year_sel");
+	for(var i=1970; i < 2037; i++){
+		var curr_opt = document.createElement('option');
+		curr_opt.className = "yearOpt";
+		curr_opt.innerText = i;
+		year_sel.appendChild(curr_opt);
+	}
+}
+
+function leftArrowClick(){
+	switch(_switchType){
+		case "month":
+			var temp_date = new Date(_year_selected, parseInt(_month_selected) - 1, 1);
+			_month_selected = temp_date.getMonth();
+			_year_selected = temp_date.getFullYear();
+			updateMonthYear(_month_selected, _year_selected);
+			break;
+		default:
+	}
+}
+function currButtonClick(){
+	switch(_switchType){
+		case "month":
+			setCurrTime();
+			clearEvents();
+			switchCalendarView(_cont_id, _switchType);
+			addEvents();
+			break;
+		default:
+	}
+}
+function rightArrowClick(){
+	switch(_switchType){
+		case "month":
+			var temp_date = new Date(_year_selected, parseInt(_month_selected) + 1, 1);
+			_month_selected = temp_date.getMonth();
+			_year_selected = temp_date.getFullYear();
+			updateMonthYear(_month_selected, _year_selected);
+			break;
+		default:
+	}
+}
+
+
+
+// HEADER ABBREVIATION
+
+function abbreviateHeader_xs(){
+	for (var i = 0; i < headerArray_top.length; i++) {
+		var curr_head = headerArray_top[i];
+		if(curr_head.innerHTML.includes(_days_of_week[i])){
+			var new_inner = curr_head.innerHTML.replace(_days_of_week[i], _days_of_week_abv_abv[i]);
+			curr_head.innerHTML = new_inner;
+		}
+		// console.log(curr_head);
+	}
+}
+function abbreviateHeader(){
+	for (var i = 0; i < headerArray_top.length; i++) {
+		var curr_head = headerArray_top[i];
+		if(curr_head.innerHTML.includes(_days_of_week[i])){
+			var new_inner = curr_head.innerHTML.replace(_days_of_week[i], _days_of_week_abv[i]);
+			curr_head.innerHTML = new_inner;
+		}
+		// console.log(curr_head);
+	}
+}
+function elongateHeader(){
+	for (var i = 0; i < headerArray_top.length; i++) {
+		var curr_head = headerArray_top[i];
+		if(curr_head.innerHTML.includes(_days_of_week[i]) == false){
+			if(curr_head.innerHTML.includes(_days_of_week_abv[i])){
+				var new_inner = curr_head.innerHTML.replace(_days_of_week_abv[i], _days_of_week[i]);
+				curr_head.innerHTML = new_inner;
+			}else if(curr_head.innerHTML.includes(_days_of_week_abv_abv[i])){
+				var new_inner = curr_head.innerHTML.replace(_days_of_week_abv_abv[i], _days_of_week[i]);
+				curr_head.innerHTML = new_inner;
+			}
+		}
+		// console.log(curr_head);
+	}
+}
+
+// CALENDAR CLICK
+
 function select_id_to_coordinates(select_id){
 	var retArr = null;
 	for (var i = 0; i < gridArray.length; i++) {
@@ -633,7 +554,396 @@ function hourClickD(click_id){
 	selectUnique(_cont_id, click_id)
 	// switchCalendarView(_cont_id, "month");
 }
-function main(){
+
+// CALENDAR POS UTILS
+
+function getRowCol(dateVal){
+	var _row = Math.floor(dateVal/7);
+	var _col = Math.floor(dateVal % 7);
+	return {row:_row, col:_col};
+}
+function getWeek(dateArg){
+	return Math.floor(dateArg / 7.0);
+}
+function coordinates_to_div(row_index, col_index){
+	if(row_index + y_offset < 0 || row_index + y_offset > gridArray.length){
+		return null;
+	}
+	if(col_index + x_offset < 0 || col_index + x_offset > gridArray[0].length){
+		return null;
+	}
+	var curr_div = gridArray[row_index + y_offset][col_index + x_offset];
+	return curr_div;
+}
+
+// -----------------------------------------------------------------
+// DRAW EVENTS
+
+function drawEventSafe_d(time_start, length, event_object){
+	var event_id = event_object.id;
+	if(containsID_d(event_id)){
+		console.log("Event already exists. Try modifying it instead.");
+		return;
+	}
+	if(time_start < 0){
+		time_start = 0;
+	}
+	var c_length = length;
+	if(length + time_start > 24){
+		c_length = 24 - time_start;
+	}
+	drawEventUnsafe_d(time_start, c_length, event_object);
+}
+function drawEventSafe_w(start_col, end_col, time_start, length, event_object){
+	var event_id = event_object.event_id;
+	if(containsID_w(event_id)){
+		console.log("Event already exists. Try modifying it instead.");
+		return;
+	}
+	var c_length = length;
+	if(length + time_start > 24){
+		c_length = 24 - time_start;
+	}
+	var d_length = end_col - start_col;
+	if(d_length < 0){
+		d_length = 1;
+	}
+	if(d_length + start_col > 7){
+		d_length = 7 - start_col;
+	}
+	drawEventUnsafe_w(start_col, d_length, time_start, c_length, event_id);
+}
+function drawEventSafe_m(start, end, event_object){
+	var event_id = event_object.event_id;
+	if(containsID(event_id)){
+		console.log("Event already exists. Try modifying it instead.");
+		return;
+	}
+	var event_split = splitEvent(start, end);
+	for(var index = 0; index < event_split.length; index++){
+		var curr_struct = event_split[index];
+		var curr_start = curr_struct.range[0];
+		var width = curr_struct.range[1] - curr_start + 1;
+		// console.log(curr_struct);
+		drawEventUnsafe_m(curr_start, width, curr_struct.flags, event_object);
+	}
+}
+function drawEventUnsafe_d_s(curr_struct){
+	drawEventUnsafe_d(curr_struct.start_time, curr_struct.length, curr_struct.event_object);
+}
+function drawEventUnsafe_w_s(curr_struct){
+	drawEventUnsafe_w(curr_struct.start, curr_struct.day_width, curr_struct.start_time, curr_struct.length, curr_struct.event_object);
+}
+function drawEventUnsafe_m_s(curr_struct){
+	drawEventUnsafe_m(curr_struct.start, curr_struct.day_width, curr_struct.flags, curr_struct.event_object);
+}
+function drawEventUnsafe_d(start_time, length, event_object){
+	var start = 0;
+	var day_width = 1;
+	var day_div = calArray[0][start];
+	var rect = day_div.getBoundingClientRect();
+	var col_width = rect.width;
+	var row_height = rect.height;
+	var x_offset_px_l = 10;
+	var x_offset_px_r = 10;
+	var y_perc = 0.30;
+	var y_offset_px = start_time*row_height;
+	var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
+	var height = row_height*length;
+	var divToAdd = document.createElement('div');
+	divToAdd.style = "position:absolute; background-color:blue; z-index:2; height:20px; cursor:pointer;"
+	+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
+	+ "left:" + (rect.left + x_offset_px_l) + "px;" 
+	+ "width:" + width + "px;" 
+	+ "height:" + height + "px;";
+	divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_object.event_id + ");" );
+	document.body.appendChild(divToAdd);
+	eventDivArray.push(divToAdd);
+	var new_struct = {
+		start_time:start_time,
+		length:length, 
+		event_object:event_object
+	};
+	var contains = containsStruct_d(new_struct);
+	if(contains == false){
+		populatedEvents_d.push(new_struct);
+		// console.log(populatedEvents_d);
+	}
+}
+function drawEventUnsafe_w(start, day_width, start_time, length, event_object){
+	var day_div = calArray[0][start];
+	var rect = day_div.getBoundingClientRect();
+	var col_width = rect.width;
+	var row_height = rect.height;
+	var x_offset_px_l = 10;
+	var x_offset_px_r = 10;
+	var y_perc = 0.30;
+	var y_offset_px = start_time*row_height;
+	var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
+	var height = row_height*length;
+	var divToAdd = document.createElement('div');
+	divToAdd.style = "position:absolute; background-color:blue; z-index:2; height:20px; cursor:pointer;"
+	+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
+	+ "left:" + (rect.left + x_offset_px_l) + "px;" 
+	+ "width:" + width + "px;" 
+	+ "height:" + height + "px;";
+	divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_object.event_id + ");" );
+	document.body.appendChild(divToAdd);
+	eventDivArray.push(divToAdd);
+	var new_struct = {
+		start:start, 
+		day_width:day_width,
+		start_time:start_time,
+		length:length, 
+		event_object:event_object
+	};
+	var contains = containsStruct_w(new_struct);
+	if(contains == false){
+		populatedEvents_w.push(new_struct);
+		// console.log(populatedEvents_w);
+	}
+}
+function drawEventUnsafe_m(start, day_width, flags, event_object){
+	var coords = getRowCol(start);
+	// console.log("drawEventUnsafe_m:");
+	// console.log(coords);
+	var ref_week = divRowsArray[coords.row];
+	var rect = ref_week.children[coords.col].getBoundingClientRect();
+	// console.log("ref_week");
+	// console.log(ref_week);
+	var col_width = rect.width;
+	var x_perc = 0.10;
+	var x_offset_px = x_perc * col_width;
+	var x_offset_px_l = 0;
+	var x_offset_px_r = 0;
+	var y_perc = 0.30;
+	var y_offset_px = y_perc * rect.height;
+	if(flags.includes("l")){
+		x_offset_px_l = 0;
+	}else{
+		x_offset_px_l = x_offset_px;
+	}
+	if(flags.includes("r")){
+		x_offset_px_r = 0;
+	}else{
+		x_offset_px_r = x_offset_px;
+	}
+	var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
+	var divToAdd = document.createElement('div');
+	divToAdd.style = "position:absolute; background-color:blue; z-index:2; height:20px; cursor:pointer;"
+	+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
+	+ "left:" + (rect.left + x_offset_px_l) + "px;" 
+	+ "width:" + width + "px;";
+	divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_object.event_id + ");" );
+	document.body.appendChild(divToAdd);
+	eventDivArray.push(divToAdd);
+	var new_struct = {start:start, day_width:day_width, flags:flags, event_object:event_object};
+	var contains = containsStruct(new_struct);
+	if(contains == false){
+		populatedEvents.push(new_struct);
+		// console.log(populatedEvents);
+	}
+	// console.log(divToAdd);
+}
+function populateEventStructure_m(curr_event){
+	var event_id = curr_event.event_id;
+	if(containsID(event_id)){
+		console.log("Event already exists. Try modifying it instead.");
+		return;
+	}
+	var temp_start = new Date(Number(curr_event.start_date));
+	var temp_end = new Date(Number(curr_event.end_date));
+	var day_pos_start = getDayPosition(temp_start.getDate(), temp_start.getFullYear(), temp_start.getMonth());
+	var day_pos_end = getDayPosition(temp_end.getDate(), temp_end.getFullYear(), temp_end.getMonth());
+	drawEventSafe_m(day_pos_start, day_pos_end, curr_event);
+}
+function eventClicked(event_id){
+	console.log("eventClicked:" + event_id);
+	var temp_struct = getEventStruct(event_id);
+	console.log(temp_struct);
+}
+
+// CONATINS
+
+function containsID_d(event_id){
+	var contains = false;
+	for(var i = 0; i < populatedEvents_d.length; i++){
+		if(populatedEvents_d[i].event_object.event_id == event_id){
+			contains = true;
+			break;
+		}
+	}
+	return contains;
+}
+function containsID_w(event_id){
+	var contains = false;
+	for(var i = 0; i < populatedEvents_w.length; i++){
+		if(populatedEvents_w[i].event_object.event_id == event_id){
+			contains = true;
+			break;
+		}
+	}
+	return contains;
+}
+function containsID(event_id){
+	var contains = false;
+	for(var i = 0; i < populatedEvents.length; i++){
+		if(populatedEvents[i].event_object.event_id == event_id){
+			contains = true;
+			break;
+		}
+	}
+	return contains;
+}
+function containsStruct(curr_struct){
+	var contains = false;
+	for(var i = 0; i < populatedEvents.length; i++){
+		if(populatedEvents[i].event_object.event_id == curr_struct.event_object.event_id && 
+			populatedEvents[i].start == curr_struct.start && 
+			populatedEvents[i].day_width == curr_struct.day_width){
+			contains = true;
+			break;
+		}
+	}
+	return contains;
+}
+function containsStruct_w(curr_struct){
+	var contains = false;
+	for(var i = 0; i < populatedEvents_w.length; i++){
+		if(populatedEvents_w[i].event_object.event_id == curr_struct.event_object.event_id && 
+			populatedEvents_w[i].start == curr_struct.start && 
+			populatedEvents_w[i].day_width == curr_struct.day_width){
+			contains = true;
+			break;
+		}
+	}
+	return contains;
+}
+function containsStruct_d(curr_struct){
+	var contains = false;
+	for(var i = 0; i < populatedEvents_d.length; i++){
+		if(populatedEvents_d[i].event_object.event_id == curr_struct.event_object.event_id && 
+			populatedEvents_d[i].start_time == curr_struct.start_time && 
+			populatedEvents_d[i].length == curr_struct.length){
+			contains = true;
+			break;
+		}
+	}
+	return contains;
+}
+function addEvents(){
+	switch(_switchType){
+		case "day":
+			addEventsD();
+			break;
+		case "week":
+			addEventsW();
+			break;
+		case "month":
+			addEventsM();
+			break;
+		default:
+			return;
+	}
+}
+function addEventsD(){
+	var count = 0;
+	var populatedEvents_c = populatedEvents_d.slice(0);
+	for (var i = 0; i < populatedEvents_c.length; i++) {
+		drawEventUnsafe_d_s(populatedEvents_c[i]);
+	}
+}
+function addEventsW(){
+	var count = 0;
+	var populatedEvents_c = populatedEvents_w.slice(0);
+	for (var i = 0; i < populatedEvents_c.length; i++) {
+		drawEventUnsafe_w_s(populatedEvents_c[i]);
+	}
+}
+function addEventsM(){
+	var count = 0;
+	var populatedEvents_c = getEventsCurrMonth();
+	for (var i = 0; i < populatedEvents_c.length; i++) {
+		drawEventUnsafe_m_s(populatedEvents_c[i]);
+	}
+}
+// -----------------------------------------------------------------
+
+// DUMMY DATA
+
+function getEventStruct(_event_id){
+	for(var i = 0; i < _dummy_events_json.length; i++){
+		var curr_event = _dummy_events_json[i];
+		if(curr_event.event_id == _event_id){
+			return curr_event;
+		}
+	}
+}
+
+function loadUserEvents(){
+	var user_events = $(_dummy_events_json).filter(
+		function(i, n){
+			return n.event_creator_alias == _dummy_user_json.alias;
+		}
+		);
+	for(var i = 0; i < user_events.length; i++){
+		var curr_event = user_events[i];
+		populateEventStructure_m(curr_event);
+	}
+	clearEvents();
+	switchCalendarView(_cont_id, _switchType);
+	addEvents();
+}
+function loadUserData(){
+	var name_div = document.getElementById("name_display");
+	name_div.innerText = _dummy_user_json.first_name + " " + _dummy_user_json.last_name;
+	var alias_div = document.getElementById("alias_display");
+	alias_div.innerText = "@" + _dummy_user_json.alias;
+	var desc_div = document.getElementById("description_display");
+	desc_div.innerText = _dummy_user_json.user_desc;
+}
+function validateEvents(){
+	for(var i = 0; i < _dummy_events_json.length; i++){
+		var curr_event = _dummy_events_json[i];
+		var start_time = new Date(parseInt(curr_event.start_date));
+		var end_time = new Date(parseInt(curr_event.end_date));
+		console.log("Name:" + curr_event.event_creator_alias);
+		console.log("Start:" + start_time);
+		console.log("End:" + end_time);
+	}
+}
+function loadDummyData(event_data, profile_data, contact_data, user){
+	_dummy_events_json = JSON.parse(event_data.replace(/&quot;/g,'\"'));
+	_dummy_profiles_json = JSON.parse(profile_data.replace(/&quot;/g,'\"'));
+	_dummy_contacts_json = JSON.parse(contact_data.replace(/&quot;/g,'\"'));
+	_dummy_user_json = JSON.parse(user.replace(/&quot;/g,'\"'))[0];
+	console.log(_dummy_events_json, _dummy_profiles_json, _dummy_contacts_json, _dummy_user_json);
+	loadUserData();
+	validateEvents();
+}
+function getDayPosition(day_num, year, month){
+	var count = 0;
+	var temp_cal = new Calendar("tempCal");
+	temp_cal.genGrid(year, month, null);
+	var grid = temp_cal.grid;
+	for(var i = 0; i < grid.length; i++){
+		for(var j = 0; j < grid[i].length; j++){
+			var curr_struct = grid[i][j];
+			if(curr_struct.date == day_num &&curr_struct.is_curr){
+				return count;
+			}
+			count++;
+		}
+	}
+}
+// -----------------------------------------------------------------
+
+
+function mainProf(){
 	window.addEventListener("resize", windowResized);
-	switchCalendarView(_cont_id, "month");
+	switchCalendarView(_cont_id, "month");	
+	loadUserEvents();
+	populateMonthYear();
+	setCurrTime();
+	windowResized();
 }
