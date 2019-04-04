@@ -1,8 +1,7 @@
-Django==2.1.7
-django-bootstrap4==0.0.7
-pytz==2018.9
+django
 gunicorn
 django-heroku
 requests
 dj-database-url
 psycopg2
+firebase_admin
