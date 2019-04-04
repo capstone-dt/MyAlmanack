@@ -8,7 +8,7 @@ import os
 import json
 
 def getDummyData(dummy_file):
-	dummy_dir = "\\user_interface\\static\\dummy_data\\"
+	dummy_dir = "/user_interface/static/dummy_data/"
 	extension = ".txt"
 	cwd = os.getcwd()
 	path = cwd + dummy_dir + dummy_file + extension
@@ -32,7 +32,7 @@ def getDummyData(dummy_file):
 	return structs
 
 def getProfilePictureBase64(file_name):
-	picture_dir = "\\user_interface\\static\\profile_pictures\\"
+	picture_dir = "/user_interface/static/profile_pictures/"
 	extension = ".png"
 	cwd = os.getcwd()
 	file_loc = cwd + picture_dir + file_name + extension
