@@ -2,16 +2,14 @@ class Event{
 				//c has to be greater that 0
 				//
 				//dateformat : '03/15/1996-21:30 | 03/15/1996-22:30'
-				constructor(name, desc,timerange){
+				constructor(name, desc,start, end){
 					this.name= name;
 					this.desc = desc;
-					this.list(timerange);
+				//	this.list(timerange);
 				}
 				list(timerange){
-					var stringStart = timerange.substring(0,16);
-					var stringEnd = timerange.substring(19, timerange.length);
-					var starttime = new Date(stringStart);
-					var endtime = new Date(stringEnd);
+					var starttime = new Date(start);
+					var endtime = new Date(end);
 					var list = [];
 					var cap = {};
 					cap.start = Math.floor((starttime) / 1000);
@@ -20,11 +18,9 @@ class Event{
 					this.list=list;
 				}
 
-				rep( su, mo, tu, we, th, fr,sa, c, timerange, event_id, user_id){
-					var stringStart = timerange.substring(0,16);
-					var stringEnd = timerange.substring(19, timerange.length);
-					var starttime = new Date(stringStart);
-					var endtime = new Date(stringEnd);
+				rep( su, mo, tu, we, th, fr,sa, c, start,end, event_id, user_id){
+					var starttime = new Date(start);
+					var endtime = new Date(end);
 					var list = [];
 					var cap = {};
 					//console.log(starttime);
@@ -443,11 +439,11 @@ class Event{
 			}
 
 			function test(){
-				let soccer = new Event('soccer','soccer practice', '03/15/2019-21:30 | 03/15/2019-22:30');
+				let soccer = new Event('soccer','soccer practice', 1552685400000,1552692600000);
 				console.log(soccer);
-				var x = soccer.rep('1','0','1','0','0','0','0','1', '03/15/2019-21:30 | 03/15/2019-22:30', 12345, 56789);
-				var y = soccer.rep('1','0','1','1','0','1','0','1', '03/15/2019-20:00 | 03/15/2019-21:00', 32415, 51231);
-				var z = soccer.rep('1','1','1','1','1','1','1','1', '03/15/2019-20:00 | 03/15/2019-21:00', 98992, 56273);
+				var x = soccer.rep('1','0','1','0','0','0','0','1', 1552685400000,1552692600000, 12345, 56789);
+				var y = soccer.rep('1','0','1','1','0','1','0','1', 1552680000000,1552683600000, 32415, 51231);
+				var z = soccer.rep('1','1','1','1','1','1','1','1', 1552680000000,1552683600000, 98992, 56273);
 				//var z = soccer.rep('0','0','0','1','1','1','1','1', '03/15/2019-16:30 | 03/15/2019-23:00');
 				//console.log(x);
 				//console.log(y);
