@@ -10,6 +10,8 @@
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 	{% load static %}
 	<script src="{% static 'user_interface/js/utilities.js' %}"> </script>
+	<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/js/bootstrap4-toggle.min.js"></script>
 </head>
 
 <body>
@@ -24,7 +26,7 @@
         <ul class="navbar-nav mr-auto">
           <li class="nav-item dropdown">
             <a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left" onclick="d_scrollTop('n_drop');">notification_important</i></a>
-            <div class="dropdown-menu  dropdown-menu-left navbarDropdownClass" aria-labelledby="dropdown03" id="n_drop">
+            <div class="dropdown-menu  dropdown-menu-left navbarDropdownClass overAll" aria-labelledby="dropdown03" id="n_drop">
             </div>
           </li>
         </ul>
@@ -32,21 +34,21 @@
           <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;">
         </form>
         <ul class= "navbar-nav ml-auto">
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown overAll">
             <a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left" onclick="d_scrollTop('f_drop');">person</i></a>
-            <div class="dropdown-menu  dropdown-menu-right navbarDropdownClass" aria-labelledby="dropdown04" id="f_drop">
+            <div class="dropdown-menu  dropdown-menu-right navbarDropdownClass overAll" aria-labelledby="dropdown04" id="f_drop">
             </div>
           </li>
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown overAll">
             <a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left" onclick="d_scrollTop('g_drop');">group</i></a>
-            <div class="dropdown-menu  dropdown-menu-right navbarDropdownClass" aria-labelledby="dropdown05" id="g_drop">
+            <div class="dropdown-menu  dropdown-menu-right navbarDropdownClass overAll" aria-labelledby="dropdown05" id="g_drop">
             </div>
           </li>
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown overAll">
             <a class="nav-link" href="http://example.com" id="dropdown06" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">settings</i></a>
-            <div class="dropdown-menu  dropdown-menu-right" aria-labelledby="dropdown06" id="s_drop">
+            <div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown06" id="s_drop">
               <a class="dropdown-item" href="#">Edit Profile</a>
-              <a class="dropdown-item" href="#">Log Out</a>
+              <a class="dropdown-item" href="/logout">Log Out</a>
             </div>
           </li>
         </ul>
@@ -69,6 +71,9 @@
 			background-color: #494949;
 			color: white;
 		}
+		.overAll{
+			z-index: 2147483638;
+		}
 	</style>
 
 	<script type="text/javascript">
@@ -90,6 +95,7 @@
 			var notif_div = document.getElementById("n_drop");
 			for(var i = 0; i < 20; i++){
 				var curr_elem = dropdownElement("#", "Notification:" + i);
+				curr_elem.className = curr_elem.className + " overAll";
 				notif_div.appendChild(curr_elem);
 			}
 		}
@@ -99,6 +105,7 @@
 			for(var i = 0; i < 20; i++){
 				// var temp_image =
 				var curr_elem = dropdownElement("#", "Friend:" + i);
+				curr_elem.className = curr_elem.className + " overAll";
 				notif_div.appendChild(curr_elem);
 			}
 		}
@@ -107,6 +114,7 @@
 			var notif_div = document.getElementById("g_drop");
 			for(var i = 0; i < 20; i++){
 				var curr_elem = dropdownElement("#", "Group:" + i);
+				curr_elem.className = curr_elem.className + " overAll";
 				notif_div.appendChild(curr_elem);
 			}
 		}

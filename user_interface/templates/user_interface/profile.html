@@ -29,7 +29,7 @@
 	</div>
 	<div class="container calCont" style="">
 	  	<div id="cal_control_bar">
-	  		<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
+	  		<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 0;">
 		      	<ul class= "navbar-nav ml-auto">
 			        <li class="nav-item">
 			          <a class="nav-link" href="#" id="prev_button"><i class="material-icons left" onclick="leftArrowClick()">arrow_left</i></a>
@@ -53,6 +53,12 @@
 		          <li class="nav-item">
 		            <div class="monthBar justify-content-center" style="">
 					  <select class="monthSel" id="month_sel" data-style="monthSel" onchange="monthYearUpdate();">
+					  </select>
+					</div>
+		          </li>
+		          <li class="nav-item">
+		            <div class="dayBar justify-content-center" style="">
+					  <select class="daySel" id="day_sel" data-style="daySel" onchange="dayWeekUpdate();">
 					  </select>
 					</div>
 		          </li>
@@ -81,14 +87,56 @@
 		      </div>
 		    </nav>
 	  	<div>
-	  	<div class="row calHeader text-xs-center" id="cal_head">
-	  		<div class="col right-block text-right">
-				<div>
-					<button type="button" data-toggle="modal" data-target="#createEventModal">Create Event</button>
-					<button type="button"  data-toggle="modal" data-target="#editEventModal">Edit Event</button>
-	  			</div>
-	  		</div>
-	  	</div>
+	  	<div id="sub_control_bar">
+	  		<nav class="navbar navbar-expand navbar-dark bg-dark">
+		      	<ul class= "navbar-nav ml-auto">
+			        <li class="nav-item" style="color: white; padding-top:15px">
+			        	Freetime
+			        </li>
+			        <li style="padding-left:15px;">
+		        	<label class="switch">
+					  <input type="checkbox">
+					  <span class="slider round"></span>
+					</label>
+					</li>
+					<li style="padding-left:30px;">
+						<div class="dropdown" >
+						  <button class="btn btn-secondary dropdown-toggle" type="button" id="friends_select_dropdown_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding-top: 16px; color:white;">
+						    Friends
+						  </button>
+						  <div class="dropdown-menu friendsSelectDropdown" aria-labelledby="friends_select_dropdown_button">
+						  	<form id="friend_select_dropdown">
+							</form>
+						  </div>
+						</div>
+					</li>
+		        </ul>
+		      <div class="collapse navbar-collapse" id="sub_control_bar_nav">
+		        <ul class="navbar-nav mr-auto">
+		        </ul>
+		        <ul class="navbar-nav">
+		          <li class="nav-item">
+		            <div class="monthBar justify-content-center" style="">
+					</div>
+		          </li>
+		          <li class="nav-item">
+		            <div class="dayBar justify-content-center" style="">
+					</div>
+		          </li>
+		          <li class="nav-item">
+		            <div class="yearBar justify-content-center" style="">
+					</div>
+		          </li>
+		        </ul>
+		        
+		        <ul class= "navbar-nav ml-auto">
+		          <li class="nav-item">
+					<a class="nav-link" href="#" id="create_event_button"><i class="material-icons left" data-toggle="modal" data-target="#createEventModal">add_circle_outline</i></a>
+		          </li>
+		        </ul>
+		      </div>
+		    </nav>
+	  	<div>
 
 	  	<div id="cal_top_head">
 	  	</div>
@@ -286,6 +334,15 @@
 			color:black;
 			text-align: center;
 		}
+		select.daySel{
+			width:50px;
+			text-align: center;
+			text-align-last: center;
+		}
+		.daySel{
+			color:black;
+			text-align: center;
+		}
 		.calListView{
 			overflow-y: scroll;
 			height: 800px;
@@ -294,6 +351,137 @@
 		.calListElem{
 			width: 100%;
 			height: 100px;
+		}
+		.switch {
+		  position: relative;
+		  display: inline-block;
+		  width: 40px;
+		  height: 20px;
+		}
+
+		/* Hide default HTML checkbox */
+		.switch input {
+		  opacity: 0;
+		  width: 0;
+		  height: 0;
+		}
+
+		/* The slider */
+		.slider {
+		  position: absolute;
+		  cursor: pointer;
+		  top: 0;
+		  left: 0;
+		  right: 0;
+		  bottom: 0;
+		  background-color: #ccc;
+		  -webkit-transition: .4s;
+		  transition: .4s;
+		}
+
+		.slider:before {
+		  position: absolute;
+		  content: "";
+		  height: 15px;
+		  width: 15px;
+		  left: 2px;
+		  bottom: 3px;
+		  background-color: white;
+		  -webkit-transition: .4s;
+		  transition: .4s;
+		}
+
+		input:checked + .slider {
+		  background-color: #2196F3;
+		}
+
+		input:focus + .slider {
+		  box-shadow: 0 0 1px #2196F3;
+		}
+
+		input:checked + .slider:before {
+		  -webkit-transform: translateX(20px);
+		  -ms-transform: translateX(20px);
+		  transform: translateX(20px);
+		}
+
+		/* Rounded sliders */
+		.slider.round {
+		  border-radius: 10px;
+		}
+
+		.slider.round:before {
+		  border-radius: 50%;
+		}
+		.check_container {
+		  display: block;
+		  position: relative;
+		  padding-top: 2px;
+		  padding-left: 25px;
+		  margin-bottom: 12px;
+		  cursor: pointer;
+		  -webkit-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		  user-select: none;
+		}
+
+		/* Hide the browser's default checkbox */
+		.check_container input {
+		  position: absolute;
+		  opacity: 0;
+		  cursor: pointer;
+		  height: 0;
+		  width: 0;
+		}
+
+		/* Create a custom checkbox */
+		.checkmark {
+		  position: absolute;
+		  top: 0;
+		  left: 0;
+		  height: 20px;
+		  width: 20px;
+		  background-color: #eee;
+		}
+
+		/* On mouse-over, add a grey background color */
+		.check_container:hover input ~ .checkmark {
+		  background-color: #ccc;
+		}
+
+		/* When the checkbox is checked, add a blue background */
+		.check_container input:checked ~ .checkmark {
+		  background-color: #2196F3;
+		}
+
+		/* Create the checkmark/indicator (hidden when not checked) */
+		.checkmark:after {
+		  content: "";
+		  position: absolute;
+		  display: none;
+		}
+
+		/* Show the checkmark when checked */
+		.check_container input:checked ~ .checkmark:after {
+		  display: block;
+		}
+
+		/* Style the checkmark/indicator */
+		.check_container .checkmark:after {
+		  left: 9px;
+		  top: 5px;
+		  width: 5px;
+		  height: 10px;
+		  border: solid white;
+		  border-width: 0 3px 3px 0;
+		  -webkit-transform: rotate(45deg);
+		  -ms-transform: rotate(45deg);
+		  transform: rotate(45deg);
+		}
+		.friendsSelectDropdown{
+			height: 200px;
+			overflow-y: scroll;
 		}
 		</style>
 
@@ -307,6 +495,16 @@
 		console.log("{{dummy_events}}");
 		loadDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}");
 		mainProf();
+
+    	function checkFriendSelect(sel_id){
+    		var check_input = document.getElementById(sel_id);
+    		// console.log(check_input);
+    		if(check_input.checked == true){
+    			check_input.checked = false;
+    		}else{
+    			check_input.checked = true;
+    		}
+    	}
 
 </script>
 
