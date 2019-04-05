@@ -31,7 +31,6 @@ var _dummy_contacts_json;
 var _dummy_user_json;
 // Friends enabled test
 
-
 /*
 JS OUTLINE:
 RESIZING
