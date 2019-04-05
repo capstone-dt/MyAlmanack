@@ -4,6 +4,7 @@ var _switchType = "month";
 var _select_class = "calSelect";
 var _select_id = "";
 var headerArray_top = [];
+var _header_top_div = null ;
 var headerArray_side = [];
 var gridArray = [];
 var calArray = [];
@@ -17,9 +18,11 @@ var _days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Fr
 var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 var _months_of_year = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+var _times_of_day_12 = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"];
 var _month_selected = "03";
 var _year_selected = "2019";
 var _day_selected = "1";
+var _week_selected = [];
 var _curr_month = "currMonth";
 var _curr_month_not = "currMonthNot";
 var _dummy_events_json;
@@ -51,9 +54,15 @@ function windowResized(){
 		case "sm":
 			elongateHeader();
 			abbreviateHeader();
+			if(_switchType == "week" && _header_top_div != null){
+				_header_top_div.style = "padding-left:28px;";
+			}
 			break;
 		default:
 			elongateHeader();
+			if(_switchType == "week" && _header_top_div != null){
+				_header_top_div.style = "padding-left:0px;";
+			}
 	}
 	ensureBoxSize();
 	clearEvents();
@@ -135,12 +144,14 @@ function makeGrid(cont_id, rowClass, colClass, name, dim_x, dim_y, onclick_func,
 		top_row.appendChild(padding);
 		row_array.push(padding);
 	}
+
 	for (var i = 0; i < dim_x; i++) {
 		var curr_col = generateTopHeader_func(i);
 		top_row.appendChild(curr_col);
 		headerArray_top.push(curr_col);
 		row_array.push(curr_col);
 	}
+	_header_top_div = top_row;
 	cont_div.appendChild(top_row);
 	gridArray.push(row_array);
 	for(var i=0; i< dim_y; i++){
@@ -286,6 +297,11 @@ function getAllEventStructsCurrMonth(){
 	}
 	return retArr;
 }
+function inRange(start, test, end){
+	var retBool = (test >= start && test <= end);
+	return retBool;
+}
+
 function getEventsCurrMonth(){
 	var retArr = [];
 	var month_start = new Date(_year_selected, _month_selected, 1);
@@ -296,12 +312,42 @@ function getEventsCurrMonth(){
 	var end_unix = month_end.getTime();
 	for(var i = 0; i < populatedEvents.length; i++){
 		var curr_event = populatedEvents[i].event_object;
-		if((curr_event.start_date >= start_unix  &&curr_event.start_date <= end_unix) || 
-			(curr_event.end_date <= end_unix && curr_event.end_date >= end_unix)){
+		if(inRange(start_unix, curr_event.start_date, end_unix) || 
+			inRange(start_unix, curr_event.end_date, end_unix)){
 			retArr.push(populatedEvents[i]);
 		}
 	}
 	return retArr;
+}
+function getEventsCurrWeek(){
+	var retArr = [];
+	for(var i= 0; i < populatedEvents.length; i++){
+		var curr_event = populatedEvents[i].event_object;
+		if(inRange(_week_selected[0].getTime(), curr_event.start_date, _week_selected[1].getTime())
+			|| inRange(_week_selected[0].getTime(), curr_event.end_date, _week_selected[1].getTime())){
+			retArr.push(curr_event);
+		}
+	}
+	return retArr;
+}
+function getEventsOnDate(date_obj){
+	var beginning_day = new Date(date_obj.getFullYear(), date_obj.getMonth(), date_obj.getDate());
+	var end_day = new Date(date_obj.getFullYear(), date_obj.getMonth(), date_obj.getDate());
+	end_day.setHours(23,59,59);
+	var retArr = [];
+	for(var i= 0; i < populatedEvents.length; i++){
+		var curr_event = populatedEvents[i].event_object;
+		if(inRange(beginning_day.getTime(), curr_event.start_date, end_day.getTime())
+			|| inRange(beginning_day.getTime(), curr_event.end_date, end_day.getTime())){
+			retArr.push(curr_event);
+		}
+	}
+	return retArr;
+}
+
+function getEventsCurrDay(){
+	var curr_day = new Date(_year_selected, _month_selected, _day_selected);
+	return getEventsOnDate(curr_day);
 }
 
 // CALENDAR HEADERS
@@ -317,6 +363,7 @@ function weekDatesHeader(col_index){
 	var ret_div = document.createElement('div');
 	ret_div.className = "col text-center defTopHeaderClass";
 	ret_div.id = ret_div.className + ":" + col_index;
+	ret_div.style = "min-width:10px";
 	ret_div.innerHTML = _days_of_week[col_index] + "<br/>##";
 	return ret_div;
 }
@@ -332,14 +379,14 @@ function noLeftHeader(row_index){
 }
 function hourLeftHeader(row_index){
 	var ret_div = document.createElement('div');
-	ret_div.className = "col-1 defLeftHeaderClass";
+	ret_div.className = "col-1 defLeftHeaderClass float-right text-right";
 	ret_div.id = ret_div.className + ":" + row_index;
-	var str_to = row_index + "";
-	if(str_to.length != 2){
+	var str_to = _times_of_day_12[row_index];
+	if(str_to.length < 4){
 		str_to = "0" + str_to;
 	}
 	ret_div.innerHTML = str_to;
-		return ret_div;
+	return ret_div;
 }
 function fillMonthViewNumbers(){
 	var tempCal = new Calendar('temp_cal');
@@ -372,17 +419,18 @@ function classCalbox(row_index, col_index, clazz){
 function setCurrTime(){
 	var month_sel = document.getElementById("month_sel");
 	var year_sel = document.getElementById("year_sel");
+	var day_sel = document.getElementById("day_sel");
 	month_sel.value = parseMonthi(new Date().getMonth());
 	year_sel.value = new Date().getFullYear();
+	day_sel.value = new Date().getDate();
 	_month_selected = new Date().getMonth();
 	_year_selected = new Date().getFullYear();
-	console.log(_month_selected, _year_selected);
+	_day_selected = new Date().getDate();
+	// console.log(_month_selected, _day_selected, _year_selected);
 }
-
 function parseMonthi(int_val){
 	return _months_of_year[int_val];
 }
-
 function parseMonth(sel_value){
 	for(var i = 0; i < _months_of_year.length; i++){
 		if(_months_of_year[i] == sel_value){
@@ -391,13 +439,14 @@ function parseMonth(sel_value){
 	}
 	return -1;
 }
-
 function monthYearUpdate(){
 	var month_sel = document.getElementById("month_sel");
 	var year_sel = document.getElementById("year_sel");
 	_month_selected = parseMonth(month_sel.value);
 	_year_selected = year_sel.value;
 	console.log(_month_selected, _year_selected);
+	populateDay();
+	selectDayHard(1);
 	clearEvents();
 	switchCalendarView(_cont_id, _switchType);
 	addEvents();
@@ -409,12 +458,25 @@ function updateMonthYear(new_month, new_year){
 	year_sel.value = new_year;
 	_month_selected = new_month;
 	_year_selected = new_year;
+	populateDay();
+	selectDayHard(1);
 	clearEvents();
 	switchCalendarView(_cont_id, _switchType);
 	addEvents();
 }
-
-
+function dayWeekUpdate(){
+	var day_sel = document.getElementById("day_sel");
+	_day_selected = day_sel.value;
+	_week_selected = [0, 0];
+	var date_selected = new Date(_year_selected, _month_selected, _day_selected);
+	var curr_day_of_week = date_selected.getDay();
+	var delta_sun = 0 - curr_day_of_week;
+	var prev_sun = new Date(date_selected.getFullYear(), date_selected.getMonth(), date_selected.getDate() + delta_sun);
+	var delta_sat = 6 - curr_day_of_week;
+	var next_sat = new Date(date_selected.getFullYear(), date_selected.getMonth(), date_selected.getDate() + delta_sat);
+	next_sat.setHours(23, 59, 59);
+	_week_selected = [prev_sun, next_sat];
+}
 function populateMonthYear(){
 	var month_sel = document.getElementById("month_sel");
 	for(var i=0; i < _months_of_year.length; i++){
@@ -431,7 +493,35 @@ function populateMonthYear(){
 		year_sel.appendChild(curr_opt);
 	}
 }
+function populateDay(){
+	var day_sel = document.getElementById("day_sel");
+	while(day_sel.children.length > 0){
+		day_sel.removeChild(day_sel.lastElementChild);
+	}
 
+	var month_start = new Date(_year_selected, _month_selected, 1);
+	var curr_day = new Date(_year_selected, _month_selected, 1);
+	var dayArr = [];
+	for(var i = 1; i < 32; i++){
+		curr_day = new Date(month_start.getFullYear(), month_start.getMonth(), i);
+		if(curr_day.getMonth() != month_start.getMonth()){
+			break;
+		}
+		dayArr.push(i);
+	}
+	for(var i = 0; i < dayArr.length; i++){
+		var curr_opt = document.createElement("option");
+		curr_opt.className = "dayOpt";
+		curr_opt.innerText = dayArr[i];
+		day_sel.appendChild(curr_opt);
+	}
+	return dayArr;
+}
+function selectDayHard(day_select){
+	var day_sel = document.getElementById("day_sel");
+	day_sel.value = day_select;
+	dayWeekUpdate();
+}
 function leftArrowClick(){
 	switch(_switchType){
 		case "month":
@@ -440,6 +530,25 @@ function leftArrowClick(){
 			_year_selected = temp_date.getFullYear();
 			updateMonthYear(_month_selected, _year_selected);
 			break;
+		case "week":
+			var temp_date = new Date(_year_selected, parseInt(_month_selected), _day_selected);
+			temp_date.setDate(temp_date.getDate() - 7);
+			_month_selected = temp_date.getMonth();
+			_year_selected = temp_date.getFullYear();
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
+			selectDayHard(_day_selected);
+			break;
+		case "day":
+			console.log("left day");
+			var temp_date = new Date(_year_selected, parseInt(_month_selected), _day_selected);
+			temp_date.setDate(temp_date.getDate() - 1);
+			_month_selected = temp_date.getMonth();
+			_year_selected = temp_date.getFullYear();
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
+			selectDayHard(_day_selected);
+			break;
 		default:
 	}
 }
@@ -447,6 +556,21 @@ function currButtonClick(){
 	switch(_switchType){
 		case "month":
 			setCurrTime();
+			selectDayHard(_day_selected);
+			clearEvents();
+			switchCalendarView(_cont_id, _switchType);
+			addEvents();
+			break;
+		case "week":
+			setCurrTime();
+			selectDayHard(_day_selected);
+			clearEvents();
+			switchCalendarView(_cont_id, _switchType);
+			addEvents();
+			break;
+		case "day":
+			setCurrTime();
+			selectDayHard(_day_selected);
 			clearEvents();
 			switchCalendarView(_cont_id, _switchType);
 			addEvents();
@@ -462,10 +586,55 @@ function rightArrowClick(){
 			_year_selected = temp_date.getFullYear();
 			updateMonthYear(_month_selected, _year_selected);
 			break;
+		case "week":
+			console.log("right week");
+			var temp_date = new Date(_year_selected, parseInt(_month_selected), _day_selected);
+			temp_date.setDate(temp_date.getDate() + 7);
+			console.log(temp_date);
+			_month_selected = temp_date.getMonth();
+			_year_selected = temp_date.getFullYear();
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
+			selectDayHard(_day_selected);
+			break;
+		case "day":
+			console.log("left day");
+			var temp_date = new Date(_year_selected, parseInt(_month_selected), _day_selected);
+			temp_date.setDate(temp_date.getDate() + 1);
+			_month_selected = temp_date.getMonth();
+			_year_selected = temp_date.getFullYear();
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
+			selectDayHard(_day_selected);
+			break;
 		default:
 	}
 }
-
+function populateFriendsSelectDropdown(){
+	var friendsSelectDropdown = document.getElementById("friend_select_dropdown");
+	var friends_to_pop = getFriendsUserData();
+	for(var i = 0; i < friends_to_pop.length; i++){
+		var curr_friend = friends_to_pop[i];
+		var curr_a = document.createElement("a");
+		curr_a.className = "dropdown-item";
+		var temp_id = curr_friend.alias + "_check";
+		curr_a.href = "#";
+		curr_a.setAttribute("onclick", "checkFriendSelect('" + temp_id + "')");
+		var curr_label = document.createElement("label");
+		curr_label.className = "check_container";
+		curr_label.innerText = curr_friend.first_name + " " + curr_friend.last_name;
+		var curr_input = document.createElement("input");
+		curr_input.type = "checkbox";
+		curr_input.id = temp_id;
+		curr_input.setAttribute("alias", curr_friend.alias);
+		var curr_span = document.createElement("span");
+		curr_span.className = "checkmark";
+		curr_label.appendChild(curr_input);
+		curr_label.appendChild(curr_span);
+		curr_a.appendChild(curr_label);
+		friendsSelectDropdown.appendChild(curr_a);
+	}
+}
 
 
 // HEADER ABBREVIATION
@@ -604,7 +773,7 @@ function drawEventSafe_w(start_col, end_col, time_start, length, event_object){
 	if(length + time_start > 24){
 		c_length = 24 - time_start;
 	}
-	var d_length = end_col - start_col;
+	var d_length = end_col - start_col + 1;
 	if(d_length < 0){
 		d_length = 1;
 	}
@@ -716,7 +885,7 @@ function drawEventUnsafe_m(start, day_width, flags, event_object){
 	var x_offset_px = x_perc * col_width;
 	var x_offset_px_l = 0;
 	var x_offset_px_r = 0;
-	var y_perc = 0.30;
+	var y_perc = 0.50;
 	var y_offset_px = y_perc * rect.height;
 	if(flags.includes("l")){
 		x_offset_px_l = 0;
@@ -730,7 +899,7 @@ function drawEventUnsafe_m(start, day_width, flags, event_object){
 	}
 	var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
 	var divToAdd = document.createElement('div');
-	divToAdd.style = "position:absolute; background-color:blue; z-index:2; height:20px; cursor:pointer;"
+	divToAdd.style = "position:absolute; background-color:#728AFF; z-index:2; height:20px; cursor:pointer;"
 	+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
 	+ "left:" + (rect.left + x_offset_px_l) + "px;" 
 	+ "width:" + width + "px;";
@@ -912,7 +1081,7 @@ function validateEvents(){
 		console.log("End:" + end_time);
 	}
 }
-function loadDummyData(event_data, profile_data, contact_data, user){
+function loadProfileDummyData(event_data, profile_data, contact_data, user){
 	_dummy_events_json = JSON.parse(event_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
 	_dummy_profiles_json = JSON.parse(profile_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
 	_dummy_contacts_json = JSON.parse(contact_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
@@ -936,6 +1105,36 @@ function getDayPosition(day_num, year, month){
 		}
 	}
 }
+function getContactListRow(){
+	console.log(_dummy_user_json);
+	var contact_list_id = _dummy_user_json.contact_list_id;
+	for(var i = 0; i < _dummy_contacts_json.length; i++){
+		var curr_contact = _dummy_contacts_json[i];
+		if(contact_list_id == curr_contact.contact_list_id){
+			return curr_contact;
+		}
+	}
+	return null;
+}
+function getFriendsUserData(){
+	var contact_list = getContactListRow();
+	var contact_names = contact_list.contact_names.split(", ");
+	var retArr = [];
+	for(var c_index = 0; c_index < contact_names.length; c_index++){
+		for(var i = 0; i < _dummy_profiles_json.length; i++){
+			var curr_profile = _dummy_profiles_json[i];
+			if(curr_profile.alias == contact_names[c_index]){
+				retArr.push(curr_profile);
+			}
+		}
+	}
+	return retArr;
+}
+function getFriendsProfilePictures(){
+	// stubbed
+}
+
+
 // -----------------------------------------------------------------
 
 
@@ -944,6 +1143,9 @@ function mainProf(){
 	switchCalendarView(_cont_id, "month");	
 	loadUserEvents();
 	populateMonthYear();
+	populateDay();
 	setCurrTime();
+	dayWeekUpdate();
+	populateFriendsSelectDropdown();
 	windowResized();
 }

@@ -19,3 +19,6 @@ class EditProfileForm(forms.Form):
 	PIphone = forms.CharField(widget=forms.HiddenInput())
 	PIorganization = forms.CharField(widget=forms.HiddenInput())
 	PIdescription = forms.CharField(widget=forms.HiddenInput())
+
+class SearchForm(forms.Form):
+	SIstring = forms.CharField(widget=forms.HiddenInput())
