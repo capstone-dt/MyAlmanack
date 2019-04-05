@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from user_interface.forms import EventForm
 from user_interface.forms import EditProfileForm
+from user_interface.forms import SearchForm
 import base64
 import os
 import json
@@ -44,7 +45,7 @@ def getProfilePictureBase64(file_name):
 
 def getCurrUser(profile_json, firebase_id):
 	for user in profile_json:
-		print(user)
+		# print(user)
 		if user["firebase_id"] == firebase_id:
 			return [user]
 	return [{}]
@@ -53,22 +54,25 @@ class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
 	def dummy(self, event_form, request):
+		search_form = SearchForm()
 		eventstructs = getDummyData("event_table")
 		eventjson = str(json.dumps(eventstructs))
 		profilestructs = getDummyData("profile_table")
 		profilejson = str(json.dumps(profilestructs))
 		contactstructs = getDummyData("contact_list_table")
 		contactjson = str(json.dumps(contactstructs))
-		currentuserjson = str(json.dumps(getCurrUser(profilestructs, "99")))
+		currentuserjson = str(json.dumps(getCurrUser(profilestructs, "88")))
 		response = render(
 			request=request,
 			template_name=self.template_name,
 			context={
-				"event_form" : event_form, 
+				"event_form" : event_form,
+				"search_form" : search_form, 
 				"dummy_events" : eventjson, 
 				"dummy_profiles" : profilejson,
 				"dummy_contacts" : contactjson,
-				"user" : str(currentuserjson)
+				"user" : str(currentuserjson),
+				"calendarFrame" : "sub_templates/calendarFrame.html"
 			}
 		)
 		return response
@@ -78,29 +82,39 @@ class ProfileView(TemplateView):
 		return self.dummy(event_form, request)
 
 	def post(self, request):
-		event_form = EventForm(request.POST)
 		print("POST REQUESTED")
-		print(event_form)
-		return self.dummy(event_form, request)
+		switchType = request.POST.get('formType')
+		print(request.POST.get('formType'))
+		event_form = EventForm()
+		if(switchType == "SubmitEvent"):
+			event_form = EventForm(request.POST)
+			print(event_form)
+			return self.dummy(event_form, request)
+		elif(switchType == "FriendRequest"):
+			event_form = EventForm(request.POST)
+			print(event_form)
+			return self.dummy(event_form, request)
 
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
 
 	def get(self, request):
 		edit_form = EditProfileForm()
+		search_form = SearchForm()
 		response = render(
 			request=request,
 			template_name=self.template_name,
-			context={"edit_form" : edit_form}
+			context={"edit_form" : edit_form, "search_form" : search_form}
 		)
 		return response
 
 	def post(self, request):
 		edit_form = EditProfileForm(request.POST)
+		search_form = SearchForm()
 		response = render(
 			request=request,
 			template_name=self.template_name,
-			context={"edit_form" : edit_form}
+			context={"edit_form" : edit_form, "search_form" : search_form}
 		)
 		return response
 
@@ -108,10 +122,11 @@ class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
 
 	def get(self, request):
+		search_form = SearchForm()
 		return render(
 			request=request,
 			template_name=self.template_name,
-			context={}
+			context={"search_form" : search_form}
 		)
 
 class DefaultView(TemplateView):
@@ -128,9 +143,19 @@ class SearchView(TemplateView):
 	template_name = 'user_interface/search.html'
 
 	def get(self, request):
+		search_form = SearchForm()
 		return render(
 			request=request,
 			template_name=self.template_name,
-			context={}
+			context={"search_form" : search_form}
+		)
+
+	def post(self, request):
+		search_form = SearchForm(request.POST)
+		print(search_form)
+		return render(
+			request=request,
+			template_name=self.template_name,
+			context={"search_form" : search_form}
 		)
 

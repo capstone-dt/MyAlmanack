@@ -12,12 +12,14 @@
 	<script src="{% static 'user_interface/js/utilities.js' %}"> </script>
 	<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/js/bootstrap4-toggle.min.js"></script>
+	<link rel="shortcut icon" type="image/png" href="{% static 'compass_PSN_icon.ico' %}"/>
+	<title>MyAlmanack</title>
 </head>
 
 <body>
 
 	<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
-      <a class="navbar-brand" href="#">MyAlmanack</a>
+      <a class="navbar-brand" href="/profile/">MyAlmanack</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsableNav" aria-controls="collapsableNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -30,8 +32,17 @@
             </div>
           </li>
         </ul>
-        <form class="form-inline justify-content-center" style="width:75%;">
-          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;">
+        <form class="form-inline justify-content-center" style="width:75%;" action="/search/" method="post">
+			{% csrf_token %}
+			{{ search_form.as_ul }}
+          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
+          <script type="text/javascript">
+          	function searchBarUpdate(){
+          		var search_form_param = document.getElementById("id_SIstring");
+          		var firstSearch = document.getElementById("firstSearch");
+          		search_form_param.value = firstSearch.value;
+          	}
+          </script>
         </form>
         <ul class= "navbar-nav ml-auto">
           <li class="nav-item dropdown overAll">
@@ -47,7 +58,7 @@
           <li class="nav-item dropdown overAll">
             <a class="nav-link" href="http://example.com" id="dropdown06" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">settings</i></a>
             <div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown06" id="s_drop">
-              <a class="dropdown-item" href="#">Edit Profile</a>
+              <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
               <a class="dropdown-item" href="/logout">Log Out</a>
             </div>
           </li>

@@ -4,6 +4,7 @@ var _switchType = "month";
 var _select_class = "calSelect";
 var _select_id = "";
 var headerArray_top = [];
+var _header_top_div = null ;
 var headerArray_side = [];
 var gridArray = [];
 var calArray = [];
@@ -17,6 +18,7 @@ var _days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Fr
 var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 var _months_of_year = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+var _times_of_day_12 = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"];
 var _month_selected = "03";
 var _year_selected = "2019";
 var _day_selected = "1";
@@ -52,9 +54,15 @@ function windowResized(){
 		case "sm":
 			elongateHeader();
 			abbreviateHeader();
+			if(_switchType == "week" && _header_top_div != null){
+				_header_top_div.style = "padding-left:28px;";
+			}
 			break;
 		default:
 			elongateHeader();
+			if(_switchType == "week" && _header_top_div != null){
+				_header_top_div.style = "padding-left:0px;";
+			}
 	}
 	ensureBoxSize();
 	clearEvents();
@@ -136,12 +144,14 @@ function makeGrid(cont_id, rowClass, colClass, name, dim_x, dim_y, onclick_func,
 		top_row.appendChild(padding);
 		row_array.push(padding);
 	}
+
 	for (var i = 0; i < dim_x; i++) {
 		var curr_col = generateTopHeader_func(i);
 		top_row.appendChild(curr_col);
 		headerArray_top.push(curr_col);
 		row_array.push(curr_col);
 	}
+	_header_top_div = top_row;
 	cont_div.appendChild(top_row);
 	gridArray.push(row_array);
 	for(var i=0; i< dim_y; i++){
@@ -353,6 +363,7 @@ function weekDatesHeader(col_index){
 	var ret_div = document.createElement('div');
 	ret_div.className = "col text-center defTopHeaderClass";
 	ret_div.id = ret_div.className + ":" + col_index;
+	ret_div.style = "min-width:10px";
 	ret_div.innerHTML = _days_of_week[col_index] + "<br/>##";
 	return ret_div;
 }
@@ -368,14 +379,14 @@ function noLeftHeader(row_index){
 }
 function hourLeftHeader(row_index){
 	var ret_div = document.createElement('div');
-	ret_div.className = "col-1 defLeftHeaderClass";
+	ret_div.className = "col-1 defLeftHeaderClass float-right text-right";
 	ret_div.id = ret_div.className + ":" + row_index;
-	var str_to = row_index + "";
-	if(str_to.length != 2){
+	var str_to = _times_of_day_12[row_index];
+	if(str_to.length < 4){
 		str_to = "0" + str_to;
 	}
 	ret_div.innerHTML = str_to;
-		return ret_div;
+	return ret_div;
 }
 function fillMonthViewNumbers(){
 	var tempCal = new Calendar('temp_cal');
@@ -1070,7 +1081,7 @@ function validateEvents(){
 		console.log("End:" + end_time);
 	}
 }
-function loadDummyData(event_data, profile_data, contact_data, user){
+function loadProfileDummyData(event_data, profile_data, contact_data, user){
 	_dummy_events_json = JSON.parse(event_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
 	_dummy_profiles_json = JSON.parse(profile_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
 	_dummy_contacts_json = JSON.parse(contact_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
