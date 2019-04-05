@@ -9,10 +9,9 @@
 				<div class="row">
 				<div class="col left-block content-wrap">
 					<div class="notnav left" id="trap_cont">
-						<a href="#" class="selected" id="friends_tab" onclick="selectTab('friends_tab')">Friends</a>
+						<a href="#" id="users_tab" onclick="selectTab('users_tab')">Users</a>
 						<a href="#" id="group_tab" onclick="selectTab('group_tab')">Groups</a>
 						<a href="#" id="events_tab" onclick="selectTab('events_tab')">Events</a>
-						<a href="#" id="users_tab" onclick="selectTab('users_tab')">Users</a>
 					</div>
 				</div><!-- /content -->
 				</div>
@@ -114,10 +113,9 @@
 		<script type="text/javascript">
 			var _tabSelect = "";
 			var _searchElements = {
-				friends : [],
+				users : [],
 				groups : [],
-				events : [],
-				users : []
+				events : []
 			};
 
 			function windowResized(){
@@ -134,7 +132,6 @@
 
 			function generateDummyData(){
 				generateUserDummyData(0, 20);
-				generateFriendDummyData(0, 20);
 				generateGroupDummyData(0, 20);
 				generateEventDummyData(0, 20);
 			}
@@ -143,14 +140,6 @@
 				for(var i = min; i < max; i++){
 					_searchElements.users.push(
 						userStruct(null, "User:" + i, i*i)
-					);
-				}
-			}
-
-			function generateFriendDummyData(min, max){
-				for(var i = min; i < max; i++){
-					_searchElements.friends.push(
-						userStruct(null, "Friend:" + i, i*i)
 					);
 				}
 			}
@@ -193,23 +182,6 @@
 				return ret_struct;
 			}
 
-			function drawFriendElement(struct){
-				var image_url = struct.image_url;
-				var name = struct.name;
-				var alias = struct.alias;
-				if(image_url == null){
-					image_url = "https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg";
-				}
-				var list_elem = document.createElement('li');
-				list_elem.className = "nav-item w-fill";
-				var a_elem = document.createElement('a');
-				a_elem.className = "nav-link active";
-				a_elem.innerHTML = name;
-				var list_div = document.getElementById("height_list");
-				list_elem.appendChild(a_elem);
-				list_div.appendChild(list_elem);
-				return list_div;
-			}
 
 			function drawUserElement(struct){
 				var image_url = struct.image_url;
@@ -256,13 +228,6 @@
 				return list_div;
 			}
 
-			function populateFriends(){
-				for(var i = 0; i < _searchElements.friends.length; i++){
-					var curr_struct = _searchElements.friends[i];
-					drawFriendElement(curr_struct);
-				}
-			}
-
 			function populateUsers(){
 				for(var i = 0; i < _searchElements.users.length; i++){
 					var curr_struct = _searchElements.users[i];
@@ -291,14 +256,14 @@
 				var cont_id = "scroll_div_cont_row";
 				var cont_div = document.getElementById(cont_id);
 				var rect = cont_div.getBoundingClientRect();
-				var friends_tab_div = document.getElementById("friends_tab");
-				var friend_rect = friends_tab_div.getBoundingClientRect();
-				var def_left = friend_rect.left +15;
+				var users_tab_div = document.getElementById("users_tab");
+				var users_rect = users_tab_div.getBoundingClientRect();
+				var def_left = users_rect.left +15;
 				var def_width = window.innerWidth - 2*def_left;
 				def_width = Math.max(def_width, 370);
 				cont_div.style = "position:absolute; border-color: black;"
 				+ "border-style: solid; border-width: 0.5px; padding-bottom: 20px; top:" 
-				+ (friend_rect.bottom - 7) + "px;"
+				+ (users_rect.bottom - 7) + "px;"
 				+ "height:" + (50) + "%;"
 				+ "width:" + (def_width) + "px;"
 				+ "left:" + (def_left) + "px;";
@@ -327,9 +292,6 @@
 					children[i].className = "";
 				}
 				switch(sel_id){
-					case "friends_tab":
-						selectFriends();
-						break;
 					case "events_tab":
 						selectEvents();
 						break;
@@ -342,10 +304,6 @@
 					default:
 						return;
 				}
-			}
-			function selectFriends(){
-				console.log("select:friends");
-				populateFriends();
 			}
 			function selectUsers(){
 				console.log("select:users");
@@ -362,7 +320,7 @@
 			function main(){
 				window.addEventListener("resize", windowResized);
 				generateDummyData();
-				selectTab("friends_tab");
+				selectTab("users_tab");
 				windowResized();
 			}
 			main();

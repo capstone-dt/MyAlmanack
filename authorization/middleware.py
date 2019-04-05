@@ -12,7 +12,6 @@ class AuthorizationMiddleware:
     
     def __call__(self, request):
         # Process request?
-        
         return self.get_response(request)
     
     def process_view(self, request, view, *view_args, **view_kwargs):
@@ -21,11 +20,11 @@ class AuthorizationMiddleware:
         
         # If the view has defined an action, check its authorization.
         if action is not None:
-        	# Create an authorization request using the defined action.
+            # Create an authorization request using the defined action.
             authorization_request = AuthorizationRequest(
                 subject=request.user,
                 action=action,
-                object=request.user, # What to put here?
+                resource=request.user, # What to put here?
                 context=request
             )
             
