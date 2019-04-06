@@ -23,5 +23,8 @@ class EditProfileForm(forms.Form):
 	PIorganization = forms.CharField(widget=forms.HiddenInput())
 	PIdescription = forms.CharField(widget=forms.HiddenInput())
 
+class FriendRequestForm(forms.Form):
+	FIalias = forms.CharField(widget=forms.HiddenInput())
+
 class SearchForm(forms.Form):
 	SIstring = forms.CharField(widget=forms.HiddenInput())

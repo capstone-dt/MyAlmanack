@@ -1,7 +1,7 @@
 
-		.reqField:before{
+.reqField:before{
 	content:"*" ;
-		color:red;
+	color:red;
 }
 .calHeader{
 }

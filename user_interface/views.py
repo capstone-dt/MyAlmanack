@@ -66,6 +66,7 @@ class ProfileView(TemplateView):
 		print(request.session)
 		users = User.objects.all()
 		print(users)
+		def_prof_pic = getProfilePictureBase64("default_profile");
 		response = render(
 			request=request,
 			template_name=self.template_name,
@@ -76,7 +77,8 @@ class ProfileView(TemplateView):
 				"dummy_profiles" : profilejson,
 				"dummy_contacts" : contactjson,
 				"user" : str(currentuserjson),
-				"calendarFrame" : "sub_templates/calendarFrame.html"
+				"calendarFrame" : "sub_templates/calendarFrame.html",
+				"default_profile" : def_prof_pic
 			}
 		)
 		return response
@@ -173,8 +175,6 @@ class SearchView(TemplateView):
 				"groups" : groups
 			}
 		)
-
-
 
 def aliasToFirebaseId(alias):
 	firebase_id = ""
