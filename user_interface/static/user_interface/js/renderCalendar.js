@@ -1080,11 +1080,14 @@ function validateEvents(){
 		console.log("End:" + end_time);
 	}
 }
+function parseQuotesJson(json_string){
+	return JSON.parse(json_string.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
+}
 function loadProfileDummyData(event_data, profile_data, contact_data, user){
-	_dummy_events_json = JSON.parse(event_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
-	_dummy_profiles_json = JSON.parse(profile_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
-	_dummy_contacts_json = JSON.parse(contact_data.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
-	_dummy_user_json = JSON.parse(user.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"))[0];
+	_dummy_events_json = parseQuotesJson(event_data);
+	_dummy_profiles_json = parseQuotesJson(profile_data);
+	_dummy_contacts_json = parseQuotesJson(contact_data);
+	_dummy_user_json = parseQuotesJson(user)[0];
 	console.log(_dummy_events_json, _dummy_profiles_json, _dummy_contacts_json, _dummy_user_json);
 	loadUserData();
 	validateEvents();
@@ -1131,6 +1134,13 @@ function getFriendsUserData(){
 }
 function getFriendsProfilePictures(){
 	// stubbed
+}
+
+function loadCalendarDataProfile(user_events_data, friend_events_data){
+	var user_events_json = parseQuotesJson(user_events_data);
+	var friend_events_json = parseQuotesJson(friend_events_data);
+	console.log(user_events_json);
+	console.log(friend_events_json);
 }
 
 

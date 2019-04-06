@@ -51,6 +51,75 @@ def getCurrUser(profile_json, firebase_id):
 			return [user]
 	return [{}]
 
+def filterDummyEventsAlias(eventstructs, alias):
+	ret_events = []
+	for temp_event in eventstructs:
+		if temp_event["event_creator_alias"] == alias:
+			ret_events.append(temp_event)
+	return ret_events
+
+def filterDummyContactsAlias(contactstructs, contact_list_id):
+	for temp_contact in contactstructs:
+		if temp_contact["contact_list_id"] == contact_list_id:
+			return temp_contact
+	return None
+
+def genHiddenEvent(passed_event):
+	hiddenstruct = {}
+	hiddenstruct["event_id"] = "-1"
+	hiddenstruct["description"] = "Hidden"
+	hiddenstruct["participating_users"] = ""
+	hiddenstruct["event_admins"] = ""
+	hiddenstruct["whitelist"] = ""
+	hiddenstruct["blacklist"] = ""
+	hiddenstruct["start_date"] = passed_event["start_date"]
+	hiddenstruct["end_date"] = passed_event["end_date"]
+	hiddenstruct["event_creator_alias"] = passed_event["event_creator_alias"]
+	hiddenstruct["event_creator_firebase_id"] = passed_event["event_creator_firebase_id"]
+	hiddenstruct["isHidden"] = "true"
+	return hiddenstruct
+
+
+def filterAccessFriendEvents(friend_events, user_alias):
+	print("FILTER FRIEND EVENTS", user_alias)
+	ret_filtered = []
+	for temp_event in friend_events:
+		whitelist_str = temp_event["whitelist"].replace(" ", "")
+		blacklist_str = temp_event["blacklist"].replace(" ", "")
+		whitelist = whitelist_str.split(",");
+		blacklist = blacklist_str.split(",");
+		whitelist_empty = False
+		blacklist_empty = False
+		if len(whitelist_str) == 0:
+			whitelist_empty = True
+		if len(blacklist_str) == 0:
+			blacklist_empty = True
+		if whitelist_empty and blacklist_empty == False:
+			isblacklisted = False
+			for blacklisted in blacklist:
+				if blacklisted == user_alias:
+					isblacklisted = True
+					break
+			if isblacklisted:
+				hiddenstruct = genHiddenEvent(temp_event)
+				ret_filtered.append(hiddenstruct)
+				continue
+		if whitelist_empty == False and blacklist_empty:
+			iswhitelisted = False
+			for whitelisted in whitelist:
+				if whitelisted == user_alias:
+					iswhitelisted = True
+					break
+			if iswhitelisted == False:
+				hiddenstruct = genHiddenEvent(temp_event)
+				ret_filtered.append(hiddenstruct)
+				continue
+		if whitelist_empty == False and blacklist_empty == False:
+			continue
+		ret_filtered.append(temp_event)
+	return ret_filtered
+
+
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
@@ -62,10 +131,27 @@ class ProfileView(TemplateView):
 		profilejson = str(json.dumps(profilestructs))
 		contactstructs = getDummyData("contact_list_table")
 		contactjson = str(json.dumps(contactstructs))
-		currentuserjson = str(json.dumps(getCurrUser(profilestructs, "88")))
-		print(request.session)
-		users = User.objects.all()
-		print(users)
+		user_firebase_id = "88"
+		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
+		currentuserjson = str(json.dumps(currentuserstruct))
+		# print(currentuserstruct)
+		user_alias = currentuserstruct[0]["alias"]
+		user_events = filterDummyEventsAlias(eventstructs, user_alias)
+		user_contact_list_id = currentuserstruct[0]["contact_list_id"]
+		user_contact_list = filterDummyContactsAlias(contactstructs, user_contact_list_id)
+		friend_names = user_contact_list["contact_names"].replace(" ", "").split(",")
+		print(friend_names)
+		friend_events = []
+		for friend_alias in friend_names:
+			curr_events = filterDummyEventsAlias(eventstructs, friend_alias)
+			for temp_event in curr_events:
+				friend_events.append(temp_event)
+		filtered_friend_events = filterAccessFriendEvents(friend_events, user_alias)
+
+		user_events_json = str(json.dumps(user_events))
+		filtered_friend_events_json = str(json.dumps(filtered_friend_events))
+		user_contact_list_json = str(json.dumps(user_contact_list))
+
 		def_prof_pic = getProfilePictureBase64("default_profile");
 		response = render(
 			request=request,
@@ -77,6 +163,9 @@ class ProfileView(TemplateView):
 				"dummy_profiles" : profilejson,
 				"dummy_contacts" : contactjson,
 				"user" : str(currentuserjson),
+				"user_events" : user_events_json,
+				"friend_events" : filtered_friend_events_json,
+				"user_contact_list" : user_contact_list_json,
 				"calendarFrame" : "sub_templates/calendarFrame.html",
 				"default_profile" : def_prof_pic
 			}
