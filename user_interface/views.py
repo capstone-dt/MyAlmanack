@@ -119,6 +119,9 @@ def filterAccessFriendEvents(friend_events, user_alias):
 		ret_filtered.append(temp_event)
 	return ret_filtered
 
+def nullAlias(request):
+	p = ProfileView()
+	return p.get(request, "")
 
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
@@ -172,7 +175,8 @@ class ProfileView(TemplateView):
 		)
 		return response
 
-	def get(self, request):
+	def get(self, request, alias):
+		print("alias passed:", alias)
 		event_form = EventForm()
 		return self.dummy(event_form, request)
 
