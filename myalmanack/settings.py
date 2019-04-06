@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = None
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
@@ -65,7 +65,7 @@ ROOT_URLCONF = 'myalmanack.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, './user_interface/templates/user_interface')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -8,6 +8,10 @@ from user_interface.forms import SearchForm
 import base64
 import os
 import json
+from authentication.firebase import get_session_claims
+from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
+
 
 def getDummyData(dummy_file):
 	dummy_dir = "/user_interface/static/dummy_data/"
@@ -119,9 +123,16 @@ def filterAccessFriendEvents(friend_events, user_alias):
 		ret_filtered.append(temp_event)
 	return ret_filtered
 
+def getCurrentFirebaseId(request):
+	User = get_user_model()
+	claims = get_session_claims(request, check_revoked=True)
+	user = User.objects.get(username=claims["uid"])
+	return user
+
 def nullAlias(request):
 	p = ProfileView()
 	return p.get(request, "")
+
 
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
@@ -177,6 +188,8 @@ class ProfileView(TemplateView):
 
 	def get(self, request, alias):
 		print("alias passed:", alias)
+		firebase_id = getCurrentFirebaseId(request)
+		print(firebase_id)
 		event_form = EventForm()
 		return self.dummy(event_form, request)
 
@@ -220,7 +233,8 @@ class EditProfileView(TemplateView):
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
 
-	def get(self, request):
+	def get(self, request, group_name):
+		print("GROUP NAME:", group_name)
 		search_form = SearchForm()
 		return render(
 			request=request,
