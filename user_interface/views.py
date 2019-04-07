@@ -1,5 +1,6 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render
+from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from user_interface.forms import EventForm
@@ -49,9 +50,10 @@ def getProfilePictureBase64(file_name):
 	return retval
 
 def getCurrUser(profile_json, firebase_id):
+	print("GET", firebase_id)
 	for user in profile_json:
-		# print(user)
-		if user["firebase_id"] == firebase_id:
+		print(user["firebase_id"])
+		if user["firebase_id"].replace(" ", "") == str(firebase_id).replace(" ", ""):
 			return [user]
 	return [{}]
 
@@ -133,11 +135,20 @@ def nullAlias(request):
 	p = ProfileView()
 	return p.get(request, "")
 
+def redirForce(request):
+	e = EditProfileView()
+	return e.get(request)
+
+def getFirebaseIDAliasDummy(user_structs, alias):
+	for temp_user in user_structs:
+		if(temp_user["alias"] == alias):
+			return temp_user["firebase_id"]
+	return -1
 
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
-	def dummy(self, event_form, request):
+	def dummy(self, event_form, request, alias_requested):
 		search_form = SearchForm()
 		eventstructs = getDummyData("event_table")
 		eventjson = str(json.dumps(eventstructs))
@@ -145,11 +156,21 @@ class ProfileView(TemplateView):
 		profilejson = str(json.dumps(profilestructs))
 		contactstructs = getDummyData("contact_list_table")
 		contactjson = str(json.dumps(contactstructs))
-		user_firebase_id = "88"
+		user_firebase_id = getCurrentFirebaseId(request)
+		# print(profilestructs)
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
-		currentuserjson = str(json.dumps(currentuserstruct))
-		# print(currentuserstruct)
+		print(currentuserstruct)
+		if bool(currentuserstruct[0]) == False:
+			return redirForce(request)
 		user_alias = currentuserstruct[0]["alias"]
+		user_selected = currentuserstruct
+		if(alias_requested != ""):
+			print("alias_requested:", alias_requested)
+			user_alias = alias_requested
+			sel_id = getFirebaseIDAliasDummy(profilestructs, user_alias)
+			user_selected = getCurrUser(profilestructs, sel_id)
+
+		currentuserjson = str(json.dumps(currentuserstruct))
 		user_events = filterDummyEventsAlias(eventstructs, user_alias)
 		user_contact_list_id = currentuserstruct[0]["contact_list_id"]
 		user_contact_list = filterDummyContactsAlias(contactstructs, user_contact_list_id)
@@ -160,13 +181,14 @@ class ProfileView(TemplateView):
 			curr_events = filterDummyEventsAlias(eventstructs, friend_alias)
 			for temp_event in curr_events:
 				friend_events.append(temp_event)
-		filtered_friend_events = filterAccessFriendEvents(friend_events, user_alias)
+		filtered_friend_events = filterAccessFriendEvents(friend_events, currentuserstruct[0]["alias"])
 
 		user_events_json = str(json.dumps(user_events))
 		filtered_friend_events_json = str(json.dumps(filtered_friend_events))
 		user_contact_list_json = str(json.dumps(user_contact_list))
+		print(user_contact_list)
 
-		def_prof_pic = getProfilePictureBase64("default_profile");
+		def_prof_pic = getProfilePictureBase64("default_profile")
 		response = render(
 			request=request,
 			template_name=self.template_name,
@@ -176,7 +198,7 @@ class ProfileView(TemplateView):
 				"dummy_events" : eventjson, 
 				"dummy_profiles" : profilejson,
 				"dummy_contacts" : contactjson,
-				"user" : str(currentuserjson),
+				"user" : str(json.dumps(user_selected)),
 				"user_events" : user_events_json,
 				"friend_events" : filtered_friend_events_json,
 				"user_contact_list" : user_contact_list_json,
@@ -191,9 +213,9 @@ class ProfileView(TemplateView):
 		firebase_id = getCurrentFirebaseId(request)
 		print(firebase_id)
 		event_form = EventForm()
-		return self.dummy(event_form, request)
+		return self.dummy(event_form, request, alias)
 
-	def post(self, request):
+	def post(self, request, alias):
 		print("POST REQUESTED")
 		switchType = request.POST.get('formType')
 		print(request.POST.get('formType'))
@@ -210,25 +232,26 @@ class ProfileView(TemplateView):
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
 
-	def get(self, request):
-		edit_form = EditProfileForm()
+	def dummy(self, request, edit_form):
 		search_form = SearchForm()
+		def_prof_pic = getProfilePictureBase64("default_profile")
 		response = render(
 			request=request,
 			template_name=self.template_name,
-			context={"edit_form" : edit_form, "search_form" : search_form}
+			context={"edit_form" : edit_form, 
+			"search_form" : search_form,
+			"default_profile" : def_prof_pic}
 		)
 		return response
 
+	def get(self, request):
+		edit_form = EditProfileForm()
+		return self.dummy(request, edit_form)
+
 	def post(self, request):
 		edit_form = EditProfileForm(request.POST)
-		search_form = SearchForm()
-		response = render(
-			request=request,
-			template_name=self.template_name,
-			context={"edit_form" : edit_form, "search_form" : search_form}
-		)
-		return response
+		print(edit_form)
+		return self.dummy(request, edit_form)
 
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'

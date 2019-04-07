@@ -29,6 +29,11 @@ var _dummy_events_json;
 var _dummy_profiles_json;
 var _dummy_contacts_json;
 var _dummy_user_json;
+
+var user_contact_list;
+var user_events_all = [];
+var member_events_all = [];
+var member_check_ids = [];
 // Friends enabled test
 
 /*
@@ -632,6 +637,7 @@ function populateFriendsSelectDropdown(){
 		curr_label.appendChild(curr_span);
 		curr_a.appendChild(curr_label);
 		friendsSelectDropdown.appendChild(curr_a);
+		member_check_ids.push({"check_id" : temp_id, "alias" : curr_friend.alias});
 	}
 }
 
@@ -925,6 +931,69 @@ function populateEventStructure_m(curr_event){
 	var day_pos_end = getDayPosition(temp_end.getDate(), temp_end.getFullYear(), temp_end.getMonth());
 	drawEventSafe_m(day_pos_start, day_pos_end, curr_event);
 }
+
+
+function getMembersSelected(){
+	var valid = [];
+	for(var i = 0; i < member_check_ids.length; i++){
+		var curr_div = document.getElementById(member_check_ids[i].check_id);
+		if(curr_div.getAttribute("flag") == "true"){
+			valid.push(member_check_ids[i].alias);
+		}
+	}
+
+	console.log(valid);
+}
+
+function drawUserEvents_m(){
+	// Draw events in blue on calendar
+}
+
+function drawMemberEvents_m(){
+	// Different color
+	// Members to draw
+	// Draw the events of those members
+	// If event is hidden, draw grey.
+}
+function drawUserEvents_w(){
+	// Draw events in blue on calendar
+}
+
+function drawMemberEvents_w(){
+	// Different color
+	// Members to draw
+	// Draw the events of those members
+	// If event is hidden, draw grey.
+}
+
+function drawUserEvents_d(){
+	// Draw events in blue on calendar
+}
+
+function drawMemberEvents_d(){
+	// Different color
+	// Members to draw
+	// Draw the events of those members
+	// If event is hidden, draw grey.
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function eventClicked(event_id){
 	console.log("eventClicked:" + event_id);
 	var temp_struct = getEventStruct(event_id);
@@ -1083,11 +1152,12 @@ function validateEvents(){
 function parseQuotesJson(json_string){
 	return JSON.parse(json_string.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
 }
-function loadProfileDummyData(event_data, profile_data, contact_data, user){
+function loadProfileDummyData(event_data, profile_data, contact_data, user, contact_list){
 	_dummy_events_json = parseQuotesJson(event_data);
 	_dummy_profiles_json = parseQuotesJson(profile_data);
 	_dummy_contacts_json = parseQuotesJson(contact_data);
 	_dummy_user_json = parseQuotesJson(user)[0];
+	user_contact_list = parseQuotesJson(contact_list);
 	console.log(_dummy_events_json, _dummy_profiles_json, _dummy_contacts_json, _dummy_user_json);
 	loadUserData();
 	validateEvents();
@@ -1109,7 +1179,7 @@ function getDayPosition(day_num, year, month){
 }
 function getContactListRow(){
 	console.log(_dummy_user_json);
-	var contact_list_id = _dummy_user_json.contact_list_id;
+	var contact_list_id = user_contact_list.contact_list_id;
 	for(var i = 0; i < _dummy_contacts_json.length; i++){
 		var curr_contact = _dummy_contacts_json[i];
 		if(contact_list_id == curr_contact.contact_list_id){

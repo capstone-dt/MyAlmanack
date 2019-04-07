@@ -8,12 +8,14 @@ from . import views
 app_name = "WEBSITECORE"
 
 urlpatterns = [
-	path("", views.ProfileView.as_view(), name="profile"),
+	path("", views.nullAlias, name="profile"),
+	path('', views.nullAlias, name="profile"),
 	path("profile", views.nullAlias, name="profile"),
 	path("profile/", views.nullAlias, name="profile"),
+	path("profile/edit", views.EditProfileView.as_view(), name="editProfile"),
+	path("profile/edit/", views.EditProfileView.as_view(), name="editProfile"),
 	re_path(r'^profile/(?P<alias>[A-Za-z0-9]+)/$', views.ProfileView.as_view(), 
 		name="profile"),
-	path("profile/edit", views.EditProfileView.as_view(), name="editProfile"),
 	re_path(r'^group/(?P<group_name>[A-Za-z0-9]+)/$', views.GroupView.as_view(), 
 		name="group"),
 	path("default", views.DefaultView.as_view(), name="default"),

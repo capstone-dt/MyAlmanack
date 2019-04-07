@@ -63,15 +63,17 @@
 <script type="text/javascript">
     	function checkFriendSelect(sel_id){
     		var check_input = document.getElementById(sel_id);
-    		// console.log(check_input);
-    		if(check_input.checked == true){
+    		if(check_input.checked){
     			check_input.checked = false;
+    			check_input.setAttribute("flag", "false");
     		}else{
     			check_input.checked = true;
+    			check_input.setAttribute("flag", "true");
     		}
+    		getMembersSelected();
     	}
 		console.log("{{dummy_events}}");
-		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}");
+		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
 		loadCalendarDataProfile("{{user_events}}", "{{friend_events}}");
 		mainProf();
 
