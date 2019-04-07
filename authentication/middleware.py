@@ -1,9 +1,5 @@
-from .firebase import is_session_valid, invalidate_session
-from .utils import redirect_login
-
-# Django
-from django.conf import settings
-from django.shortcuts import redirect
+from .firebase import is_session_valid
+from .utils import redirect_logout
 
 
 class FirebaseSessionMiddleware:
@@ -26,5 +22,4 @@ class FirebaseSessionMiddleware:
 		if login_required and (
 			not request.user.is_authenticated or not is_session_valid(request)
 		):
-		    invalidate_session(request)
-			return redirect_login(request)
+			return redirect_logout(request)
