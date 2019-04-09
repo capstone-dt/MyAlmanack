@@ -3,7 +3,7 @@ from .enforcement import EnforcementAuthority as AuthorizationEnforcer
 from .enforcement import AuthorizationRequest, AuthorizationResult
 
 # Expose the short-hand HTTP request authorization function.
-authorize_http = AuthorizationEnforcer.authorize_http
+authorize = AuthorizationEnforcer.authorize_http
 
 # Expose action attributes.
 from .attributes import actions
