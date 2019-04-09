@@ -341,6 +341,73 @@ class Event{
 					}console.log(arr);
 					//console.log(tempList);
 				}
+				freetime_per_day(list, start, end){
+					var ONE_DAY = 86400000;// milliseconds
+					var startdate = new Date(start);
+					var enddate = new Date(end);
+					list.sort((elemA, elemB) => elemA.start - elemB.start);
+					var arrsize = (Math.abs(end - start)/ONE_DAY);
+					arrsize = Math.floor(arrsize);
+					//console.log("daysss "+arrsize);
+					var arr = new Array(arrsize).fill(null);
+					//console.log(arr.length);
+					var freetime = this.freeTime(list,0);
+					console.log("%%freetime%%");
+					console.log(freetime);
+					var freetime_list = freetime[1];
+					console.log(freetime_list);
+					var i, j, indexS=0, indexE;
+					var tempList = [];
+					for (i =0; i< arr.length; i++){//
+						var dayUnixS = start+(86400000*i);
+						var dayUnixE = start+(86400000*i)+86400000;
+						console.log(dayUnixS);
+						console.log(dayUnixE);
+						for (j=0; j< freetime_list.length;j++){
+							if (freetime_list[j].start == 0){
+								freetime_list[j].start ==freetime_list[j].end-86400000;
+							}
+							if (freetime_list[j].end == 9999999999999999999){
+								indexE= j;
+								freetime_list[j].end == freetime_list[j].start+86400000;
+							}
+							if (dayUnixS < freetime_list[j].start && freetime_list[j].start < dayUnixE){
+								if (arr[i] == null){
+									arr[i] = [];
+									if (indexS ==0){
+										console.log("ASDaSFAWRASFAS");
+										console.log("ASDaSFAWRASFAS   "+i);
+										console.log("ASDaSFAWRASFAS    IN "+indexS);
+										indexS =i;
+									}
+								}
+								arr[i].push(freetime_list[j]);
+							}
+						}
+					}
+						var a;
+					for (a=0; a < arr.length;a++){
+						console.log(a);
+						var dayUnixS = start+(86400000*a);
+						var dayUnixE = start+(86400000*a)+86400000;
+						console.log("indexS "+indexS);
+						console.log("indexE "+indexE);
+						if (arr[a] == null && a <indexS){
+							var struc = {};
+							struc.start = dayUnixS;
+							struc.end = dayUnixE;
+							arr[a] =struc;
+						}
+						if (arr[a] == null && a >indexE){
+							var struc = {};
+							struc.start = dayUnixS;
+							struc.end = dayUnixE;
+							arr[a] =struc;
+						}
+					}
+				
+					return arr;
+			}
 
 				freeTime(list, threshold){
 					//console.log(list);
@@ -370,8 +437,8 @@ class Event{
 						}
 						if (i== newList.length-2){
 							var newTime = {};
-								newTime.start = newList[i].end;
-								newTime.end = 999999999999999;
+								newTime.start = newList[i+1].end;
+								newTime.end = 9999999999999999999;
 								free.push(newTime);
 						}
 						if (newList[i].end < newList[i+1].start){
@@ -398,8 +465,8 @@ class Event{
 															//to avoid conflicts
 					var freetime_user_list = this.freeTime(list, 0)[0];
 					var freetime_list = this.freeTime(list, 0)[1];
-					console.log("this the freetime conflict ");
-					console.log(freetime_list);
+				//	console.log("this the freetime conflict ");
+					//console.log(freetime_list);
 					var start = event.start;
 					var end = event.end;
 					var index1=0, index2=0;
@@ -462,7 +529,9 @@ class Event{
 				event.end = 1552684400000;
 				var bool = cal.conflict (event, list);
 				console.log(bool);
-				var threshold = 12323600; //1hr
+				var threshold = (0); //1hr = 12323600
 				var freetime = cal.freeTime(list ,threshold);
+				console.log("freetime this:");
 				console.log(freetime);
+				console.log(cal.freetime_per_day(list,1551416400000,1554091200000 ))
 			}
