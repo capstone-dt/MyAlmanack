@@ -396,13 +396,15 @@ class Event{
 							var struc = {};
 							struc.start = dayUnixS;
 							struc.end = dayUnixE;
-							arr[a] =struc;
+							arr[a] =[];
+							arr[a].push(struc);
 						}
 						if (arr[a] == null && a >indexE){
 							var struc = {};
 							struc.start = dayUnixS;
 							struc.end = dayUnixE;
-							arr[a] =struc;
+							arr[a] =[];
+							arr[a].push(struc);
 						}
 					}
 				
