@@ -32,6 +32,8 @@ var _dummy_user_json;
 
 var user_contact_list;
 var user_events_all = [];
+var user_color = "rgba(114,138,255,0.6)";
+var member_color = "rgba(128,0,128,0.4)";
 var member_events_all = [];
 var member_check_ids = [];
 // Friends enabled test
@@ -108,6 +110,56 @@ function getResponsiveBreakpoint() {
 // -----------------------------------------------------------------
 
 // DRAW CALENDAR
+
+var percentColors = [
+    { pct: 0.0, color: { r: 0xff, g: 0x00, b: 0 } },
+    { pct: 0.5, color: { r: 0xff, g: 0xff, b: 0 } },
+    { pct: 1.0, color: { r: 0x00, g: 0xff, b: 0 } } ];
+
+var getColorForPercentage = function(pct) {
+    for (var i = 1; i < percentColors.length - 1; i++) {
+        if (pct < percentColors[i].pct) {
+            break;
+        }
+    }
+    var lower = percentColors[i - 1];
+    var upper = percentColors[i];
+    var range = upper.pct - lower.pct;
+    var rangePct = (pct - lower.pct) / range;
+    var pctLower = 1 - rangePct;
+    var pctUpper = rangePct;
+    var color = {
+        red: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
+        green: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
+        blue: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
+    };
+    return color;
+    // or output as hex if preferred
+}  
+
+function drawColorGrid(isRainbow){
+	var retArray = [];
+	if(isRainbow == false){
+		switchCalendarView(_cont_id, _switchType);
+	}
+	for(var i = 0; i < calArray.length; i++){
+		for(var j = 0; j < calArray[i].length; j++){
+			var curr_elem = calArray[i][j];
+			if(isRainbow == false){
+				curr_elem.style.backgroundColor = "white";
+			}else{
+				var randNum = Math.random();
+				var randColor = getColorForPercentage(randNum);
+				console.log(randColor);
+				curr_elem.style.backgroundColor =  
+					"rgba(" + randColor.red + ", " + randColor.green + ", " 
+					+ randColor.blue + ", 0.2)";
+			}
+			retArray.push(curr_elem);
+		}
+	}
+	return retArray;
+}
 
 function friendsEnabled(){
 	return false;
@@ -196,12 +248,6 @@ function makeGrid(cont_id, rowClass, colClass, name, dim_x, dim_y, onclick_func,
 function switchCalendarView(cont_id, switchType){
 	var cont_div = document.getElementById(cont_id);
 	cont_div.innerHTML = "";
-	var doFocus = false;
-	if(switchType === _switchType){
-		doFocus = false;
-	}else{
-		doFocus = true;
-	}
 	_switchType = switchType;
 	clearEvents();
 	switch(switchType){
@@ -218,9 +264,6 @@ function switchCalendarView(cont_id, switchType){
 		default:
 			makeGrid(cont_id, "calWeek", "defStyle calDay", "M", 7, 6, dayClickM, weekDaysHeader, noLeftHeader);
 			fillMonthViewNumbers();
-		}
-		if(doFocus == true){
-			focusCalendar();
 		}
 }
 function clearEvents(){
@@ -261,15 +304,7 @@ function splitEvent(start, end){
 	}
 	return retArr;
 }
-function focusCalendar(){
-	var cal_head = document.getElementById("cal_top_head");
-	var bound = cal_head.getBoundingClientRect();
-	if(_switchType === "month"){
-		window.scrollTo(0, bound.top);
-		return;
-	}
-	window.scrollTo(0, bound.top + 100);
-}
+
 function filterAlias(array, alias){
 	var filtered = [];
 	for(var i = 0; i < array.length; i++){
@@ -280,6 +315,17 @@ function filterAlias(array, alias){
 	}
 	return filtered;
 }
+function filterAliasArray(event_array, alias_array){
+	var retArray = [];
+	for(var i = 0; i < alias_array.length; i++){
+		var curr_filtered = filterAlias(event_array, alias_array[i]);
+		for(var j = 0; j < curr_filtered.length; j++){
+			retArray.push(curr_filtered[j]);
+		}
+	}
+	return retArray;
+}
+
 function getAllEventStructsCurrMonthAlias(alias){
 	var allCurr = getAllEventStructsCurrMonth();
 	return filterAlias(allCurr, alias);
@@ -323,6 +369,77 @@ function getEventsCurrMonth(){
 	}
 	return retArr;
 }
+
+function getEventsCurrMonthUser(){
+	var retArr = [];
+	var month_start = new Date(_year_selected, _month_selected, 1);
+	month_start.setHours(0,0,0);
+	var start_unix = month_start.getTime();
+	var month_end = new Date(_year_selected, _month_selected + 1, 0);
+	month_end.setHours(23,59,59);
+	var end_unix = month_end.getTime();
+	for(var i = 0; i < user_events.length; i++){
+		var curr_event = user_events[i];
+		if(inRange(start_unix, curr_event.start_date, end_unix) || 
+			inRange(start_unix, curr_event.end_date, end_unix)){
+			retArr.push(user_events[i]);
+		}
+	}
+	return retArr;
+}
+function getEventsCurrMonthMembers(){
+	var retArr = [];
+	var month_start = new Date(_year_selected, _month_selected, 1);
+	month_start.setHours(0,0,0);
+	var start_unix = month_start.getTime();
+	var month_end = new Date(_year_selected, _month_selected + 1, 0);
+	month_end.setHours(23,59,59);
+	var end_unix = month_end.getTime();
+	for(var i = 0; i < member_events_all.length; i++){
+		var curr_event = member_events_all[i];
+		if(inRange(start_unix, curr_event.start_date, end_unix) || 
+			inRange(start_unix, curr_event.end_date, end_unix)){
+			retArr.push(member_events_all[i]);
+		}
+	}
+	return retArr;
+}
+
+function getEventsCurrMonthSelected(){
+	var selected_members = getMembersSelected();
+	if(selected_members.length == 0){
+		return [];
+	}
+	var curr_month_members = getEventsCurrMonthMembers();
+	var retArray = filterAliasArray(curr_month_members, selected_members);
+	return retArray;
+}
+
+
+function getEventsCurrWeekUser(){
+	var retArr = [];
+	for(var i= 0; i < user_events.length; i++){
+		var curr_event = user_events[i];
+		if(inRange(_week_selected[0].getTime(), curr_event.start_date, _week_selected[1].getTime())
+			|| inRange(_week_selected[0].getTime(), curr_event.end_date, _week_selected[1].getTime())){
+			retArr.push(curr_event);
+		}
+	}
+	return retArr;
+}
+
+function getEventsCurrWeekMembers(){
+	var retArr = [];
+	for(var i= 0; i < member_events_all.length; i++){
+		var curr_event = member_events_all[i];
+		if(inRange(_week_selected[0].getTime(), curr_event.start_date, _week_selected[1].getTime())
+			|| inRange(_week_selected[0].getTime(), curr_event.end_date, _week_selected[1].getTime())){
+			retArr.push(curr_event);
+		}
+	}
+	return retArr;
+}
+
 function getEventsCurrWeek(){
 	var retArr = [];
 	for(var i= 0; i < populatedEvents.length; i++){
@@ -641,6 +758,43 @@ function populateFriendsSelectDropdown(){
 	}
 }
 
+function checkFriendSelect(sel_id){
+	var check_input = document.getElementById(sel_id);
+	if(check_input.checked){
+		check_input.checked = false;
+		check_input.setAttribute("flag", "false");
+	}else{
+		check_input.checked = true;
+		check_input.setAttribute("flag", "true");
+	}
+	getMembersSelected();
+}
+
+function getMembersSelected(){
+	var valid = [];
+	for(var i = 0; i < member_check_ids.length; i++){
+		var curr_div = document.getElementById(member_check_ids[i].check_id);
+		if(curr_div.getAttribute("flag") == "true"){
+			valid.push(member_check_ids[i].alias);
+		}
+	}
+	console.log(valid);
+	return valid;
+}
+
+function getMembersSelectedEvents(){
+	var members_selected = getMembersSelected();
+	var retArray = [];
+	for(var i = 0; i < members_selected.length; i++){
+		for(var j = 0; j < member_events_all.length; j++){
+			if(member_events_all[j].event_creator_alias == members_selected[i]){
+				retArray.push(member_events_all[j]);
+			}
+		}
+	}
+	return retArray;
+}
+
 
 // HEADER ABBREVIATION
 
@@ -716,7 +870,7 @@ function dayClickM(click_id){
 	// console.log("week selected");
 	selectUnique(_cont_id, click_id)
 	// switchCalendarView(_cont_id, "week");
-		focusCalendar();
+		// focusCalendar();
 }
 function hourClickW(click_id){
 	console.log("hourClickW:" + click_id);
@@ -802,6 +956,21 @@ function drawEventSafe_m(start, end, event_object){
 		drawEventUnsafe_m(curr_start, width, curr_struct.flags, event_object);
 	}
 }
+function drawEventSafe_m_color(start, end, event_object, color){
+	var event_id = event_object.event_id;
+	if(containsID(event_id)){
+		console.log("Event already exists. Try modifying it instead.");
+		return;
+	}
+	var event_split = splitEvent(start, end);
+	for(var index = 0; index < event_split.length; index++){
+		var curr_struct = event_split[index];
+		var curr_start = curr_struct.range[0];
+		var width = curr_struct.range[1] - curr_start + 1;
+		// console.log(curr_struct);
+		drawEventUnsafe_m_color(curr_start, width, curr_struct.flags, event_object, color);
+	}
+}
 function drawEventUnsafe_d_s(curr_struct){
 	drawEventUnsafe_d(curr_struct.start_time, curr_struct.length, curr_struct.event_object);
 }
@@ -809,7 +978,7 @@ function drawEventUnsafe_w_s(curr_struct){
 	drawEventUnsafe_w(curr_struct.start, curr_struct.day_width, curr_struct.start_time, curr_struct.length, curr_struct.event_object);
 }
 function drawEventUnsafe_m_s(curr_struct){
-	drawEventUnsafe_m(curr_struct.start, curr_struct.day_width, curr_struct.flags, curr_struct.event_object);
+	drawEventUnsafe_m_color(curr_struct.start, curr_struct.day_width, curr_struct.flags, curr_struct.event_object, curr_struct.event_color);
 }
 function drawEventUnsafe_d(start_time, length, event_object){
 	var start = 0;
@@ -878,6 +1047,10 @@ function drawEventUnsafe_w(start, day_width, start_time, length, event_object){
 	}
 }
 function drawEventUnsafe_m(start, day_width, flags, event_object){
+	drawEventUnsafe_m_color(start, day_width, flags, event_object, user_color);
+}
+
+function drawEventUnsafe_m_color(start, day_width, flags, event_object, color){
 	var coords = getRowCol(start);
 	// console.log("drawEventUnsafe_m:");
 	// console.log(coords);
@@ -904,14 +1077,19 @@ function drawEventUnsafe_m(start, day_width, flags, event_object){
 	}
 	var width = day_width*col_width - x_offset_px_l - x_offset_px_r;
 	var divToAdd = document.createElement('div');
-	divToAdd.style = "position:absolute; background-color:#728AFF; z-index:2; height:20px; cursor:pointer;"
+	divToAdd.style = "position:absolute; background-color:" + color + "; z-index:2; height:20px; cursor:pointer;"
 	+ "top:" + (rect.top + y_offset_px + window.scrollY) + "px;" 
 	+ "left:" + (rect.left + x_offset_px_l) + "px;" 
 	+ "width:" + width + "px;";
 	divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_object.event_id + ");" );
 	document.body.appendChild(divToAdd);
 	eventDivArray.push(divToAdd);
-	var new_struct = {start:start, day_width:day_width, flags:flags, event_object:event_object};
+	var new_struct = {start:start, 
+		day_width:day_width, 
+		flags:flags, 
+		event_object:event_object,
+		event_color:color
+	};
 	var contains = containsStruct(new_struct);
 	if(contains == false){
 		populatedEvents.push(new_struct);
@@ -919,7 +1097,7 @@ function drawEventUnsafe_m(start, day_width, flags, event_object){
 	}
 	// console.log(divToAdd);
 }
-function populateEventStructure_m(curr_event){
+function populateEventStructure_m(curr_event, color){
 	var event_id = curr_event.event_id;
 	if(containsID(event_id)){
 		console.log("Event already exists. Try modifying it instead.");
@@ -929,24 +1107,13 @@ function populateEventStructure_m(curr_event){
 	var temp_end = new Date(Number(curr_event.end_date));
 	var day_pos_start = getDayPosition(temp_start.getDate(), temp_start.getFullYear(), temp_start.getMonth());
 	var day_pos_end = getDayPosition(temp_end.getDate(), temp_end.getFullYear(), temp_end.getMonth());
-	drawEventSafe_m(day_pos_start, day_pos_end, curr_event);
+	drawEventSafe_m_color(day_pos_start, day_pos_end, curr_event, color);
 }
 
-
-function getMembersSelected(){
-	var valid = [];
-	for(var i = 0; i < member_check_ids.length; i++){
-		var curr_div = document.getElementById(member_check_ids[i].check_id);
-		if(curr_div.getAttribute("flag") == "true"){
-			valid.push(member_check_ids[i].alias);
-		}
-	}
-
-	console.log(valid);
-}
 
 function drawUserEvents_m(){
 	// Draw events in blue on calendar
+
 }
 
 function drawMemberEvents_m(){
@@ -954,6 +1121,7 @@ function drawMemberEvents_m(){
 	// Members to draw
 	// Draw the events of those members
 	// If event is hidden, draw grey.
+
 }
 function drawUserEvents_w(){
 	// Draw events in blue on calendar
@@ -976,16 +1144,6 @@ function drawMemberEvents_d(){
 	// Draw the events of those members
 	// If event is hidden, draw grey.
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1118,19 +1276,24 @@ function getEventStruct(_event_id){
 }
 
 function loadUserEvents(){
-	var user_events = $(_dummy_events_json).filter(
-		function(i, n){
-			return n.event_creator_alias == _dummy_user_json.alias;
-		}
-		);
-	for(var i = 0; i < user_events.length; i++){
-		var curr_event = user_events[i];
-		populateEventStructure_m(curr_event);
+	for(var i = 0; i < user_events_all.length; i++){
+		var curr_event = user_events_all[i];
+		populateEventStructure_m(curr_event, user_color);
 	}
 	clearEvents();
 	switchCalendarView(_cont_id, _switchType);
 	addEvents();
 }
+function loadMemberEvents(){
+	for(var i = 0; i < member_events_all.length; i++){
+		var curr_event = member_events_all[i];
+		populateEventStructure_m(curr_event, member_color);
+	}
+	clearEvents();
+	switchCalendarView(_cont_id, _switchType);
+	addEvents();
+}
+
 function loadUserData(){
 	var name_div = document.getElementById("name_display");
 	name_div.innerText = _dummy_user_json.first_name + " " + _dummy_user_json.last_name;
@@ -1209,8 +1372,12 @@ function getFriendsProfilePictures(){
 function loadCalendarDataProfile(user_events_data, friend_events_data){
 	var user_events_json = parseQuotesJson(user_events_data);
 	var friend_events_json = parseQuotesJson(friend_events_data);
-	console.log(user_events_json);
-	console.log(friend_events_json);
+	for(var i = 0; i < user_events_json.length; i++){
+		user_events_all.push(user_events_json[i]);
+	}
+	for(var j = 0; j < friend_events_json.length; j++){
+		member_events_all.push(friend_events_json[j]);
+	}
 }
 
 
@@ -1221,6 +1388,7 @@ function mainProf(){
 	window.addEventListener("resize", windowResized);
 	switchCalendarView(_cont_id, "month");	
 	loadUserEvents();
+	loadMemberEvents();
 	populateMonthYear();
 	populateDay();
 	setCurrTime();

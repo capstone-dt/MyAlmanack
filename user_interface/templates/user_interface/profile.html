@@ -61,20 +61,9 @@
 		</style>
 
 <script type="text/javascript">
-    	function checkFriendSelect(sel_id){
-    		var check_input = document.getElementById(sel_id);
-    		if(check_input.checked){
-    			check_input.checked = false;
-    			check_input.setAttribute("flag", "false");
-    		}else{
-    			check_input.checked = true;
-    			check_input.setAttribute("flag", "true");
-    		}
-    		getMembersSelected();
-    	}
 		console.log("{{dummy_events}}");
+		loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
 		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
-		loadCalendarDataProfile("{{user_events}}", "{{friend_events}}");
 		mainProf();
 
 

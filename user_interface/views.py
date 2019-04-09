@@ -200,7 +200,7 @@ class ProfileView(TemplateView):
 				"dummy_contacts" : contactjson,
 				"user" : str(json.dumps(user_selected)),
 				"user_events" : user_events_json,
-				"friend_events" : filtered_friend_events_json,
+				"member_events" : filtered_friend_events_json,
 				"user_contact_list" : user_contact_list_json,
 				"calendarFrame" : "sub_templates/calendarFrame.html",
 				"default_profile" : def_prof_pic
