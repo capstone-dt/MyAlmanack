@@ -312,9 +312,7 @@ class Event{
 
 					var arrsize = (Math.abs(end - start)/ONE_DAY);
 					arrsize = Math.floor(arrsize);
-					//console.log("daysss "+arrsize);
 					var arr = new Array(arrsize).fill(null);
-					//console.log(arr.length);
 					var i, j;
 					var tempList = [];
 					for (i =0; i< list.length; i++){//iterate through different users
@@ -338,7 +336,7 @@ class Event{
 
 
 						}
-					}console.log(arr);
+					}
 					//console.log(tempList);
 				}
 				freetime_per_day(list, start, end){
@@ -348,21 +346,14 @@ class Event{
 					list.sort((elemA, elemB) => elemA.start - elemB.start);
 					var arrsize = (Math.abs(end - start)/ONE_DAY);
 					arrsize = Math.floor(arrsize);
-					//console.log("daysss "+arrsize);
 					var arr = new Array(arrsize).fill(null);
-					//console.log(arr.length);
 					var freetime = this.freeTime(list,0);
-					console.log("%%freetime%%");
-					console.log(freetime);
 					var freetime_list = freetime[1];
-					console.log(freetime_list);
 					var i, j, indexS=0, indexE;
 					var tempList = [];
 					for (i =0; i< arr.length; i++){//
 						var dayUnixS = start+(86400000*i);
 						var dayUnixE = start+(86400000*i)+86400000;
-						console.log(dayUnixS);
-						console.log(dayUnixE);
 						for (j=0; j< freetime_list.length;j++){
 							if (freetime_list[j].start == 0){
 								freetime_list[j].start ==freetime_list[j].end-86400000;
@@ -375,9 +366,6 @@ class Event{
 								if (arr[i] == null){
 									arr[i] = [];
 									if (indexS ==0){
-										console.log("ASDaSFAWRASFAS");
-										console.log("ASDaSFAWRASFAS   "+i);
-										console.log("ASDaSFAWRASFAS    IN "+indexS);
 										indexS =i;
 									}
 								}
@@ -387,11 +375,8 @@ class Event{
 					}
 						var a;
 					for (a=0; a < arr.length;a++){
-						console.log(a);
 						var dayUnixS = start+(86400000*a);
 						var dayUnixE = start+(86400000*a)+86400000;
-						console.log("indexS "+indexS);
-						console.log("indexE "+indexE);
 						if (arr[a] == null && a <indexS){
 							var struc = {};
 							struc.start = dayUnixS;
@@ -456,10 +441,7 @@ class Event{
 						}
 					}
 					var struc = [user_list,free]
-					//console.log(newList);
 					console.log(struc);
-					//console.log(startS);
-					//console.log(endS);
 					return struc;
 				}
 
@@ -467,40 +449,28 @@ class Event{
 															//to avoid conflicts
 					var freetime_user_list = this.freeTime(list, 0)[0];
 					var freetime_list = this.freeTime(list, 0)[1];
-				//	console.log("this the freetime conflict ");
-					//console.log(freetime_list);
 					var start = event.start;
 					var end = event.end;
 					var index1=0, index2=0;
 					var i, Scheck=false, Echeck=false;
 					for (i = 0; i < freetime_list.length; i++){//start checker
-					console.log(i);
-					console.log("in list S: "+new Date (freetime_list[i].start));
-					console.log("in list E: "+new Date (freetime_list[i].end));
-					console.log(" given S : "+new Date (start));
-					console.log(" given E : "+new Date (end));
 
 
 						if (start >= freetime_list[i].start && start <= freetime_list[i].end){
 							Scheck = true;
 							index1 = i;
-							console.log("here "+index1);
 						}
 					}
 					for (i = 0; i < freetime_list.length; i++){//end checker
-					console.log(i);
 						if (end >= freetime_list[i].start && end <= freetime_list[i].end){
 							Echeck = true;
 							index2 = i;
-							console.log("here "+index2);
 						}
 					}
 					if (Scheck == true && Echeck == true && index1 == index2){
 						return false; //not conflicting
 					}
 					return true; //is conflicting
-					console.log(freetime_user_list);
-					console.log(freetime_list);
 
 
 				}
