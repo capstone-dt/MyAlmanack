@@ -10,12 +10,16 @@
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 	{% load static %}
 	<script src="{% static 'user_interface/js/utilities.js' %}"> </script>
+	<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/js/bootstrap4-toggle.min.js"></script>
+	<link rel="shortcut icon" type="image/png" href="{% static 'compass_PSN_icon.ico' %}"/>
+	<title>MyAlmanack</title>
 </head>
 
 <body>
 
 	<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
-      <a class="navbar-brand" href="#">MyAlmanack</a>
+      <a class="navbar-brand" href="/profile/">MyAlmanack</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsableNav" aria-controls="collapsableNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -23,30 +27,55 @@
       <div class="collapse navbar-collapse" id="collapsableNav">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item dropdown">
-            <a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left" onclick="d_scrollTop('n_drop');">notification_important</i></a>
-            <div class="dropdown-menu  dropdown-menu-left navbarDropdownClass" aria-labelledby="dropdown03" id="n_drop">
+            <a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">notification_important</i></a>
+            <div class="dropdown-menu  dropdown-menu-left overAll" aria-labelledby="dropdown03">
+            	<form>
+            	<div class="dropHeader" id="e_drop_label" style="">Event Invites</div>
+            	<div class="dropdown-divider"></div>
+            	<div class="navbarDropdownClass" id="e_drop"></div>
+            	</form>
             </div>
           </li>
         </ul>
-        <form class="form-inline justify-content-center" style="width:75%;">
-          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;">
+        <form class="form-inline justify-content-center" style="width:75%;" action="/search/" method="post">
+			{% csrf_token %}
+			{{ search_form.as_ul }}
+          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
+          <script type="text/javascript">
+          	function searchBarUpdate(){
+          		var search_form_param = document.getElementById("id_SIstring");
+          		var firstSearch = document.getElementById("firstSearch");
+          		search_form_param.value = firstSearch.value;
+          	}
+          </script>
         </form>
         <ul class= "navbar-nav ml-auto">
-          <li class="nav-item dropdown">
-            <a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left" onclick="d_scrollTop('f_drop');">person</i></a>
-            <div class="dropdown-menu  dropdown-menu-right navbarDropdownClass" aria-labelledby="dropdown04" id="f_drop">
+          <li class="nav-item dropdown overAll">
+            <a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">person</i></a>
+            <div class="dropdown-menu dropdown-menu-right overAll" aria-labelledby="dropdown04">
+            	<form>
+            	<div class="dropHeader" id="f_drop_label" style="">Friend Requests</div>
+            	<div class="dropdown-divider"></div>
+            	<div class="navbarDropdownClass" id="f_drop">
+            	</div>
+            	</form>
             </div>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left" onclick="d_scrollTop('g_drop');">group</i></a>
-            <div class="dropdown-menu  dropdown-menu-right navbarDropdownClass" aria-labelledby="dropdown05" id="g_drop">
+          <li class="nav-item dropdown overAll">
+            <a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">group</i></a>
+            <div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown05">
+            	<form>
+            	<div class="dropHeader" id="g_drop_label" style="">Group Invites</div>
+            	<div class="dropdown-divider"></div>
+            	<div class="navbarDropdownClass" id="g_drop"></div>
+            	</form>
             </div>
           </li>
-          <li class="nav-item dropdown">
+          <li class="nav-item dropdown overAll">
             <a class="nav-link" href="http://example.com" id="dropdown06" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">settings</i></a>
-            <div class="dropdown-menu  dropdown-menu-right" aria-labelledby="dropdown06" id="s_drop">
-              <a class="dropdown-item" href="#">Edit Profile</a>
-              <a class="dropdown-item" href="#">Log Out</a>
+            <div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown06" id="s_drop">
+              <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
+              <a class="dropdown-item" href="/logout">Log Out</a>
             </div>
           </li>
         </ul>
@@ -65,9 +94,67 @@
 			width: 250px;
 			overflow-y: scroll;
 		}
+		.dropHeader{
+			height: 14px;
+			text-align: center;
+		}
 		.searchStyle:focus {
 			background-color: #494949;
 			color: white;
+		}
+		.overAll{
+			z-index: 2147483638;
+		}
+		.acceptButton{
+			background-color: #7EDD81;
+			border: none;
+			color: white;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 15px;
+			margin: 4px 2px;
+			padding-top: 5px;
+			cursor: pointer;
+			width: 50px;
+			height: 25px;
+		}
+		.acceptButton:hover{
+			background-color: #6AB76B;
+		}
+		.rejectButton{
+			background-color: #FF9999;
+			border: none;
+			color: white;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 15px;
+			margin: 4px 2px;
+			padding-top: 5px;
+			cursor: pointer;
+			width: 50px;
+			height: 25px;
+		}
+		.rejectButton:hover{
+			background-color: #E57575;
+		}
+		.confirmButton{
+			background-color: #93A7FF;
+			border: none;
+			color: white;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 15px;
+			margin: 4px 2px;
+			padding-top: 5px;
+			cursor: pointer;
+			width: 50px;
+			height: 25px;
+		}
+		.confirmButton:hover{
+			background-color: #728AFF;
 		}
 	</style>
 
@@ -86,10 +173,37 @@
 			return ret_elem;
 		}
 
-		function populateNotificationsDropdown(){
-			var notif_div = document.getElementById("n_drop");
+		function populateEventInvitesDropdown(){
+			var notif_div = document.getElementById("e_drop");
 			for(var i = 0; i < 20; i++){
-				var curr_elem = dropdownElement("#", "Notification:" + i);
+				// CHANGE TO ACTUAL ID
+				var event_id = i;
+
+				var curr_elem = document.createElement('a');
+				curr_elem.className= "dropdown-item overAll";
+				curr_elem.href = "#";
+				curr_elem.id = "e_" + event_id;
+				curr_elem.setAttribute("event_id", event_id);
+				var event_text_div = document.createElement('div');
+				event_text_div.innerHTML = "Event Description " + i;
+				event_text_div.style ="display:inline;";
+				curr_elem.appendChild(event_text_div);
+				var button_cont = document.createElement('div');
+				button_cont.className = "container";
+				var button_row = document.createElement('div');
+				button_row.className = "row";
+				var confirm = document.createElement('div');
+				confirm.className = "col confirmButton";
+				confirm.innerText = "Confirm";
+				confirm.setAttribute("onclick", "confirmButtonEvent('" + curr_elem.id + "', '" + event_id + "')");
+				var reject = document.createElement('div');
+				reject.className = "col rejectButton";
+				reject.innerText = "Reject";
+				reject.setAttribute("onclick", "rejectButtonEvent('" + curr_elem.id + "', '" + event_id + "')");
+				button_row.appendChild(confirm);
+				button_row.appendChild(reject);
+				button_cont.appendChild(button_row);
+				curr_elem.appendChild(button_cont);
 				notif_div.appendChild(curr_elem);
 			}
 		}
@@ -97,8 +211,42 @@
 		function populateFriendsDropdown(){
 			var notif_div = document.getElementById("f_drop");
 			for(var i = 0; i < 20; i++){
-				// var temp_image =
-				var curr_elem = dropdownElement("#", "Friend:" + i);
+				
+				// CHANGE USER PICTURE AND ALIAS BASED ON DATABASE
+				var def_image = base64ToImage("{{default_profile}}");
+				def_image.setAttribute("width", "20px");
+				def_image.setAttribute("height", "20px");
+				var user_alias = i;
+
+				var curr_elem = document.createElement('a');
+				curr_elem.className= "dropdown-item overAll";
+				curr_elem.href = "#";
+				curr_elem.id = "fr_" + user_alias;
+				curr_elem.setAttribute("alias", user_alias);
+				var friend_text_div = document.createElement('div');
+				friend_text_div.innerHTML = "First Last " + i;
+				friend_text_div.style ="display:inline;";
+				var image_div = document.createElement('div');
+				image_div.style = "display:inline; padding-right:20px; ";
+				image_div.appendChild(def_image);
+				curr_elem.appendChild(image_div);
+				curr_elem.appendChild(friend_text_div);
+				var button_cont = document.createElement('div');
+				button_cont.className = "container";
+				var button_row = document.createElement('div');
+				button_row.className = "row";
+				var accept = document.createElement('div');
+				accept.className = "col acceptButton";
+				accept.innerText = "Accept";
+				accept.setAttribute("onclick", "acceptButtonRequest('" + curr_elem.id + "', '" + user_alias + "')");
+				var reject = document.createElement('div');
+				reject.className = "col rejectButton";
+				reject.innerText = "Reject";
+				reject.setAttribute("onclick", "rejectButtonRequest('" + curr_elem.id + "', '" + user_alias + "')");
+				button_row.appendChild(accept);
+				button_row.appendChild(reject);
+				button_cont.appendChild(button_row);
+				curr_elem.appendChild(button_cont);
 				notif_div.appendChild(curr_elem);
 			}
 		}
@@ -106,17 +254,83 @@
 		function populateGroupDropdown(){
 			var notif_div = document.getElementById("g_drop");
 			for(var i = 0; i < 20; i++){
-				var curr_elem = dropdownElement("#", "Group:" + i);
+				// CHANGE TO ACTUAL Group Name
+				var group_id = i;
+
+				var curr_elem = document.createElement('a');
+				curr_elem.className= "dropdown-item overAll";
+				curr_elem.href = "#";
+				curr_elem.id = "g_" + group_id;
+				curr_elem.setAttribute("event_id", group_id);
+				var event_text_div = document.createElement('div');
+				event_text_div.innerHTML = "Group Invite  " + i;
+				event_text_div.style ="display:inline;";
+				curr_elem.appendChild(event_text_div);
+				var button_cont = document.createElement('div');
+				button_cont.className = "container";
+				var button_row = document.createElement('div');
+				button_row.className = "row";
+				var accept = document.createElement('div');
+				accept.className = "col acceptButton";
+				accept.innerText = "Accept";
+				accept.setAttribute("onclick", "acceptButtonGroup('" + curr_elem.id + "', '" + group_id + "')");
+				var reject = document.createElement('div');
+				reject.className = "col rejectButton";
+				reject.innerText = "Reject";
+				reject.setAttribute("onclick", "rejectButtonGroup('" + curr_elem.id + "', '" + group_id + "')");
+				button_row.appendChild(accept);
+				button_row.appendChild(reject);
+				button_cont.appendChild(button_row);
+				curr_elem.appendChild(button_cont);
 				notif_div.appendChild(curr_elem);
 			}
 		}
 
 		function populateDropdowns(){
-			populateNotificationsDropdown();
+			populateEventInvitesDropdown();
 			populateFriendsDropdown();
 			populateGroupDropdown();
 		}
+
+		function acceptButtonRequest(div_id, alias){
+			console.log("accept:" + alias);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+		}
+
+		function rejectButtonRequest(div_id, alias){
+			console.log("reject:" + alias);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+		}
+
+		function confirmButtonEvent(div_id, event_id){
+			console.log("confirm:" + event_id);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+		}
+
+		function rejectButtonEvent(div_id, event_id){
+			console.log("reject:" + event_id);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+		}
+
+
+		function acceptButtonGroup(div_id, alias){
+			console.log("accept:" + alias);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+		}
+
+		function rejectButtonGroup(div_id, alias){
+			console.log("reject:" + alias);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+		}
+
 		populateDropdowns();
+
 
 	</script>
 

@@ -105,7 +105,7 @@ class RepeatEvent(Event):
     rep_type = models.CharField(max_length=7)
     start_time = models.BigIntegerField()
     end_time = models.BigIntegerField()
-	week_arr = ArrayField(models.CharField(max_length=300, blank=True, null=True))
+	week_arr = models.CharField(max_length=7)
 
     class Meta:
         managed = False

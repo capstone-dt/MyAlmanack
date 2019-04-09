@@ -2,12 +2,18 @@
 
 {% block content %}
 
-{% load static %}
-<script src="{% static 'user_interface/js/renderCalendar.js' %}"> </script>
-<script src="{% static 'user_interface/js/calendarData.js' %}"> </script>
 
-	<div class="container">
-	    <h1><div id="name_display"> </div></h1>
+	<div class="container" style="padding-top: 10px;">
+	    <h1>
+	    	<div class="row">
+	    	<div class="col-8">
+	    	<div id="name_display"> </div> 
+	    	</div>
+	    	<div class="col-4">
+	    	<button class="friendButton">Add Friend</button>
+	    	</div>
+	    	</div>
+	    </h1>
 	  	<hr>
 		<div class="row">
 	      <!-- left column -->
@@ -15,6 +21,7 @@
 	        <div class="text-center">
 	          <img src="//placehold.it/100" class="avatar img-circle" alt="avatar">
 	          <h6><div id="alias_display"></div></h6>
+	          
 	        </div>
 	      </div>
 	      
@@ -27,286 +34,38 @@
 	  	</div>
 	<hr>
 	</div>
-	<div class="container calCont" style="">
-	  	<div id="cal_control_bar">
-	  		<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
-		      	<ul class= "navbar-nav ml-auto">
-			        <li class="nav-item">
-			          <a class="nav-link" href="#" id="prev_button"><i class="material-icons left" onclick="leftArrowClick()">arrow_left</i></a>
-			        </li>
-			        <li class="nav-item">
-			          <a class="nav-link" href="#" id="curr_button"><i class="material-icons left" onclick="currButtonClick()">fiber_manual_record</i></a>
-			        </li>
-			        <li class="nav-item">
-			          <a class="nav-link" href="#" id="next_button"><i class="material-icons left" onclick="rightArrowClick()">arrow_right</i></a>
-			        </li>
-		        </ul>
-		      <div class="collapse navbar-collapse" id="collapsableNav">
-		        <ul class="navbar-nav mr-auto">
-		          <li class="nav-item dropdown">
-		            <a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-		            <div class="dropdown-menu  dropdown-menu-left navbarDropdownClass" aria-labelledby="dropdown03" id="n_drop">
-		            </div>
-		          </li>
-		        </ul>
-		        <ul class="navbar-nav">
-		          <li class="nav-item">
-		            <div class="monthBar justify-content-center" style="">
-					  <select class="monthSel" id="month_sel" data-style="monthSel" onchange="monthYearUpdate();">
-					  </select>
-					</div>
-		          </li>
-		          <li class="nav-item">
-		            <div class="yearBar justify-content-center" style="">
-					  <select class="yearSel" id="year_sel" data-style="yearSel" onchange="monthYearUpdate();">
-					  </select>
-					</div>
-		          </li>
-		        </ul>
-		        
-		        <ul class= "navbar-nav ml-auto">
-		          <li class="nav-item">
-		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'month');" id="month_button" aria-expanded="false">Month</a>
-		          </li>
-		          <li class="nav-item">
-		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'week');" id="week_button" aria-expanded="false">Week</a>
-		          </li>
-		          <li class="nav-item">
-		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'day');" id="day_button" aria-expanded="false">Day</a>
-		          </li>
-		          <li class="nav-item">
-		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'list');" id="list_button" aria-expanded="false">List</a>
-		          </li>
-		        </ul>
-		      </div>
-		    </nav>
-	  	<div>
-	  	<div class="row calHeader text-xs-center" id="cal_head">
-	  		<div class="col right-block text-right">
-				<div>
-					<button type="button" data-toggle="modal" data-target="#createEventModal">Create Event</button>
-					<button type="button"  data-toggle="modal" data-target="#editEventModal">Edit Event</button>
-	  			</div>
-	  		</div>
-	  	</div>
-
-	  	<div id="cal_top_head">
-	  	</div>
-	  	<div id="cal_grid_cont" style="padding-top: 20px;">
-	  		
-			  	</div>
-	</div>
-	<div class="modal fade" id="createEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-	  <div class="modal-dialog modal-dialog-centered" role="document">
-	    <div class="modal-content">
-	      <div class="modal-header">
-	        <h5 class="modal-title" id="createEventModalLongTitle">Create a New Event</h5>
-	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          <span aria-hidden="true">&times;</span>
-	        </button>
-	      </div>
-	      <div class="modal-body">
-	        <form action="/profile/" method="post">
-			  	<div class="form-group">
-				    <label class="reqField" for="inputEventName">Event Name</label>
-				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputEventName" pattern="^[a-zA-Z0-9 ]*$" required>
-				</div>
-				<div class="form-row">
-				  <div class="form-group col-md-6">
-				    <label class="reqField" for="inputStartDate">Start Date</label>
-				    <input onchange="updateEventForm()" class="form-control" type="date" id="inputStartDate" pattern="(?n:^(?=\d)((?<month>(0?[13578])|1[02]|(0?[469]|11)(?!.31)|0?2(?(.29)(?=.29.((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|(16|[2468][048]|[3579][26])00))|(?!.3[01])))(?<sep>[-./])(?<day>0?[1-9]|[12]\d|3[01])\k<sep>(?<year>(1[6-9]|[2-9]\d)\d{2})(?(?=\x20\d)\x20|$))?(?<time>((0?[1-9]|1[012])(:[0-5]\d){0,2}(?i:\x20[AP]M))|([01]\d|2[0-3])(:[0-5]\d){1,2})?$)$" required>
-				  </div>	
-				  <div class="form-group col-md-6">
-				    <label class="reqField" for="inputEndDate">End Date</label>
-				    <input onchange="updateEventForm()" class="form-control" type="date" id="inputEndDate" pattern="(?n:^(?=\d)((?<month>(0?[13578])|1[02]|(0?[469]|11)(?!.31)|0?2(?(.29)(?=.29.((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|(16|[2468][048]|[3579][26])00))|(?!.3[01])))(?<sep>[-./])(?<day>0?[1-9]|[12]\d|3[01])\k<sep>(?<year>(1[6-9]|[2-9]\d)\d{2})(?(?=\x20\d)\x20|$))?(?<time>((0?[1-9]|1[012])(:[0-5]\d){0,2}(?i:\x20[AP]M))|([01]\d|2[0-3])(:[0-5]\d){1,2})?$)$" required>
-				  </div>
-				</div>
-				<div class="form-row">
-				  <div class="form-group col-md-6">
-				    <label class="reqField" for="inputRepeatType">Repeat</label>
-				    <select onchange="updateEventForm()" class="form-control" id="inputRepeatType">
-					  <option value="day"  selected="selected">Daily</option>
-					  <option value="week">Weekly</option>
-					  <option value="month">Monthly</option>
-					  <option value="year">Yearly</option>
-					</select>
-				  </div>	
-				  <div class="form-group col-md-6">
-				    <label class="reqField" for="inputUntilDate">Until</label>
-				    <input onchange="updateEventForm()" class="form-control" type="date" id="inputUntilDate" pattern="(?n:^(?=\d)((?<month>(0?[13578])|1[02]|(0?[469]|11)(?!.31)|0?2(?(.29)(?=.29.((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|(16|[2468][048]|[3579][26])00))|(?!.3[01])))(?<sep>[-./])(?<day>0?[1-9]|[12]\d|3[01])\k<sep>(?<year>(1[6-9]|[2-9]\d)\d{2})(?(?=\x20\d)\x20|$))?(?<time>((0?[1-9]|1[012])(:[0-5]\d){0,2}(?i:\x20[AP]M))|([01]\d|2[0-3])(:[0-5]\d){1,2})?$)$" required>
-				  </div>
-				</div>
-				<div id="inputRepeatPattern">
-					
-				</div>
-				<div class="form-group">
-				    <label for="inputInviteList">Invite</label>
-				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputInviteList" pattern="^[a-zA-Z0-9 ]*$">
-				</div>
-				<div class="form-row">
-				  <div class="form-group col-md-6">
-				    <label for="inputWhitelist">Whitelist</label>
-				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputWhitelist" pattern="^[a-zA-Z0-9 ]*$">
-				  </div>	
-				  <div class="form-group col-md-6">
-				    <label for="inputBlacklist">Blacklist</label>
-				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputBlacklist" pattern="^[a-zA-Z0-9 ]*$">
-				  </div>
-				</div>
-				{% csrf_token %}
-				{{ event_form.as_ul }}
-				<script type="text/javascript">
-					function updateEventForm(){
-						// Event Name
-						var prefix = "id_EI";
-						var enter_name = document.getElementById("inputEventName");
-						var form_name = document.getElementById(prefix + "name");
-						form_name.value = enter_name.value;
-						var enter_start = document.getElementById("inputStartDate");
-						var form_start = document.getElementById(prefix + "start");
-						form_start.value = enter_start.value;
-						var enter_end = document.getElementById("inputEndDate");
-						var form_end = document.getElementById(prefix + "end");
-						form_end.value = enter_end.value;
-						var enter_repeat = document.getElementById("inputRepeatType");
-						var form_repeat = document.getElementById(prefix + "repeat");
-						form_repeat.value = enter_repeat.value;
-						var enter_until = document.getElementById("inputUntilDate");
-						var form_until = document.getElementById(prefix + "until");
-						form_until.value = enter_until.value;
-						// Invite
-						var enter_invite = document.getElementById("inputInviteList");
-						var form_invite = document.getElementById(prefix + "invite");
-						form_invite.value = enter_invite.value;
-
-						// Whitelist
-						var enter_whitelist = document.getElementById("inputWhitelist");
-						var form_whitelist = document.getElementById(prefix + "whitelist");
-						form_whitelist.value = enter_whitelist.value;
-
-						// Blacklist
-						var enter_blacklist = document.getElementById("inputBlacklist");
-						var form_blacklist = document.getElementById(prefix + "blacklist");
-						form_blacklist.value = enter_blacklist.value;
-					}
-				</script>
-			  <button type="submit" class="btn btn-primary">Create Event</button>
-			</form>
-	      </div>
-	    </div>
-	  </div>
-	</div>
-	<div class="modal fade" id="editEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-	  <div class="modal-dialog modal-dialog-centered" role="document">
-	    <div class="modal-content">
-	      <div class="modal-header">
-	        <h5 class="modal-title" id="editEventModalLongTitle">Edit</h5>
-	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          <span aria-hidden="true">&times;</span>
-	        </button>
-	      </div>
-	      <div class="modal-body">
-	        <form>
-				<div class="form-group">
-				    <label class="reqField" for="inputEmailLogin">Email Address</label>
-				    <input type="text" class="form-control" id="inputEmailLogin" pattern="^([\w\-\.]+)@((\[([0-9]{1,3}\.){3}[0-9]{1,3}\])|(([\w\-]+\.)+)([a-zA-Z]{2,4}))$" required>
-				</div>
-				<button type="submit" class="btn btn-primary">Login Button Here</button>
-				</form>
-	      </div>
-	    </div>
-	  </div>
-	</div>		
+	
+    <div id="calendarLoc">
+    	{% with calendarFrame as sub_template %}
+    		{% include calendarFrame %}
+    	{% endwith %}
+    </div>
 	<hr>
 	<style type="text/css">
-		.reqField:before{
-			content:"*" ;
-     		color:red;
-		}
-		.calHeader{
-		}
-		.defStyle{
-			background-color: white;
-			border-style: solid;
-			border-width: 0.5px;
-			border-color: lightgrey;
-		}
-		.defStyle:hover{
-			background-color: #f2f2f2;
-			border-width: 0.7px;
-		}
-		.calSelect{
-			background-color: #bcd6ff;
-		}
-		.calSelect:hover{
-			background-color: #abc5ee;
-		}
-		.calWeekRow{
-
-		}
-		.calWeek{
-			object-fit: cover;
-		}
-		.calWeek:hover{
-		}
-		.calDay{
-		}
-		.calDay:before{
-		}
-		.calHour{
-			min-height: 2%;
-			object-fit: cover;
-		}
-		.calDayW{
-		}
-		.calDayD{
-		}
-		.currMonth{
-			color:black;
-		}
-		.currMonthNot{
-			color:grey;
-		}
-		select.monthSel{
-			width:100px;
+		.friendButton{
+			background-color: #7EDD81; /* Green */
+			border: none;
+			color: white;
+			padding: 15px 32px;
 			text-align: center;
-			text-align-last: center;
-			border-right: none;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;
+			margin: 4px 2px;
+			cursor: pointer;
 		}
-		.monthSel{
-			color:black;
-			text-align: center;
+		.friendButton:hover{
+			background-color: #6AB76B;
 		}
-		select.yearSel{
-			width:50px;
-			text-align: center;
-			text-align-last: center;
-		}
-		.yearSel{
-			color:black;
-			text-align: center;
-		}
-		.calListView{
-			overflow-y: scroll;
-			height: 800px;
-			border-top : grey;
-		}
-		.calListElem{
-			width: 100%;
-			height: 100px;
-		}
+		
 		</style>
 
 <script type="text/javascript">
-		function test_image_pass(){
-			var image = base64ToImage("{{temp_image}}");
-			console.log(image);
-			document.body.appendChild(image);
-		}
-		// test_image_pass();
 		console.log("{{dummy_events}}");
-		loadDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}");
+		loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
+		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
 		mainProf();
+
 
 </script>
 
