@@ -5,32 +5,120 @@
 	<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
 	<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	{% load static %}
+	<script src="{% static 'user_interface/js/utilities.js' %}"> </script>
 </head>
 
 <body>
-	<nav class="navbar navbar-expand-sm navbar-expand-xs navbar-dark bg-dark mb-4">
+
+	<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
       <a class="navbar-brand" href="#">MyAlmanack</a>
-        <div class="mr-auto">
-        	<a class="nav-link disabled" href="#">  <span class="sr-only">(current)</span></a>
-        </div>
-        <div  style="padding-right: 20px;">
-	        <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#registerModal">
-				  Register
-				</button>
-        	<button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#loginModal">
-				  Login
-				</button>
-		</div>
-	</nav>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsableNav" aria-controls="collapsableNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="collapsableNav">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left" onclick="d_scrollTop('n_drop');">notification_important</i></a>
+            <div class="dropdown-menu  dropdown-menu-left navbarDropdownClass" aria-labelledby="dropdown03" id="n_drop">
+            </div>
+          </li>
+        </ul>
+        <form class="form-inline justify-content-center" style="width:75%;">
+          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;">
+        </form>
+        <ul class= "navbar-nav ml-auto">
+          <li class="nav-item dropdown">
+            <a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left" onclick="d_scrollTop('f_drop');">person</i></a>
+            <div class="dropdown-menu  dropdown-menu-right navbarDropdownClass" aria-labelledby="dropdown04" id="f_drop">
+            </div>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left" onclick="d_scrollTop('g_drop');">group</i></a>
+            <div class="dropdown-menu  dropdown-menu-right navbarDropdownClass" aria-labelledby="dropdown05" id="g_drop">
+            </div>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link" href="http://example.com" id="dropdown06" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">settings</i></a>
+            <div class="dropdown-menu  dropdown-menu-right" aria-labelledby="dropdown06" id="s_drop">
+              <a class="dropdown-item" href="#">Edit Profile</a>
+              <a class="dropdown-item" href="#">Log Out</a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
 	{% block content %}
 	{% endblock %}
 
 	<style type="text/css">
 		.reqField:before{
 			content:"*" ;
-     color:red;
+     		color:red;
+		}
+		.navbarDropdownClass{
+			height:200px;
+			width: 250px;
+			overflow-y: scroll;
+		}
+		.searchStyle:focus {
+			background-color: #494949;
+			color: white;
 		}
 	</style>
+
+	<script type="text/javascript">
+
+		function d_scrollTop(drop_id){
+			var drop = document.getElementById(drop_id);
+			drop.scrollTop = 0;
+		}
+
+		function dropdownElement(href, innerHTML){
+			var ret_elem = document.createElement('a');
+			ret_elem.className= "dropdown-item";
+			ret_elem.href = href;
+			ret_elem.innerHTML = innerHTML;
+			return ret_elem;
+		}
+
+		function populateNotificationsDropdown(){
+			var notif_div = document.getElementById("n_drop");
+			for(var i = 0; i < 20; i++){
+				var curr_elem = dropdownElement("#", "Notification:" + i);
+				notif_div.appendChild(curr_elem);
+			}
+		}
+
+		function populateFriendsDropdown(){
+			var notif_div = document.getElementById("f_drop");
+			for(var i = 0; i < 20; i++){
+				// var temp_image =
+				var curr_elem = dropdownElement("#", "Friend:" + i);
+				notif_div.appendChild(curr_elem);
+			}
+		}
+
+		function populateGroupDropdown(){
+			var notif_div = document.getElementById("g_drop");
+			for(var i = 0; i < 20; i++){
+				var curr_elem = dropdownElement("#", "Group:" + i);
+				notif_div.appendChild(curr_elem);
+			}
+		}
+
+		function populateDropdowns(){
+			populateNotificationsDropdown();
+			populateFriendsDropdown();
+			populateGroupDropdown();
+		}
+		populateDropdowns();
+
+	</script>
 
 
 </body>

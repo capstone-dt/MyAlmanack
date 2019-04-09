@@ -1,0 +1,45 @@
++ authorization
+	.AuthorizationRequest (alias of enforcement.AuthorizationRequest)
+	.AuthorizationResult (alias of enforcement.AuthorizationResult)
+	.actions (alias of attributes.actions)
+	+ attributes
+	    .Subject
+		.Action
+		.Resource
+		.Context
+	    + subjects
+	        .User
+	    + actions
+	        + user
+	    + resources
+	    + contexts
+	+ enforcement (policy enforcement point - front-end API)
+		.EnforcementAuthority
+			.authorize(request) - calls DecisionAuthority
+	+ decision (policy decision point - called by PEP)
+		.DecisionAuthority
+		    .authorize(request)
+		.AuthorizationRequest
+		.AuthorizationResult
+			{PERMIT, DENY, NOT_APPLICABLE}
+		.Rule?
+		.Policy
+		.PolicySet?
+		.Target? (used by all of the above)
+	+ information (policy information point - called by PDP)
+		+ environment
+		+ user
+	+ policies
+		(might be bad to implement as Python files since they need to be changeable)
+		+ user
+		    + profile
+			    .ViewProfile
+			    .EditProfile
+			    .InviteProfile
+		+ group
+			.AddGroupMember
+			.RemoveGroupMember
+		+ event
+			.AddEvent
+			.EditEvent
+			.RemoveEvent
