@@ -208,7 +208,31 @@ function drawColorGrid(isRainbow){
 function friendsEnabled(){
 	return false;
 }
+function customDateString(date){
+	var date_string = _months_of_year[date.getMonth()] + " ";
+	date_string += date.getDate() + ", ";
+	date_string += date.getFullYear();
+	return date_string;
+}
 
+function customTimeString(date){
+	var hr = date.getHours();
+	var min = date.getMinutes();
+	if (min < 10) {
+	    min = "0" + min;
+	}
+	var ampm = "am";
+	if( hr > 12 ) {
+	    hr -= 12;
+	    ampm = "pm";
+	}
+	if(hr == 0){
+		hr = 12;
+		ampm = "am";
+	}
+	var time_string = hr + ":" + min + ampm;
+	return time_string;
+}
 function makeList(cont_id){
 	console.log("makeList");
 	clearEvents();
@@ -222,20 +246,48 @@ function makeList(cont_id){
 	var sub_list = document.createElement("ul");
 	sub_list.className = "nav nav-pills nav-stacked";
 	sub_list.style.overflowY = "scroll";
-	for(var i = 0; i < user_events_all.length; i++){
-		// console.log("la" + i);
+	sub_list.style.height = "500px";
+	sub_list.style.border = "black";
+	sub_list.style.borderStyle = "solid";
+	sub_list.style.borderWidth = "1px";
+	var selected_events = getMembersSelectedEvents();
+	var createFunc = function(external_div, arr, i){
 		var list_elem = document.createElement('li');
 		list_elem.className = "nav-item";
 		list_elem.style.width = "100%";
 		var a_elem = document.createElement('a');
-		a_elem.className = "nav-link active";
-		a_elem.innerHTML = user_events_all[i].description;
-		a_elem.innerHTML += " <br> " + user_events_all[i].start_date;
+		a_elem.className = "navbar-text";
+		a_elem.innerHTML = arr[i].description  + "<br>";
+		a_elem.innerHTML += "@" + arr[i].event_creator_alias;
+		var temp_date_time = new Date(Number(arr[i].start_date));
+		var date_string_start = customDateString(temp_date_time);
+		var time_string_start = customTimeString(temp_date_time);
+		a_elem.innerHTML += " <br> " + date_string_start + "  " + time_string_start;
+		temp_date_time = new Date(Number(arr[i].end_date));
+		var date_string_end = customDateString(temp_date_time);
+		var time_string_end = customTimeString(temp_date_time);
+		a_elem.innerHTML += " - " + date_string_end + "  " + time_string_end;
 		a_elem.style.width = "100%";
+		a_elem.style.borderBottom = "1px solid grey";
+		a_elem.style.paddingLeft = "20px";
 		list_elem.appendChild(a_elem);
-		sub_list.appendChild(list_elem);
+		external_div.appendChild(list_elem);
+	};
+	var combinedEvents = [];
+	for(var i = 0; i < user_events_all.length; i++){
+		combinedEvents.push(user_events_all[i]);
 	}
-	sub_list.style.height = "300px";
+	for(var i = 0; i < selected_events.length; i++){
+		combinedEvents.push(selected_events[i]);
+	}
+	combinedEvents.sort(function(a, b){return a.start_date - b.start_date});
+	for(var i = 0; i < combinedEvents.length; i++){
+		if(combinedEvents[i].isHidden != undefined && combinedEvents[i].isHidden){
+			continue;
+		}
+		createFunc(sub_list, combinedEvents, i);
+	}
+	list_div.style.height = "100%";
 	list_div.style.width = "100%";
 	list_div.appendChild(sub_list);
 	cont_div.appendChild(list_div);
