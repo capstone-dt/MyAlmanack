@@ -211,6 +211,35 @@ function friendsEnabled(){
 
 function makeList(cont_id){
 	console.log("makeList");
+	clearEvents();
+	// Make actual list div
+	var cont_div = document.getElementById(cont_id);
+	while (cont_div.hasChildNodes()) {
+	    cont_div.removeChild(cont_div.lastChild);
+	}
+	var list_div = document.createElement("div");
+	// <ul class="nav nav-pills nav-stacked" id="height_list">
+	var sub_list = document.createElement("ul");
+	sub_list.className = "nav nav-pills nav-stacked";
+	sub_list.style.overflowY = "scroll";
+	for(var i = 0; i < user_events_all.length; i++){
+		// console.log("la" + i);
+		var list_elem = document.createElement('li');
+		list_elem.className = "nav-item";
+		list_elem.style.width = "100%";
+		var a_elem = document.createElement('a');
+		a_elem.className = "nav-link active";
+		a_elem.innerHTML = user_events_all[i].description;
+		a_elem.innerHTML += " <br> " + user_events_all[i].start_date;
+		a_elem.style.width = "100%";
+		list_elem.appendChild(a_elem);
+		sub_list.appendChild(list_elem);
+	}
+	sub_list.style.height = "300px";
+	list_div.style.width = "100%";
+	list_div.appendChild(sub_list);
+	cont_div.appendChild(list_div);
+	addEvents();
 }
 
 function makeGrid(cont_id, rowClass, colClass, name, dim_x, dim_y, onclick_func, generateTopHeader_func, generateSideHeader_func){
