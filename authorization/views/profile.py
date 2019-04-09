@@ -1,12 +1,17 @@
-from authorization import actions
-from authorization.decorators import permission_required
+from authorization import authorize_http, actions
 
 # Django
 from django.http import HttpResponse
 
 
-@permission_required(actions.user.profile.ViewProfile)
 def profile(request):
+    # Do some processing to find another user.
+    some_other_user = request.user
+    
+    # Authorize the request. This will automatically redirect to 403 if denied.
+    authorize_http(request, actions.user.profile.ViewProfile, some_other_user)
+    
+    # Perform stuff.
     return HttpResponse(
         "Congratulations, you have permission to view this profile!"
     )

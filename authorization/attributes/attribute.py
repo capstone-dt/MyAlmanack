@@ -1,4 +1,5 @@
-from ..utils import get_class_name, is_subclass, assert_subclass
+from ..wrappers import BaseWrapper
+from ..utils import get_class_name, is_subclass
 
 # Python
 from importlib import import_module
@@ -6,22 +7,8 @@ import inspect
 from os import listdir
 
 
-class Attribute:
-    _root = None
-    
-    def __init__(self, object):
-        # Make sure that the subclass extending this class has set the root.
-        if self._root is None:
-            raise ValueError("The \"_root\" class property has not been set!")
-        
-        # Make sure that the object is a subclass instance of the root class.
-        assert_subclass(object, self._root)
-        
-        # Set the object as the proxied object.
-        self._object = object
-    
-    def __str__(self):
-        return "%s[%s]" % (get_class_name(self), self._object)
+class Attribute(BaseWrapper):
+    pass
 
 
 def wrap_attribute(attribute_class, object, wrappers_directory):

@@ -1,4 +1,4 @@
-from ..decision import AuthorizationResult
+from ..enforcement import AuthorizationResult
 from ..utils import assert_subclass
 
 
