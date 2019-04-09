@@ -4,7 +4,10 @@ from authorization.attributes.resources import User as UserResource
 from authorization.attributes.contexts import HttpRequestContext
 
 
-class BinaryUserHttpAction(Action):
+class BinaryUserAction(Action):
     _subject_class = UserSubject
     _resource_class = UserResource
+
+
+class BinaryUserHttpAction(BinaryUserAction):
     _context_class = HttpRequestContext

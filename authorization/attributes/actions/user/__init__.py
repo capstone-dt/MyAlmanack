@@ -1,2 +1,2 @@
-from .binary_user_http_action import BinaryUserHttpAction
+from .binary_user_action import BinaryUserAction, BinaryUserHttpAction
 from .profile import *
