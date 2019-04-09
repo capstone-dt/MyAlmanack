@@ -9,7 +9,8 @@ def index(request):
     authorization_request = authorization.AuthorizationRequest(
         subject=request.user,
         action=authorization.actions.user.profile.EditProfile,
-        resource=request.user
+        resource=request.user,
+        context=request
     )
     
     return render(request, "authorization/index.html", context={
