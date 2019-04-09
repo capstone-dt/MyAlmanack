@@ -17,7 +17,7 @@ class Action:
                 else:
                     return AuthorizationResult.DENY
             except Exception as error:
-                print("Skipping inapplicable action authorization:", error)
+                print("Unable to evaluate action authorization:", error)
         
         # If we get to this point, then none of the policies were applicable.
         return AuthorizationResult.NOT_APPLICABLE
@@ -34,4 +34,4 @@ class Action:
         
         # Assert the context attribute's class if available.
         if hasattr(cls, "_context_class"):
-            assert_subclass(resource, cls._context_class)
+            assert_subclass(context, cls._context_class)
