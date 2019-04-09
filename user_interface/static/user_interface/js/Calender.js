@@ -335,7 +335,7 @@ class Event{
 							}
 
 
-						}
+						}return arr;
 					}
 					//console.log(tempList);
 				
@@ -358,7 +358,7 @@ class Event{
 							if (freetime_list[j].start_date == 0){
 								freetime_list[j].start_date ==freetime_list[j].end_date-86400000;
 							}
-							if (freetime_list[j].end_date == 9999999999999999999){
+							if (freetime_list[j].end_date == 99999999999999){
 								indexE= j;
 								freetime_list[j].end_date == freetime_list[j].start_date+86400000;
 							}
@@ -425,7 +425,7 @@ class Event{
 						if (i== newList.length-2){
 							var newTime = {};
 								newTime.start_date = newList[i+1].end_date;
-								newTime.end_date = 9999999999999999999;
+								newTime.end_date = 99999999999999;
 								free.push(newTime);
 						}
 						if (newList[i].end_date < newList[i+1].start_date){
@@ -503,8 +503,10 @@ class Event{
 				//Fri Mar 15 1996 21:30:00 GMT-0500 (Eastern Standard Time) | Fri Mar 15 1996 22:30:00 GMT-0500 (Eastern Standard Time)
 				let cal = new Calend_datear('my calend_datear');
 				cal.genGrid('2019', '02');
-				cal.events_per_day(list1,1551416400000, 1554091200000);
+				var perday = cal.events_per_day(list1,1551416400000, 1554091200000);
 				console.log(cal);
+				console.log("perday");
+				console.log(perday);
 				var event = {};
 				//1552862056000
 				//1552867159500
