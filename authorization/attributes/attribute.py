@@ -30,7 +30,7 @@ def wrap_attribute(attribute_class, object, wrappers_directory):
         for (_, _class) in inspect.getmembers(wrapper_module, checker):
             if is_subclass(object, _class):
                 return object
-            elif isinstance(object, _class._root):
+            elif _class.is_wrappable(object):
                 return _class(object)
     
     # If we get to this point, then there was no wrapper class available for
