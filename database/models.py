@@ -34,7 +34,7 @@ class Event(models.Model):
     blacklist = ArrayField(models.CharField(max_length=128))
     start_date = models.BigIntegerField()
     end_date = models.BigIntegerField()
-    event_creator_firebase_id = models.ForeignKey('Profile', models.CASCADE)
+    event_creator_firebase = models.ForeignKey('Profile', models.CASCADE)
 
     class Meta:
         managed = True
