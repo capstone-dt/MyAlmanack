@@ -1,5 +1,5 @@
-from ..wrappers import BaseWrapper
-from ..utils import get_class_name, is_subclass
+from ..utilities.wrapper import Wrapper
+from ..utilities._class import get_class_name, is_subclass
 
 # Python
 from importlib import import_module
@@ -7,7 +7,7 @@ from inspect import isclass, getmembers
 from os import listdir
 
 
-class Attribute(BaseWrapper):
+class Attribute(Wrapper):
     pass
 
 
@@ -33,8 +33,8 @@ def wrap_attribute(attribute_class, object, wrappers_directory):
             elif _class.is_wrappable(object):
                 return _class(object)
     
-    # If we get to this point, then there was no wrapper class available for
-    # the given object.
+    # If we get to this point, then there was no wrapper class available for the
+    #     given object.
     raise ValueError(
         "There is no %s wrapper class available for %s!" %
         (get_class_name(attribute_class), get_class_name(object))
