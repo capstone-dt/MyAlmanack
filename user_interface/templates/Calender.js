@@ -18,17 +18,17 @@ class Event{
 					this.list=list;
 				}
 
-				rep( su, mo, tu, we, th, fr,sa, c, start_date,end_date, event_id, participating_users){
+				rep( su, mo, tu, we, th, fr,sa, c, start_date,end_date, event_id, user_id){
 					var start_datetime = new Date(start_date);
 					var end_datetime = new Date(end_date);
 					var list = [];
 					var cap = {};
 					//console.log(start_datetime);
-					//console.log(participating_users);
+					//console.log(user_id);
 					cap.start_date = Math.floor((start_datetime));
 					cap.end_date = Math.floor((end_datetime));
 					cap.event_id= event_id;
-					cap.participating_users = participating_users;
+					cap.user_id = user_id;
 					list.push(cap);
 					var pattern = su+mo+tu+we+th+fr+sa; //pattern
 					//console.log("pattern :"+pattern);
@@ -61,7 +61,7 @@ class Event{
 										cap.start_date = Math.floor((tempdateS));
 										cap.end_date = Math.floor((tempdateE));
 										cap.event_id= event_id;
-										cap.participating_users = participating_users;
+										cap.user_id = user_id;
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
@@ -90,7 +90,7 @@ class Event{
 										cap.start_date = Math.floor((tempdateS));
 										cap.end_date = Math.floor((tempdateE));
 										cap.event_id= event_id;
-										cap.participating_users = participating_users;
+										cap.user_id = user_id;
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
@@ -119,7 +119,7 @@ class Event{
 										cap.start_date = Math.floor((tempdateS));
 										cap.end_date = Math.floor((tempdateE));
 										cap.event_id= event_id;
-										cap.participating_users = participating_users;
+										cap.user_id = user_id;
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
@@ -148,7 +148,7 @@ class Event{
 										cap.start_date = Math.floor((tempdateS));
 										cap.end_date = Math.floor((tempdateE));
 										cap.event_id= event_id;
-										cap.participating_users = participating_users;
+										cap.user_id = user_id;
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
@@ -177,7 +177,7 @@ class Event{
 										cap.start_date = Math.floor((tempdateS));
 										cap.end_date = Math.floor((tempdateE));
 										cap.event_id= event_id;
-										cap.participating_users = participating_users;
+										cap.user_id = user_id;
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
@@ -205,7 +205,7 @@ class Event{
 										cap.start_date = Math.floor((tempdateS));
 										cap.end_date = Math.floor((tempdateE));
 										cap.event_id= event_id;
-										cap.participating_users = participating_users;
+										cap.user_id = user_id;
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
@@ -234,7 +234,7 @@ class Event{
 										cap.start_date = Math.floor((tempdateS));
 										cap.end_date = Math.floor((tempdateE));
 										cap.event_id= event_id;
-										cap.participating_users = participating_users;
+										cap.user_id = user_id;
 										list.push(cap);
 										//console.log("list UPDATED: "+list);
 									}
@@ -315,17 +315,17 @@ class Event{
 					var arr = new Array(arrsize).fill(null);
 					var i, j;
 					var tempList = [];
-					//for (i =0; i< list.length; i++){//iterate through different users
-						for (j =0; j< list.length;j++){//iterate through user's events
-							var eventtimeS = (new Date(list[j].start_date)).getTime();
-							var eventtimeE = (new Date(list[j].end_date)).getTime();
+					for (i =0; i< list.length; i++){//iterate through different users
+						for (j =0; j< list[i].length;j++){//iterate through user's events
+							var eventtimeS = (new Date(list[i][j].start_date)).getTime();
+							var eventtimeE = (new Date(list[i][j].end_date)).getTime();
 							if ( start_datedate.getTime() < eventtimeS && eventtimeS < end_datedate.getTime() ){
 								var distance = Math.floor(Math.abs(eventtimeS - start_datedate.getTime())/ONE_DAY);
 								var event = {};
 								event.start_date = eventtimeS;
 								event.end_date = eventtimeE;
-								event.event_id = list[j].event_id;
-								event.participating_users = list[j].participating_users;
+								event.event_id = list[i][j].event_id;
+								event.user_id = list[i][j].user_id;
 								event.canView = false;
 								tempList.push(event);
 								if (arr[distance] == null){
@@ -338,7 +338,13 @@ class Event{
 						}
 					}
 					//console.log(tempList);
-				
+				}
+				sort_by_user(list){
+					var i;
+					for (i=0; i< list.length;i++){
+						
+					}
+				}
 				freetime_per_day(list, start_date, end_date){
 					var ONE_DAY = 86400000;// milliseconds
 					var start_datedate = new Date(start_date);
@@ -401,15 +407,15 @@ class Event{
 					var i, j;
 					var newList = [];
 					var user_list = [];
-					//for (i = 0; i< list.length ; i++){//iterate through different users
-						for (j = 0; j < list.length; j++){//iterate through user's events
-							newList.push(list[j]);
-							if (user_list.includes(list[j].participating_users)==false){
-								user_list.push(list[j].participating_users);
+					for (i = 0; i< list.length ; i++){//iterate through different users
+						for (j = 0; j < list[i].length; j++){//iterate through user's events
+							newList.push(list[i][j]);
+							if (user_list.includes(list[i][j].user_id)==false){
+								user_list.push(list[i][j].user_id);
 							}
 						}
 
-					
+					}
 
 					newList.sort((elemA, elemB) => elemA.start_date - elemB.start_date);
 					var free = [];
@@ -480,41 +486,30 @@ class Event{
 			function test(){
 				let soccer = new Event('soccer','soccer practice', 1552685400000,1552692600000);
 				console.log(soccer);
-				var x = soccer.rep('1','0','1','0','0','0','0','1', 1552685400000,1552692600000, 12345, [56789,51231]);
-				var y = soccer.rep('1','0','1','1','0','1','0','1', 1552680000000,1552683600000, 32415, [51231]);
-				var z = soccer.rep('1','1','1','1','1','1','1','1', 1552680000000,1552683600000, 98992, [56789,12345,56273]);
+				var x = soccer.rep('1','0','1','0','0','0','0','1', 1552685400000,1552692600000, 12345, 56789);
+				var y = soccer.rep('1','0','1','1','0','1','0','1', 1552680000000,1552683600000, 32415, 51231);
+				var z = soccer.rep('1','1','1','1','1','1','1','1', 1552680000000,1552683600000, 98992, 56273);
 				//var z = soccer.rep('0','0','0','1','1','1','1','1', '03/15/2019-16:30 | 03/15/2019-23:00');
 				//console.log(x);
 				//console.log(y);
 				var list = [x,y,z];
-				var list1 = [];
-				var i,j;
-				for (i = 0; i< list.length ; i++){//iterate through different users
-						for (j = 0; j < list[i].length; j++){//iterate through user's events
-					list1.push(list[i][j]);
-				}
-				}
-				console.log("list");
-				console.log(list);
-				console.log("list1");
-				console.log(list1);
-
+				//console.log(list);
 
 				//Fri Mar 15 1996 21:30:00 GMT-0500 (Eastern Standard Time) | Fri Mar 15 1996 22:30:00 GMT-0500 (Eastern Standard Time)
 				let cal = new Calend_datear('my calend_datear');
 				cal.genGrid('2019', '02');
-				cal.events_per_day(list1,1551416400000, 1554091200000);
+				cal.events_per_day(list,1551416400000, 1554091200000);
 				console.log(cal);
 				var event = {};
 				//1552862056000
 				//1552867159500
 				event.start_date = 1551416400000;
 				event.end_date = 1552684400000;
-				var bool = cal.conflict (event, list1);
+				var bool = cal.conflict (event, list);
 				console.log(bool);
 				var threshold = (0); //1hr = 12323600
-				var freetime = cal.freeTime(list1 ,threshold);
+				var freetime = cal.freeTime(list ,threshold);
 				console.log("freetime this:");
 				console.log(freetime);
-				console.log(cal.freetime_per_day(list1,1551416400000,1554091200000 ))
+				console.log(cal.freetime_per_day(list,1551416400000,1554091200000 ))
 			}
