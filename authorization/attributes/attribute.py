@@ -3,7 +3,7 @@ from ..utils import get_class_name, is_subclass
 
 # Python
 from importlib import import_module
-import inspect
+from inspect import isclass, getmembers
 from os import listdir
 
 
@@ -14,7 +14,7 @@ class Attribute(BaseWrapper):
 def wrap_attribute(attribute_class, object, wrappers_directory):
     # Define a function for picking classes out of wrapper modules.
     checker = lambda member: (
-        inspect.isclass(member) and is_subclass(member, attribute_class)
+        isclass(member) and is_subclass(member, attribute_class)
     )
     
     # List all the modules in the given wrappers directory.
@@ -27,7 +27,7 @@ def wrap_attribute(attribute_class, object, wrappers_directory):
         )
         
         # Find the corresponding wrapper class in the wrapper module.
-        for (_, _class) in inspect.getmembers(wrapper_module, checker):
+        for (_, _class) in getmembers(wrapper_module, checker):
             if is_subclass(object, _class):
                 return object
             elif _class.is_wrappable(object):
