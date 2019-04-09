@@ -1,7 +1,9 @@
 from ..decision import DecisionAuthority
+from ..utilities._class import assert_subclass
 
 # Django
 from django.core.exceptions import PermissionDenied
+from django.http.request import HttpRequest
 
 
 class EnforcementAuthority:
@@ -15,6 +17,10 @@ class EnforcementAuthority:
     
     @classmethod
     def authorize_http(cls, http_request, action, resource, redirect_403=True):
+        # Make sure http_request is a subclass of Django's HttpRequest class.
+        assert_subclass(http_request, HttpRequest)
+        
+        # Create the authorization request.
         from .authorization_request import AuthorizationRequest
         request = AuthorizationRequest(
             subject=http_request.user,

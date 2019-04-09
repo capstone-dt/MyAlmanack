@@ -32,7 +32,7 @@ class AuthorizationRequest:
         return "%s[subject=%s, action=Action[%s], resource=%s, context=%s]" % (
             get_class_name(self),
             self.subject,
-            get_class_name(self.action),
+            self.action,
             self.resource,
             self.context
         )
