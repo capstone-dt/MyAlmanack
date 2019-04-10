@@ -16,8 +16,7 @@ class User(Wrapper):
         if isinstance(object, User):
             return object
         elif isinstance(object, Profile):
-            # The UID is stored in the username field.
-            return User.objects.get(username=object.firebase_id)
+            return User.objects.get(pk=object.firebase_id)
     
     @classmethod
     def is_wrappable(cls, object):
@@ -36,7 +35,7 @@ class User(Wrapper):
     
     @classmethod
     def from_uid(cls, uid):
-        return cls(cls.get_user_model().objects.get(username=uid))
+        return cls(cls.get_user_model().objects.get(pk=uid))
     
     """
     Instance methods
@@ -46,12 +45,11 @@ class User(Wrapper):
         return isinstance(other, User) and self.get_uid() == other.get_uid()
     
     def get_uid(self):
-        # The UID is stored in the username field.
-        return self._object.username
+        return self._object.pk
     
     def get_profile(self):
-        #return Profile.objects.get(firebase_id=self._object.username)
-        return Profile(firebase_id=self._object.username) # STUB
+        #return Profile.objects.get(firebase_id=self._object.pk)
+        return Profile(firebase_id=self._object.pk) # STUB
     
     # This returns a list of users which are contacts to this user.
     def get_contacts(self):
