@@ -4,6 +4,6 @@ from authorization import policies
 
 class EditProfile(BinaryUserAction):
     policies = [
-        # A user can only edit himself/herself.
+        # A user can edit his or her own profile.
         policies.miscellaneous.SubjectIsResource
     ]

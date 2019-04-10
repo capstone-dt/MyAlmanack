@@ -7,7 +7,7 @@ class Profile:
     def __init__(self, firebase_id):
         self.firebase_id = firebase_id
         self.contact_list = ContactList([
-            firebase_id
+            #firebase_id
         ])
 
 

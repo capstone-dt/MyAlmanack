@@ -27,7 +27,7 @@ class Group(Wrapper):
     @classmethod
     def from_uid(cls, uid):
         #return cls(_Group.objects.get(group_name=uid))
-        return cls(_Group("12345")) # STUB
+        return cls(_Group(uid)) # STUB
     
     """
     Instance methods
