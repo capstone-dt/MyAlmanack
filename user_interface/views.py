@@ -174,8 +174,10 @@ class ProfileView(TemplateView):
 		if(alias_requested != ""):
 			print("alias_requested:", alias_requested)
 			user_alias = alias_requested
-			sel_id = getFirebaseIDAliasDummy(profilestructs, user_alias)
+			sel_id = getFirebaseIDAliasDummy(profilestructs, alias_requested)
 			user_selected = getCurrUser(profilestructs, sel_id)
+			print("user_selected", user_selected)
+
 
 		currentuserjson = str(json.dumps(currentuserstruct))
 		user_events = filterDummyEventsAlias(eventstructs, user_alias)
@@ -194,6 +196,7 @@ class ProfileView(TemplateView):
 				is_friend = "true"
 			else:
 				is_friend = "false"
+
 
 		for friend_alias in friend_names:
 			curr_events = filterDummyEventsAlias(eventstructs, friend_alias)
@@ -243,21 +246,16 @@ class ProfileView(TemplateView):
 		switchType = request.POST.get('formType')
 		print(request.POST.get('formType'))
 		event_form = EventForm()
-		if(switchType == "SubmitEvent"):
-			event_form_filled = EventForm(request.POST)
-			print(event_form_filled)
-			return self.dummy(event_form, request, alias)
-		elif(switchType == "FriendRequest"):
-			event_form = EventForm(request.POST)
-			print(event_form)
-			return self.dummy(event_form, request, alias)
+		formController(request)
+		return self.dummy(event_form, request, alias)
 
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
 
-	def dummy(self, request, edit_form):
+	def dummy(self, request):
 		search_form = SearchForm()
 		group_form = GroupForm()
+		edit_form = EditProfileForm()
 		def_prof_pic = getProfilePictureBase64("default_profile")
 		response = render(
 			request=request,
@@ -271,13 +269,11 @@ class EditProfileView(TemplateView):
 		return response
 
 	def get(self, request):
-		edit_form = EditProfileForm()
-		return self.dummy(request, edit_form)
+		return self.dummy(request)
 
 	def post(self, request):
-		edit_form = EditProfileForm(request.POST)
-		print(edit_form)
-		return self.dummy(request, edit_form)
+		formController(request)
+		return self.dummy(request)
 
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
@@ -350,6 +346,27 @@ class SearchView(TemplateView):
 				"groups" : groups
 			}
 		)
+
+def formController(request):
+	switchType = request.POST.get('formType')
+	print(request.POST.get('formType'))
+	event_form = EventForm()
+	if(switchType == "SubmitEvent"):
+		event_form_filled = EventForm(request.POST)
+		print(event_form_filled)
+	elif(switchType == "FriendRequest"):
+		friend_form = FriendRequestForm(request.POST)
+		print(friend_form)
+	elif(switchType == "GroupRequest"):
+		invite_form = GroupInviteForm(request.POST)
+		print(invite_form)
+	elif(switchType == "EditProfile"):
+		profile_form = EditProfileForm(request.POST)
+		print(profile_form)
+	elif(switchType == "CreateGroup"):
+		group_form = GroupForm(request.POST)
+		print(group_form)
+
 
 def aliasToFirebaseId(alias):
 	firebase_id = ""

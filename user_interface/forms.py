@@ -7,9 +7,9 @@ class EventForm(forms.Form):
 	EIstart = forms.CharField(widget=forms.HiddenInput())
 	EIend = forms.CharField(widget=forms.HiddenInput())
 	# Split manually
-	EIinvite = forms.CharField(widget=forms.HiddenInput())
-	EIwhitelist = forms.CharField(widget=forms.HiddenInput())
-	EIblacklist = forms.CharField(widget=forms.HiddenInput())
+	EIinvite = forms.CharField(widget=forms.HiddenInput(), required=False)
+	EIwhitelist = forms.CharField(widget=forms.HiddenInput(), required=False)
+	EIblacklist = forms.CharField(widget=forms.HiddenInput(), required=False)
 	EIrepeat = forms.CharField(widget=forms.HiddenInput(), required=False)
 	EIrepeat_pattern = forms.CharField(widget=forms.HiddenInput(), required=False)
 
@@ -34,6 +34,9 @@ class FriendRequestForm(forms.Form):
 
 class FriendRemoveForm(forms.Form):
 	FIalias = forms.CharField(widget=forms.HiddenInput())
+
+class GroupInviteForm(forms.Form):
+	GIalias = forms.CharField(widget=forms.HiddenInput())
 
 class SearchForm(forms.Form):
 	SIstring = forms.CharField(widget=forms.HiddenInput(), required=False)

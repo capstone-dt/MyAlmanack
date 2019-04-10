@@ -242,10 +242,10 @@
 
 						// form_start.value = enter_start.value;
 						var enter_end_date = document.getElementById("inputEndDate");
-						var enter_end_time = document.getElementById("inputEndDate");
+						var enter_end_time = document.getElementById("inputEndTime");
 						var form_end = document.getElementById("id_EIend");
 						var end_date_day = new Date(enter_end_date.value + " " + enter_end_time.value);
-						form_start.value = start_date_day.getTime() + "";
+						form_end.value = end_date_day.getTime() + "";
 						// ADD DATE FORMATTING
 
 						// form_end.value = enter_end.value;

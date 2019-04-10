@@ -348,21 +348,38 @@
 	        </button>
 	      </div>
 	      <div class="modal-body">
-	        <form action="/group/" method="post"> 
+	        <form action="/profile/" method="post"> 
 				<div class="form-group">
 				    <label class="reqField" for="inputGroupName">Group Name</label>
-				    <input type="text" class="form-control" id="inputGroupName" pattern="[A-Za-z0-9]{1,}$" required>
+				    <input type="text"  onchange="updateGroupForm()" class="form-control" id="inputGroupName" pattern="[A-Za-z0-9]{1,}$" required>
 				</div>
 				<div class="form-group">
 				    <label for="inputGroupDescription">Description</label>
-				    <input type="text" class="form-control" id="inputGroupDescription" >
+				    <input type="text"  onchange="updateGroupForm()" class="form-control" id="inputGroupDescription" >
 				</div>
 				<div class="form-group">
 				    <label for="inputGroupInvites">Invites</label>
-				    <input type="text" class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites">
+				    <input type="text" onchange="updateGroupForm()"  class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites">
 				</div>
 				{% csrf_token %}
 				{{ group_form.as_ul }}
+				<script type="text/javascript">
+					function updateGroupForm(){
+						var form_group_name = document.getElementById("id_GIname");
+						var div_group_name = document.getElementById("inputGroupName");
+						form_group_name.value = div_group_name.value;
+
+						var form_group_desc = document.getElementById("id_GIdescription");
+						var div_group_desc = document.getElementById("inputGroupDescription");
+						form_group_desc.value = div_group_desc.value;
+
+						var form_group_inv = document.getElementById("id_GIinvite");
+						var div_group_inv = document.getElementById("inputGroupInvites");
+						form_group_inv.value = div_group_inv.value;
+
+					}
+				</script>
+				<input type="hidden" name="formType" value="CreateGroup">
 				<input type="submit" class="confirmButton" style="width:100%; height:50px;" value="Create Group">
 			</form>
 	      </div>
