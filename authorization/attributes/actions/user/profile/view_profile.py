@@ -7,6 +7,6 @@ class ViewProfile(BinaryUserAction):
         # A user can view his or her own profile.
         policies.miscellaneous.SubjectIsResource,
         
-        # Users must be contacts.
+        # Users who are contacts can view each other's profile.
         policies.user.relationship.UsersAreContacts
     ]

@@ -7,7 +7,7 @@
 
 <body>
 	<div>Welcome to the authorization sub-system!</div>
-	<div><a href="profile">Click here to attempt to view a profile.</a></div>
+	<div><a href="profile/{{ request.user.username }}">Click here to view your profile.</a></div>
 	<br>
 	<div>
 	    Debugging message:
