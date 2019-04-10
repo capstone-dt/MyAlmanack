@@ -1,4 +1,4 @@
-from .authorization_result import AuthorizationResult
+from ..enforcement.authorization_result import AuthorizationResult
 
 
 class DecisionAuthority:

@@ -1,5 +1,5 @@
 from .policy import Policy
-from ..utils import assert_subclass
+from ..utilities.reflection import assert_subclass
 
 # Python
 from enum import IntEnum

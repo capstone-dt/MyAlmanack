@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = None
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'user_interface'
+    'user_interface',
+    'database'
 ]
 
 MIDDLEWARE = [
@@ -84,12 +85,11 @@ WSGI_APPLICATION = 'myalmanack.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+
+try:
+    from .local_settings import *
+except:
+    pass
 
 import dj_database_url
 
@@ -167,7 +167,7 @@ LOGOUT_REDIRECT_URL = "/"
 
 INSTALLED_APPS += ["authorization.App"]
 
-MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
+#MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
 
 
 # Django-Heroku

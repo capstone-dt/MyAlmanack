@@ -1,6 +1,6 @@
-from .decision_authority import DecisionAuthority
+from .enforcement_authority import EnforcementAuthority
 from ..attributes import Subject, Action, Resource, Context, wrap_attribute
-from ..utils import get_class_name, assert_subclass
+from ..utilities.reflection import get_class_name, assert_subclass
 
 
 class AuthorizationRequest:
@@ -22,17 +22,17 @@ class AuthorizationRequest:
         )
     
     def authorize(self):
-        return DecisionAuthority.authorize(self)
+        return EnforcementAuthority.authorize(self)
     
     @property
     def is_permitted(self):
-        return DecisionAuthority.is_permitted(self)
+        return EnforcementAuthority.is_permitted(self)
     
     def __str__(self):
         return "%s[subject=%s, action=Action[%s], resource=%s, context=%s]" % (
             get_class_name(self),
             self.subject,
-            get_class_name(self.action),
+            self.action,
             self.resource,
             self.context
         )
