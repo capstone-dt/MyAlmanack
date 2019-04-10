@@ -173,6 +173,10 @@ class ProfileView(TemplateView):
 		if(isValid == False):
 			return redirForce(request)
 
+
+		profile_data = getProfileData(user_firebase_id)
+		
+
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		print(currentuserstruct)
 		user_alias = currentuserstruct[0]["alias"]
@@ -265,9 +269,6 @@ class EditProfileView(TemplateView):
 		edit_form = EditProfileForm()
 		def_prof_pic = getProfilePictureBase64("default_profile")
 		user_firebase_id = getCurrentFirebaseId(request)
-		isValid = validFirebaseId(user_firebase_id);
-		print("isvalid_id", isValid)
-			return redirForce(request)
 			
 
 		response = render(
