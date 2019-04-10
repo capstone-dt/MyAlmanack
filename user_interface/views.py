@@ -511,6 +511,16 @@ def getProfileData(firebase_id):
 	# Return dictionary containing profile information.
 	return user_data
 
+# Check for valid firebase_id.
+def validFirebaseId(firebase_id):
+	f_id = Profile.objects.filter(pk=firebase_id).count()
+	valid_id = True
+
+	if f_id == 0:
+		valid_id = False
+
+	return valid_id
+
 # Edit user data.
 def editProfileData(firebase_id, alias, phone_num, last_name, first_name,
 	email, birth_date, organization, user_desc):
@@ -562,6 +572,16 @@ def createGroup(firebase_id, group_name, group_admin, group_members, group_desc)
 			+ ' VALUES (%s, %s, %s, %s)', [group_name, group_admin, group_members, group_desc])
 		cursor.execute('UPDATE "Contact_List" SET memberships = array_append(memberships, %s)'
 			+ ' WHERE contact_list_id = %s', [group_name, cl_id])
+
+# Check for valid group_name.
+def validGroupName(group_name):
+	gn = Group.objects.filter(pk=group_name).count()
+	valid_id = True
+
+	if gn == 0:
+		valid_id = False
+
+	return valid_id
 
 def leaveGroup(firebase_id, group_name):
 	with connection.cursor() as cursor:
