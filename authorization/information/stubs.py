@@ -1,0 +1,22 @@
+class ContactList:
+    def __init__(self, uids):
+        self.contact_names = uids
+
+
+class Profile:
+    def __init__(self, firebase_id):
+        self.firebase_id = firebase_id
+        self.contact_list = ContactList([
+            "SJ9F2PEcMNWWDqQWzgsdvuRK8Rg2", # h_zhang8@uncg.edu
+            "2lcTdIHw8hSMF90ZL0BH6HG028C2", # mtresnik@uncg.edu
+        ])
+
+
+class Group:
+    def __init__(self, group_name):
+        from .user import User
+        self.group_name = group_name
+        self.group_members = [
+            User.from_uid("SJ9F2PEcMNWWDqQWzgsdvuRK8Rg2"), # h_zhang8@uncg.edu
+            User.from_uid("2lcTdIHw8hSMF90ZL0BH6HG028C2"), # mtresnik@uncg.edu
+        ]
