@@ -29,4 +29,4 @@ class FriendRequestForm(forms.Form):
 	FIalias = forms.CharField(widget=forms.HiddenInput())
 
 class SearchForm(forms.Form):
-	SIstring = forms.CharField(widget=forms.HiddenInput())
+	SIstring = forms.CharField(widget=forms.HiddenInput(), required=False)

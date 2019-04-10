@@ -29,6 +29,7 @@ var _dummy_events_json;
 var _dummy_profiles_json;
 var _dummy_contacts_json;
 var _dummy_user_json;
+var _prev_scroll_y = 0;
 
 var user_contact_list;
 var user_events_all = [];
@@ -39,6 +40,7 @@ var select_color = "rgb(214, 214, 216)";
 var member_events_all = [];
 var member_check_ids = [];
 var freetimeChecked = false;
+var timeout_mil = 20;
 // Friends enabled test
 
 /*
@@ -78,6 +80,9 @@ function windowResized(){
 	addEvents();
 }
 function clickAnywhere(event){
+	if(window.scrollY != 0){
+		_prev_scroll_y = window.scrollY;
+	}
 	var clientX = event.clientX;
 	var clientY = event.clientY;
 	// Go through all divs and see which divs are affected
@@ -181,25 +186,270 @@ var getColorForPercentage = function(pct) {
     return color;
     // or output as hex if preferred
 }  
-
-function drawColorGrid(isRainbow){
+function convertEventListPooya(mike_structs){
 	var retArray = [];
-	if(isRainbow == false){
-		switchCalendarView(_cont_id, _switchType);
-		return retArray;
+	for(var i = 0; i < mike_structs.length; i++){
+		var curr_event = mike_structs[i];
+		var new_struct = {};
+		new_struct.start_date = Number(curr_event.start_date);
+		new_struct.end_date = Number(curr_event.end_date);
+		new_struct.participating_users = [];
+		new_struct.event_id = Number(curr_event.event_id);
+		retArray.push(new_struct);
 	}
+	return retArray;
+}
+function acuumulateDeltas(events_passed){
+	var retNum = 0;
+	for(var i = 0; i < events_passed.length; i++){
+		var curr_delt = events_passed[i].end_date - events_passed[i].start_date;
+		retNum += curr_delt;
+	}
+	return retNum;
+}
+
+function testDaysAffected(){
+	var s1 = new Date(2019,3,5);
+	s1.setHours(12,0,0);
+	var e1 = new Date(2019,3,7);
+	e1.setHours(15,0,0);
+	var s2 = new Date(2019,3,8);
+	s2.setHours(4,0,0);
+	var e2 = new Date(2019,3,15);
+	e2.setHours(17,0,0);
+	var test_events = [
+	{start_date:s1.getTime(), end_date:e1.getTime()}, 
+	{start_date:s2.getTime(), end_date:e2.getTime()}
+	];
+	console.log(getEventsDays(test_events));
+
+}
+
+function getHoursAffected(event_passed){
+	var daysAffected = getDaysAffected(event_passed);
+	if(daysAffected.length == 1){
+		return [(event_passed.end_date - event_passed.start_date)/1000/60/60];
+	}
+	var start_hours = daysAffected[1].getTime() - event_passed.start_date;
+	var end_hours = event_passed.end_date - daysAffected[daysAffected.length - 1].getTime(); 
+	var temp_array = [];
+	temp_array.push(start_hours);
+	for(var i = 1; i < daysAffected.length - 1; i++){
+		temp_array.push(24*60*60*1000);
+	}
+	temp_array.push(end_hours);
+	var retArray = [];
+	for(var i = 0; i < temp_array.length; i++){
+		var toAdd = temp_array[i]/1000/60/60;
+		retArray.push(toAdd);
+	}
+	return retArray;
+}
+
+function getDaysAffected(event_passed){
+	var start_date = new Date(event_passed.start_date);
+	start_date.setHours(0,0,0);
+	var end_date = new Date(event_passed.end_date);
+	end_date.setDate(end_date.getDate() + 1);
+	end_date.setHours(0,0,0);
+	var retArray = [];
+	var curr_date = new Date(start_date.getTime());
+	do{
+		retArray.push(new Date(curr_date.getTime()));
+		curr_date.setDate(curr_date.getDate() + 1);
+	}while(curr_date.getTime() < end_date.getTime());
+	return retArray;
+}
+
+function getEventsDays(events){
+	var freeArray = [];
+	for(var i = 0; i < events.length; i++){
+		var curr_event = events[i];
+		var days_affected = getDaysAffected(curr_event);
+		var hours_affected = getHoursAffected(curr_event);
+		for(var j = 0; j < days_affected.length; j++){
+			var contains = false;
+			for(var k = 0; k < freeArray.length; k++){
+				var curr_day_map = freeArray[k];
+				if(curr_day_map.time == days_affected[j].getTime()){
+					contains = true;
+					curr_day_map.hours += hours_affected[j];
+					break;
+				}
+			}
+			if(contains == false){
+				var temp_struct = {};
+				temp_struct.time = days_affected[j].getTime();
+				temp_struct.hours = hours_affected[j];
+				freeArray.push(temp_struct);
+			}
+		}
+	}
+	var retArray = [];
+	for(var i = 0; i < freeArray.length; i++){
+		var temp_struct = freeArray[i];
+		retArray.push({start_time:temp_struct.time, hours:Math.min(24, temp_struct.hours)});
+	}
+	return retArray;
+}
+function eventsSplitDays(events){
+	var freeArray = [];
+	for(var i = 0; i < events.length; i++){
+		var curr_event = events[i];
+		var days_affected = getDaysAffected(curr_event);
+		var hours_affected = getHoursAffected(curr_event);
+		for(var j = 0; j < days_affected.length; j++){
+			var contains = false;
+			for(var k = 0; k < freeArray.length; k++){
+				var curr_day_map = freeArray[k];
+				if(curr_day_map.time == days_affected[j].getTime()){
+					contains = true;
+					curr_day_map.hours += hours_affected[j];
+					break;
+				}
+			}
+			if(contains == false){
+				var temp_struct = {};
+				temp_struct.time = days_affected[j].getTime();
+				temp_struct.hours = hours_affected[j];
+				freeArray.push(temp_struct);
+			}
+		}
+	}
+	var retArray = [];
+	for(var i = 0; i < freeArray.length; i++){
+		var temp_struct = freeArray[i];
+		retArray.push({start_time:temp_struct.time, hours:Math.min(24, temp_struct.hours)});
+	}
+	return retArray;
+}
+function eventHoursSplit(event_passed){
+	var daysAffected = getDaysAffected(event_passed);
+	if(daysAffected.length == 1){
+		return [{end_date:Number(event_passed.end_date), start_date:Number(event_passed.start_date),
+			event_id:event_passed.event_id}];
+	}
+	var start_hours = daysAffected[1].getTime() - event_passed.start_date;
+	var end_day_start = new Date(event_passed.start_date);
+	end_day_start.setHours(23,59,59);
+	var start_struct = {start_date:Number(event_passed.start_date), end_date:end_day_start.getTime(),
+		event_id:event_passed.event_id};
+	var beg_day_end = new Date(event_passed.end_date);
+	beg_day_end.setHours(0,0,0);
+	var end_hours = event_passed.end_date - daysAffected[daysAffected.length - 1].getTime(); 
+	var end_struct =  {start_date:beg_day_end.getTime(), end_date:Number(event_passed.end_date),
+		event_id:event_passed.event_id};
+	var temp_array = [];
+	temp_array.push(start_struct);
+	for(var i = 1; i < daysAffected.length - 1; i++){
+		var temp_day_end = new Date(daysAffected[i].getTime());
+		temp_day_end.setHours(23,59,59);
+		var temp_struct = {start_date:daysAffected[i].getTime(), end_date:temp_day_end.getTime(),
+			event_id:event_passed.event_id};
+		temp_array.push(temp_struct);
+	}
+	temp_array.push(end_struct);
+	return temp_array;
+}
+function testEventHoursSplit(){
+	var s1 = new Date(Number("1555732800000"));
+	var e1 = new Date(Number("1556078340000"));
+	var temp_struct = {start_date:s1.getTime(), end_date:e1.getTime(), event_id:100};
+	console.log(eventHoursSplit(temp_struct));
+}
+
+function drawColorGrid(isRainbow) {
+	var retArray = [];
 	if(_switchType != "month"){
 		return retArray;
 	}
+	var member_events = getMembersSelectedEvents();
+	var combinedEvents = [];
+	for(var i = 0; i < user_events_all.length; i++){
+		combinedEvents.push(user_events_all[i]);
+	}
+	for(var i = 0; i < member_events.length; i++){
+		combinedEvents.push(member_events[i]);
+	}
+	combinedEvents = combinedEvents.sort(function(a,b){return a.start_date - b.start_date});
+	var temp_convert_split = [];
+	var pooya_array = convertEventListPooya(combinedEvents);
+
+	for(var i = 0; i < pooya_array.length; i++){
+		var sub_array = eventHoursSplit(pooya_array[i]);
+		// console.log(pooya_array[i]);
+		// console.log("sub_array", sub_array);
+		for(var j = 0; j < sub_array.length; j++){
+			temp_convert_split.push(sub_array[j]);
+		}
+	}
+	// console.log("temp_convert_split", temp_convert_split);
+	var pooya_array = convertEventListPooya(temp_convert_split);
+	// console.log("pooya_array", pooya_array);
+	
+	var month_start = new Date(_year_selected, _month_selected, 1);
+	var month_end = new Date(_year_selected, _month_selected + 1, 0);
+	var temp_cal = new Calendar("temp_cal");
+	var freetimeArray = temp_cal.freetime_per_day(pooya_array, month_start.getTime(), month_end.getTime());
+	var combined_free = [];
+
+	// console.log(freetimeArray);
+	for(var i = 0; i < freetimeArray.length; i++){
+		var curr_arr = freetimeArray[i];
+		if(curr_arr != null){
+			// console.log("non null");
+			for(var j = 0; j < curr_arr.length; j++){
+				// console.log(curr_arr);
+				if(curr_arr[j].end_date == 99999999999999){
+					// CRASHES AT 99999999999999
+					var temp_end = new Date(month_end.getTime() + 5*1000*24*60*60);
+					curr_arr[j].end_date = temp_end.getTime();
+				}
+				combined_free.push(curr_arr[j]);
+			}
+		}
+	}			
+	// console.log(combined_free);
+	var eventsHours = getEventsDays(combined_free);
+	var count = 0;
 	for(var i = 0; i < calArray.length; i++){
 		for(var j = 0; j < calArray[i].length; j++){
 			var curr_elem = calArray[i][j];
-			var randNum = Math.random();
-			var randColor = getColorForPercentage(randNum);
+			if(curr_elem.className.includes(_curr_month_not)){
+				continue;
+			}
+			var month_day = Number(curr_elem.innerText);
+			var temp_date = new Date(_year_selected, _month_selected, month_day);
+			temp_date.setHours(0,0,0);
+			temp_date = temp_date.getTime();
+			var hoursFree = 24;
+			// console.log(temp_date);
+			for(var k = 0; k < eventsHours.length; k++){
+				// console.log(eventsHours[k]);
+				if(Number(temp_date) == Number(eventsHours[k].start_time)){
+					// console.log("FOUND");
+					hoursFree = eventsHours[k].hours;
+					break;
+				}
+			}
+			// console.log("hours free:", hoursFree);
+			var hoursOcc = 24 - hoursFree;
+			var alpha = 0;
+			if(hoursFree < 8){
+				alpha = 0;
+			}else{
+				alpha = (hoursFree - 8)/16;
+			}
+			if(getEventsCurrMonthUser().length == 0){
+				alpha = 1;
+			}
+
+			var randColor = getColorForPercentage(alpha);
 			curr_elem.style.backgroundColor =  
 				"rgba(" + randColor.red + ", " + randColor.green + ", " 
 				+ randColor.blue + ", 0.2)";
 			retArray.push(curr_elem);
+			count += 1;
 		}
 	}
 	return retArray;
@@ -208,9 +458,33 @@ function drawColorGrid(isRainbow){
 function friendsEnabled(){
 	return false;
 }
+function customDateString(date){
+	var date_string = _months_of_year[date.getMonth()] + " ";
+	date_string += date.getDate() + ", ";
+	date_string += date.getFullYear();
+	return date_string;
+}
 
+function customTimeString(date){
+	var hr = date.getHours();
+	var min = date.getMinutes();
+	if (min < 10) {
+	    min = "0" + min;
+	}
+	var ampm = "am";
+	if( hr > 12 ) {
+	    hr -= 12;
+	    ampm = "pm";
+	}
+	if(hr == 0){
+		hr = 12;
+		ampm = "am";
+	}
+	var time_string = hr + ":" + min + ampm;
+	return time_string;
+}
 function makeList(cont_id){
-	console.log("makeList");
+	// console.log("makeList");
 	clearEvents();
 	// Make actual list div
 	var cont_div = document.getElementById(cont_id);
@@ -222,20 +496,104 @@ function makeList(cont_id){
 	var sub_list = document.createElement("ul");
 	sub_list.className = "nav nav-pills nav-stacked";
 	sub_list.style.overflowY = "scroll";
-	for(var i = 0; i < user_events_all.length; i++){
-		// console.log("la" + i);
+	sub_list.style.height = "500px";
+	sub_list.style.border = "black";
+	sub_list.style.borderStyle = "solid";
+	sub_list.style.borderWidth = "1px";
+	// Freetime not checked.
+	var selected_events = getMembersSelectedEvents();
+	var createFuncEvent = function(external_div, arr, i){
 		var list_elem = document.createElement('li');
 		list_elem.className = "nav-item";
 		list_elem.style.width = "100%";
 		var a_elem = document.createElement('a');
-		a_elem.className = "nav-link active";
-		a_elem.innerHTML = user_events_all[i].description;
-		a_elem.innerHTML += " <br> " + user_events_all[i].start_date;
+		a_elem.className = "navbar-text";
+		a_elem.innerHTML = arr[i].description  + "<br>";
+		a_elem.innerHTML += "@" + arr[i].event_creator_alias;
+		var temp_date_time = new Date(Number(arr[i].start_date));
+		var date_string_start = customDateString(temp_date_time);
+		var time_string_start = customTimeString(temp_date_time);
+		a_elem.innerHTML += " <br> " + date_string_start + "  " + time_string_start;
+		temp_date_time = new Date(Number(arr[i].end_date));
+		var date_string_end = customDateString(temp_date_time);
+		var time_string_end = customTimeString(temp_date_time);
+		a_elem.innerHTML += " - " + date_string_end + "  " + time_string_end;
 		a_elem.style.width = "100%";
+		a_elem.style.borderBottom = "1px solid grey";
+		a_elem.style.paddingLeft = "20px";
 		list_elem.appendChild(a_elem);
-		sub_list.appendChild(list_elem);
+		external_div.appendChild(list_elem);
+	};
+	var createFuncFree = function(external_div, arr, i){
+		var list_elem = document.createElement('li');
+		list_elem.className = "nav-item";
+		list_elem.style.width = "100%";
+		var a_elem = document.createElement('a');
+		a_elem.className = "navbar-text";
+		a_elem.innerHTML =  "Freetime <br>";
+		var temp_date_time = new Date(Number(arr[i].start_date));
+		var date_string_start = customDateString(temp_date_time);
+		var time_string_start = customTimeString(temp_date_time);
+		a_elem.innerHTML += date_string_start + "  " + time_string_start;
+		temp_date_time = new Date(Number(arr[i].end_date));
+		var date_string_end = customDateString(temp_date_time);
+		var time_string_end = customTimeString(temp_date_time);
+		a_elem.innerHTML += " - " + date_string_end + "  " + time_string_end;
+		a_elem.style.width = "100%";
+		a_elem.style.borderBottom = "1px solid grey";
+		a_elem.style.paddingLeft = "20px";
+		list_elem.appendChild(a_elem);
+		external_div.appendChild(list_elem);
+	};
+	var combinedEvents = [];
+	for(var i = 0; i < user_events_all.length; i++){
+		combinedEvents.push(user_events_all[i]);
 	}
-	sub_list.style.height = "300px";
+	for(var i = 0; i < selected_events.length; i++){
+		combinedEvents.push(selected_events[i]);
+	}
+	if(combinedEvents.length > 0){
+	combinedEvents.sort(function(a, b){return a.start_date - b.start_date});
+	if(freetimeChecked == false){
+		for(var i = 0; i < combinedEvents.length; i++){
+			if(combinedEvents[i].isHidden != undefined && combinedEvents[i].isHidden){
+				continue;
+			}
+			createFuncEvent(sub_list, combinedEvents, i);
+		}
+	}else{
+		// Get freetime of all people
+
+		var pooya_array = convertEventListPooya(combinedEvents);
+		// console.log("pooya_array", pooya_array);
+		
+		var month_start = new Date(_year_selected, _month_selected, _day_selected);
+		var month_end = new Date(Number(combinedEvents[combinedEvents.length - 1].end_date));
+		month_end.setDate(month_end.getDate() + 1);
+		var temp_cal = new Calendar("temp_cal");
+		console.log("makeList free", pooya_array);
+		console.log(month_start, month_end);
+		var freetimeArray = temp_cal.freetime_per_day(pooya_array, month_start.getTime(), month_end.getTime());
+		var combined_free = [];
+		// console.log(freetimeArray);
+		for(var i = 0; i < freetimeArray.length; i++){
+			var curr_arr = freetimeArray[i];
+			if(curr_arr != null){
+				// console.log("non null");
+				for(var j = 0; j < curr_arr.length; j++){
+					// console.log(curr_arr);
+					combined_free.push(curr_arr[j]);
+				}
+			}
+		}
+		console.log(combined_free);
+		for(var i = 0; i < combined_free.length; i++){
+			createFuncFree(sub_list, combined_free, i);
+		}
+	}
+	
+	}
+	// list_div.style.height = "100%";
 	list_div.style.width = "100%";
 	list_div.appendChild(sub_list);
 	cont_div.appendChild(list_div);
@@ -308,11 +666,18 @@ function makeGrid(cont_id, rowClass, colClass, name, dim_x, dim_y, onclick_func,
 	}
 	// console.log(gridArray);
 	windowResized();
-	addEvents();
+	addEvents();	
+	if(_prev_scroll_y != 0){
+		window.scrollTo(0, _prev_scroll_y);
+	}
 }
 function switchCalendarView(cont_id, switchType){
 	var cont_div = document.getElementById(cont_id);
 	cont_div.innerHTML = "";
+	if(window.scrollY != 0){
+		_prev_scroll_y = window.scrollY;
+		console.log("scroll_y", _prev_scroll_y);
+	}
 	_switchType = switchType;
 	clearEvents();
 	switch(switchType){
@@ -333,7 +698,18 @@ function switchCalendarView(cont_id, switchType){
 				drawColorGrid(freetimeChecked);
 			}
 		}
+	smoothScrollTo();
+	
 }
+function smoothScrollTo(){
+	window.setTimeout(
+		function(){window.scrollTo({
+			top: _prev_scroll_y,
+			left: 0,
+			behavior: 'smooth'
+			});}, 100);
+}
+
 function clearEvents(){
 	for(var i = 0; i < eventDivArray.length; i++){
 		var curr_event = eventDivArray[i];
@@ -471,11 +847,11 @@ function getEventsCurrMonthUser(){
 	var month_end = new Date(_year_selected, _month_selected + 1, 0);
 	month_end.setHours(23,59,59);
 	var end_unix = month_end.getTime();
-	for(var i = 0; i < user_events.length; i++){
-		var curr_event = user_events[i];
+	for(var i = 0; i < user_events_all.length; i++){
+		var curr_event = user_events_all[i];
 		if(inRange(start_unix, curr_event.start_date, end_unix) || 
 			inRange(start_unix, curr_event.end_date, end_unix)){
-			retArr.push(user_events[i]);
+			retArr.push(user_events_all[i]);
 		}
 	}
 	return retArr;
@@ -788,7 +1164,15 @@ function selectDayHard(day_select){
 	day_sel.value = day_select;
 	dayWeekUpdate();
 }
+function scrollAdjust(){
+	if(_prev_scroll_y != 0){
+		window.scrollTo(0, _prev_scroll_y);
+	}
+}
 function leftArrowClick(){
+	if(_switchType == "list"){
+		return;
+	}
 	clearEvents();
 	switch(_switchType){
 		case "month":
@@ -825,35 +1209,19 @@ function leftArrowClick(){
 }
 function currButtonClick(){
 	clearEvents();
-	switch(_switchType){
-		case "month":
-			setCurrTime();
-			selectDayHard(_day_selected);
-			clearEvents();
-			switchCalendarView(_cont_id, _switchType);
-			addEvents();
-			break;
-		case "week":
-			setCurrTime();
-			selectDayHard(_day_selected);
-			clearEvents();
-			switchCalendarView(_cont_id, _switchType);
-			addEvents();
-			break;
-		case "day":
-			setCurrTime();
-			selectDayHard(_day_selected);
-			clearEvents();
-			switchCalendarView(_cont_id, _switchType);
-			addEvents();
-			break;
-		default:
-	}
+	setCurrTime();
+	selectDayHard(_day_selected);
+	clearEvents();
+	switchCalendarView(_cont_id, _switchType);
+	addEvents();
 	clearEvents();
 	switchCalendarView(_cont_id, _switchType);
 	addEvents();
 }
 function rightArrowClick(){
+	if(_switchType == "list"){
+		return;
+	}
 	clearEvents();
 	switch(_switchType){
 		case "month":
@@ -915,6 +1283,7 @@ function populateFriendsSelectDropdown(){
 }
 
 function checkFriendSelect(sel_id){
+	_prev_scroll_y = window.scrollY;
 	var check_input = document.getElementById(sel_id);
 	if(check_input.checked){
 		check_input.checked = false;
@@ -1020,6 +1389,7 @@ function select(select_id){
 }
 function dayClickM(click_id){
 	console.log("dayClick:" + click_id);
+	_prev_scroll_y = window.scrollY;
 	var temp_div = document.getElementById(click_id);
 	if(temp_div.className.includes(_curr_month_not)){
 		return;
@@ -1441,6 +1811,7 @@ function addEvents(){
 		default:
 			return;
 	}
+	scrollAdjust();
 }
 function addEventsD(){
 	var count = 0;

@@ -40,12 +40,15 @@
         <form class="form-inline justify-content-center" style="width:75%;" action="/search/" method="post">
 			{% csrf_token %}
 			{{ search_form.as_ul }}
-          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
+          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onclick="searchBarUpdate();" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
           <script type="text/javascript">
           	function searchBarUpdate(){
           		var search_form_param = document.getElementById("id_SIstring");
           		var firstSearch = document.getElementById("firstSearch");
           		search_form_param.value = firstSearch.value;
+          		if(firstSearch.value == ""){
+          			search_form_param.value = " ";
+          		}
           	}
           </script>
         </form>

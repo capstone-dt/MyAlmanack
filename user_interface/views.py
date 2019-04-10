@@ -268,7 +268,8 @@ class GroupView(TemplateView):
 		return render(
 			request=request,
 			template_name=self.template_name,
-			context={"search_form" : search_form}
+			context={"search_form" : search_form, 
+				"calendarFrame" : "sub_templates/calendarFrame.html",}
 		)
 
 class DefaultView(TemplateView):
