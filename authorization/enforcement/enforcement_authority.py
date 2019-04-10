@@ -1,5 +1,5 @@
 from ..decision import DecisionAuthority
-from ..utilities._class import assert_subclass
+from ..utilities.reflection import assert_subclass
 
 # Django
 from django.core.exceptions import PermissionDenied

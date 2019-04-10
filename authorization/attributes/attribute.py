@@ -1,5 +1,5 @@
 from ..utilities.wrapper import Wrapper
-from ..utilities._class import get_class_name, is_subclass
+from ..utilities.reflection import get_class_name, is_subclass
 
 # Python
 from importlib import import_module

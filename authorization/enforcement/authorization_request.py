@@ -1,6 +1,6 @@
 from .enforcement_authority import EnforcementAuthority
 from ..attributes import Subject, Action, Resource, Context, wrap_attribute
-from ..utilities._class import get_class_name, assert_subclass
+from ..utilities.reflection import get_class_name, assert_subclass
 
 
 class AuthorizationRequest:

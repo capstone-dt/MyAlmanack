@@ -1,6 +1,6 @@
 from .attributes import Action
-from .decision import AuthorizationRequest
-from .utils import assert_subclass
+from .enforcement import AuthorizationRequest
+from .utilities.reflection import assert_subclass
 
 # Django
 from django.core.exceptions import PermissionDenied

@@ -1,5 +1,5 @@
 from ..enforcement import AuthorizationResult
-from ..utilities._class import assert_subclass
+from ..utilities.reflection import assert_subclass
 
 
 class Action:

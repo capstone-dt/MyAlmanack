@@ -1,6 +1,6 @@
 from .user import User
 from ..utilities.wrapper import Wrapper
-from ..utilities._class import is_subclass
+from ..utilities.reflection import is_subclass
 
 # MyAlmanack database (Justin's subsystem)
 #from database.models import Group as _Group

@@ -1,4 +1,4 @@
-from ._class import get_class_name, is_subclass, assert_subclass
+from .reflection import get_class_name, is_subclass, assert_subclass
 
 
 class Wrapper:
