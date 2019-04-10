@@ -14,6 +14,7 @@ class Profile:
 
 class Group:
     def __init__(self, group_name):
+        from .user import User
         self.group_name = group_name
         self.group_members = [
             User.from_uid("SJ9F2PEcMNWWDqQWzgsdvuRK8Rg2"), # h_zhang8@uncg.edu
