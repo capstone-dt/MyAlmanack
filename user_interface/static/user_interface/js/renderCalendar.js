@@ -360,10 +360,6 @@ function testEventHoursSplit(){
 
 function drawColorGrid(isRainbow) {
 	var retArray = [];
-	if(isRainbow == false){
-		switchCalendarView(_cont_id, _switchType);
-		return retArray;
-	}
 	if(_switchType != "month"){
 		return retArray;
 	}
@@ -378,6 +374,7 @@ function drawColorGrid(isRainbow) {
 	combinedEvents = combinedEvents.sort(function(a,b){return a.start_date - b.start_date});
 	var temp_convert_split = [];
 	var pooya_array = convertEventListPooya(combinedEvents);
+
 	for(var i = 0; i < pooya_array.length; i++){
 		var sub_array = eventHoursSplit(pooya_array[i]);
 		// console.log(pooya_array[i]);
@@ -395,6 +392,7 @@ function drawColorGrid(isRainbow) {
 	var temp_cal = new Calendar("temp_cal");
 	var freetimeArray = temp_cal.freetime_per_day(pooya_array, month_start.getTime(), month_end.getTime());
 	var combined_free = [];
+
 	// console.log(freetimeArray);
 	for(var i = 0; i < freetimeArray.length; i++){
 		var curr_arr = freetimeArray[i];
@@ -402,17 +400,21 @@ function drawColorGrid(isRainbow) {
 			// console.log("non null");
 			for(var j = 0; j < curr_arr.length; j++){
 				// console.log(curr_arr);
+				if(curr_arr[j].end_date == 99999999999999){
+					// CRASHES AT 99999999999999
+					var temp_end = new Date(month_end.getTime() + 5*1000*24*60*60);
+					curr_arr[j].end_date = temp_end.getTime();
+				}
 				combined_free.push(curr_arr[j]);
 			}
 		}
-	}
+	}			
 	// console.log(combined_free);
 	var eventsHours = getEventsDays(combined_free);
 	var count = 0;
 	for(var i = 0; i < calArray.length; i++){
 		for(var j = 0; j < calArray[i].length; j++){
 			var curr_elem = calArray[i][j];
-			var randNum = Math.random();
 			if(curr_elem.className.includes(_curr_month_not)){
 				continue;
 			}
@@ -437,6 +439,9 @@ function drawColorGrid(isRainbow) {
 				alpha = 0;
 			}else{
 				alpha = (hoursFree - 8)/16;
+			}
+			if(getEventsCurrMonthUser().length == 0){
+				alpha = 1;
 			}
 
 			var randColor = getColorForPercentage(alpha);
@@ -831,11 +836,11 @@ function getEventsCurrMonthUser(){
 	var month_end = new Date(_year_selected, _month_selected + 1, 0);
 	month_end.setHours(23,59,59);
 	var end_unix = month_end.getTime();
-	for(var i = 0; i < user_events.length; i++){
-		var curr_event = user_events[i];
+	for(var i = 0; i < user_events_all.length; i++){
+		var curr_event = user_events_all[i];
 		if(inRange(start_unix, curr_event.start_date, end_unix) || 
 			inRange(start_unix, curr_event.end_date, end_unix)){
-			retArr.push(user_events[i]);
+			retArr.push(user_events_all[i]);
 		}
 	}
 	return retArr;

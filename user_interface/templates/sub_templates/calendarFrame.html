@@ -78,9 +78,8 @@
 								_prev_scroll_y = window.scrollY;
 							}
 							freetimeChecked = !freetimeChecked;
-							drawColorGrid(freetimeChecked);
-							if(_switchType == "list"){
-								switchCalendarView(_cont_id, "list");
+							if(_switchType == "list" || _switchType == "month"){
+								switchCalendarView(_cont_id, _switchType);
 							}
 							window.setTimeout(
 								function(){window.scrollTo(0, _prev_scroll_y);}, timeout_mil);
