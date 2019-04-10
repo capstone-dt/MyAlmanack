@@ -74,8 +74,16 @@
 					</label>
 					<script type="text/javascript">
 						function switchTest(){
+							if(window.scrollY != 0){
+								_prev_scroll_y = window.scrollY;
+							}
 							freetimeChecked = !freetimeChecked;
 							drawColorGrid(freetimeChecked);
+							if(_switchType == "list"){
+								switchCalendarView(_cont_id, "list");
+							}
+							window.setTimeout(
+								function(){window.scrollTo(0, _prev_scroll_y);}, timeout_mil);
 						}
 					</script>
 					</li>
