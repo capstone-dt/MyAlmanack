@@ -8,6 +8,9 @@
 <body>
 	<div>Welcome to the authorization sub-system!</div>
 	<div><a href="profile/{{ request.user.username }}">Click here to view your profile.</a></div>
+	<div><a href="profile/k8L2m8QQWMfc7zPwSzJr25AwdVB2">Click here to view Hao's profile (h_zhang8@uncg.edu).</a></div>
+	<div><a href="profile/2lcTdIHw8hSMF90ZL0BH6HG028C2">Click here to view Mike's profile (mtresnik@uncg.edu).</a></div>
+	<div><a href="{% url 'logout' %}?next={% url 'index' %}">Click here to logout.</a></div>
 	<br>
 	<div>
 	    Debugging message:
