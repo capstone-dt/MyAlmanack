@@ -17,11 +17,16 @@ class EventForm(forms.Form):
 class EditProfileForm(forms.Form):
 	PIfirst = forms.CharField(widget=forms.HiddenInput())
 	PIlast = forms.CharField(widget=forms.HiddenInput())
-	PIemail = forms.CharField(widget=forms.HiddenInput())
+	# ADDED
+	PIalias = forms.CharField(widget=forms.HiddenInput())
+	PIemail = forms.CharField(widget=forms.HiddenInput(), required=False)
 	PIbirthday = forms.DateField(widget=forms.HiddenInput())
-	PIphone = forms.CharField(widget=forms.HiddenInput())
-	PIorganization = forms.CharField(widget=forms.HiddenInput())
-	PIdescription = forms.CharField(widget=forms.HiddenInput())
+	PIphone = forms.CharField(widget=forms.HiddenInput(), required=False)
+	PIorganization = forms.CharField(widget=forms.HiddenInput(), required=False)
+	PIdescription = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+class FriendRequestForm(forms.Form):
+	FIalias = forms.CharField(widget=forms.HiddenInput())
 
 class SearchForm(forms.Form):
 	SIstring = forms.CharField(widget=forms.HiddenInput())

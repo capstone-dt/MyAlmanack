@@ -69,9 +69,15 @@
 			        </li>
 			        <li style="padding-left:15px;">
 		        	<label class="switch">
-					  <input type="checkbox">
-					  <span class="slider round"></span>
+					  <input type="checkbox" onclick="switchTest()" id="freetimeChecked">
+					  <span class="slider round" ></span>
 					</label>
+					<script type="text/javascript">
+						function switchTest(){
+							freetimeChecked = !freetimeChecked;
+							drawColorGrid(freetimeChecked);
+						}
+					</script>
 					</li>
 					<li style="padding-left:30px;">
 						<div class="dropdown" >
