@@ -256,7 +256,7 @@ class Event{
 
 			}
 
-			class Calend_datear{
+			class Calendar{
 				constructor(name){
 					this.name = name;
 				}
@@ -392,6 +392,7 @@ class Event{
 							arr[a].push(struc);
 						}
 					}
+
 				
 					return arr;
 			}
@@ -494,14 +495,14 @@ class Event{
 					list1.push(list[i][j]);
 				}
 				}
-				console.log("list");
-				console.log(list);
+				//console.log("list");
+				//console.log(list);
 				console.log("list1");
 				console.log(list1);
 
 
 				//Fri Mar 15 1996 21:30:00 GMT-0500 (Eastern Standard Time) | Fri Mar 15 1996 22:30:00 GMT-0500 (Eastern Standard Time)
-				let cal = new Calend_datear('my calend_datear');
+				let cal = new Calendar('my Calendar');
 				cal.genGrid('2019', '02');
 				var perday = cal.events_per_day(list1,1551416400000, 1554091200000);
 				console.log(cal);
@@ -518,5 +519,6 @@ class Event{
 				var freetime = cal.freeTime(list1 ,threshold);
 				console.log("freetime this:");
 				console.log(freetime);
+				console.log("freetime21231 : ");
 				console.log(cal.freetime_per_day(list1,1551416400000,1554091200000 ))
 			}
