@@ -23,8 +23,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = None
 
-ALLOWED_HOSTS = []
-
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 SECURE_BROWSER_XSS_FILTER = True
@@ -85,29 +83,12 @@ WSGI_APPLICATION = 'myalmanack.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-import dj_database_url
-
-db_from_env = dj_database_url.config()
-DATABASES['default'].update(db_from_env)
-
-
-# Password validation
-# https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 
 # Internationalization
@@ -134,10 +115,7 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface\\static")]
-
-print(STATIC_ROOT)
-print(STATICFILES_DIRS)
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface/static")]
 
 
 # Authentication
@@ -161,7 +139,7 @@ LOGOUT_REDIRECT_URL = "/"
 
 INSTALLED_APPS += ["authorization.App"]
 
-#MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
+# MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
 
 
 # Override default settings with local settings for development environments
