@@ -18,10 +18,10 @@ class FirebaseAuthenticationBackend(ModelBackend):
 		
 		try:
 			# Return the user if they exist.
-			user = User.objects.get(username=claims["uid"])
+			user = User.objects.get(pk=claims["uid"])
 		except User.DoesNotExist:
 			# If the user does not exist, create them.
-			user = User(username=claims["uid"])
+			user = User(pk=claims["uid"])
 			user.save()
 		return user
 	
