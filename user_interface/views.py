@@ -173,6 +173,10 @@ class ProfileView(TemplateView):
 		if(isValid == False):
 			return redirForce(request)
 
+
+		profile_data = getProfileData(user_firebase_id)
+		
+
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		print(currentuserstruct)
 		user_alias = currentuserstruct[0]["alias"]
