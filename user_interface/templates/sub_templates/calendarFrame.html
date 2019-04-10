@@ -6,7 +6,7 @@
 
 <div class="container calCont" style="width:100%;">
 	  	<div id="cal_control_bar">
-	  		<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 0;">
+	  		<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 21;">
 		      	<ul class= "navbar-nav ml-auto">
 			        <li class="nav-item" onclick="leftArrowClick()">
 			          <a class="nav-link" href="#" id="prev_button"><i class="material-icons left">arrow_left</i></a>
@@ -18,12 +18,8 @@
 			          <a class="nav-link" href="#" id="next_button"><i class="material-icons left">arrow_right</i></a>
 			        </li>
 		        </ul>
-		      <div class="collapse navbar-collapse" id="collapsableNav">
-		        <ul class="navbar-nav mr-auto">
-		          <li class="nav-item dropdown">
-		          </li>
-		        </ul>
-		        <ul class="navbar-nav">
+		      <div class="collapse navbar-collapse" id="collapsableNav" style="padding-left: 10%;">
+		        <ul class="navbar-nav mx-auto">
 		          <li class="nav-item">
 		            <div class="monthBar justify-content-center" style="">
 					  <select class="monthSel" id="month_sel" data-style="monthSel" onchange="monthYearUpdate();">
@@ -45,7 +41,18 @@
 		        </ul>
 		        
 		        <ul class= "navbar-nav ml-auto">
-		          <li class="nav-item">
+		        	<li class="nav-item dropdown overAll">
+			            <a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">View</a>
+			            	<div class="dropdown-menu dropdown-menu-right" style="position:absolute; z-index: 100; color:black; " aria-labelledby="dropdown04">
+			            	
+			            	<a class="dropdown-item" href="#" onclick="switchCalendarView('cal_grid_cont', 'month');" id="month_button" aria-expanded="false">Month</a>
+			            	<a class="dropdown-item" href="#" onclick="switchCalendarView('cal_grid_cont', 'week');" id="week_button" aria-expanded="false">Week</a>
+			            	<a class="dropdown-item" href="#" onclick="switchCalendarView('cal_grid_cont', 'day');" id="day_button" aria-expanded="false">Day</a>
+			            	<a class="dropdown-item" href="#" onclick="switchCalendarView('cal_grid_cont', 'list');" id="list_button" aria-expanded="false">List</a>
+			            	</div>
+			            </div>
+			          </li>
+		          <!-- <li class="nav-item">
 		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'month');" id="month_button" aria-expanded="false">Month</a>
 		          </li>
 		          <li class="nav-item">
@@ -56,7 +63,7 @@
 		          </li>
 		          <li class="nav-item">
 		            <a class="nav-link" href="#" onclick="switchCalendarView('cal_grid_cont', 'list');" id="list_button" aria-expanded="false">List</a>
-		          </li>
+		          </li> -->
 		        </ul>
 		      </div>
 		    </nav>
@@ -81,8 +88,7 @@
 							if(_switchType == "list" || _switchType == "month"){
 								switchCalendarView(_cont_id, _switchType);
 							}
-							window.setTimeout(
-								function(){window.scrollTo(0, _prev_scroll_y);}, timeout_mil);
+							smoothScrollTo();
 						}
 					</script>
 					</li>
@@ -129,7 +135,7 @@
 
 	  	<div id="cal_top_head">
 	  	</div>
-	  	<div id="cal_grid_cont" style="padding-top: 20px;">
+	  	<div id="cal_grid_cont" style="padding-top: 20px; padding-bottom: 100px;">
 	  		
 			  	</div>
 	</div>

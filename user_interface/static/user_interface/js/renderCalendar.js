@@ -534,7 +534,7 @@ function makeList(cont_id){
 		var temp_date_time = new Date(Number(arr[i].start_date));
 		var date_string_start = customDateString(temp_date_time);
 		var time_string_start = customTimeString(temp_date_time);
-		a_elem.innerHTML += " <br> " + date_string_start + "  " + time_string_start;
+		a_elem.innerHTML += date_string_start + "  " + time_string_start;
 		temp_date_time = new Date(Number(arr[i].end_date));
 		var date_string_end = customDateString(temp_date_time);
 		var time_string_end = customTimeString(temp_date_time);
@@ -552,6 +552,7 @@ function makeList(cont_id){
 	for(var i = 0; i < selected_events.length; i++){
 		combinedEvents.push(selected_events[i]);
 	}
+	if(combinedEvents.length > 0){
 	combinedEvents.sort(function(a, b){return a.start_date - b.start_date});
 	if(freetimeChecked == false){
 		for(var i = 0; i < combinedEvents.length; i++){
@@ -590,7 +591,9 @@ function makeList(cont_id){
 			createFuncFree(sub_list, combined_free, i);
 		}
 	}
-	list_div.style.height = "100%";
+	
+	}
+	// list_div.style.height = "100%";
 	list_div.style.width = "100%";
 	list_div.appendChild(sub_list);
 	cont_div.appendChild(list_div);
@@ -695,10 +698,18 @@ function switchCalendarView(cont_id, switchType){
 				drawColorGrid(freetimeChecked);
 			}
 		}
-	window.setTimeout(
-		function(){window.scrollTo(0, _prev_scroll_y);}, timeout_mil);
+	smoothScrollTo();
 	
 }
+function smoothScrollTo(){
+	window.setTimeout(
+		function(){window.scrollTo({
+			top: _prev_scroll_y,
+			left: 0,
+			behavior: 'smooth'
+			});}, 100);
+}
+
 function clearEvents(){
 	for(var i = 0; i < eventDivArray.length; i++){
 		var curr_event = eventDivArray[i];
@@ -1159,6 +1170,9 @@ function scrollAdjust(){
 	}
 }
 function leftArrowClick(){
+	if(_switchType == "list"){
+		return;
+	}
 	clearEvents();
 	switch(_switchType){
 		case "month":
@@ -1195,35 +1209,19 @@ function leftArrowClick(){
 }
 function currButtonClick(){
 	clearEvents();
-	switch(_switchType){
-		case "month":
-			setCurrTime();
-			selectDayHard(_day_selected);
-			clearEvents();
-			switchCalendarView(_cont_id, _switchType);
-			addEvents();
-			break;
-		case "week":
-			setCurrTime();
-			selectDayHard(_day_selected);
-			clearEvents();
-			switchCalendarView(_cont_id, _switchType);
-			addEvents();
-			break;
-		case "day":
-			setCurrTime();
-			selectDayHard(_day_selected);
-			clearEvents();
-			switchCalendarView(_cont_id, _switchType);
-			addEvents();
-			break;
-		default:
-	}
+	setCurrTime();
+	selectDayHard(_day_selected);
+	clearEvents();
+	switchCalendarView(_cont_id, _switchType);
+	addEvents();
 	clearEvents();
 	switchCalendarView(_cont_id, _switchType);
 	addEvents();
 }
 function rightArrowClick(){
+	if(_switchType == "list"){
+		return;
+	}
 	clearEvents();
 	switch(_switchType){
 		case "month":

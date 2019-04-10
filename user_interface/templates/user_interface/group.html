@@ -91,9 +91,11 @@
 	  	</div>
 	<hr>
 	</div>
-	<div class="container calCont" style="">
-		  	
-	</div>	
+    <div id="calendarLoc">
+    	{% with calendarFrame as sub_template %}
+    		{% include calendarFrame %}
+    	{% endwith %}
+    </div>
 	<style type="text/css">
 
 		.card-block{
@@ -158,33 +160,8 @@
 		</style>
 
 <script type="text/javascript">
-	
-	function windowResized(){
-		var breakpoint = getResponsiveBreakpoint();
-	}
 
-	function getResponsiveBreakpoint() {
-	    var envs = ["xs", "sm", "md", "lg"];
-	    var env = "";
-
-	    var $el = $("<div>");
-	    $el.appendTo($("body"));
-
-	    for (var i = envs.length - 1; i >= 0; i--) {
-	        env = envs[i];
-	        $el.addClass("d-" + env + "-none");;
-	        if ($el.is(":hidden")) {
-	            break; // env detected
-	        }
-	    }
-	    $el.remove();
-	    return env;
-	}
-	function main(){
-		window.addEventListener("resize", windowResized);
-		switchCalendarView(_cont_id, "month");
-	}
-		main();
+		mainProf();
 </script>
 
 {% endblock %}
