@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = None
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
@@ -84,12 +84,6 @@ WSGI_APPLICATION = 'myalmanack.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-
-
-try:
-    from .local_settings import *
-except:
-    pass
 
 import dj_database_url
 
@@ -168,16 +162,6 @@ LOGOUT_REDIRECT_URL = "/"
 INSTALLED_APPS += ["authorization.App"]
 
 #MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
-
-
-# Django-Heroku
-# TODO: Move this to local_settings.py
-
-#import django_heroku
-#django_heroku.settings(locals())
-
-#import dj_database_url
-#DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
 
 # Override default settings with local settings for development environments
