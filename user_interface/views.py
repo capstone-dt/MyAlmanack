@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
+from database.models import Profile
 from user_interface.forms import *
 import base64
 import os
@@ -164,6 +165,8 @@ class ProfileView(TemplateView):
 		contactjson = str(json.dumps(contactstructs))
 		user_firebase_id = getCurrentFirebaseId(request)
 		# print(profilestructs)
+		isvalid = validFirebaseId(user_firebase_id);
+		print("isvalid_id", isvalid)
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		print(currentuserstruct)
 		if bool(currentuserstruct[0]) == False:
