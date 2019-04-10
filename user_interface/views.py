@@ -158,6 +158,7 @@ class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
 	def dummy(self, event_form, request, alias_requested):
+
 		search_form = SearchForm()
 		eventstructs = getDummyData("event_table")
 		eventjson = str(json.dumps(eventstructs))
@@ -165,14 +166,15 @@ class ProfileView(TemplateView):
 		profilejson = str(json.dumps(profilestructs))
 		contactstructs = getDummyData("contact_list_table")
 		contactjson = str(json.dumps(contactstructs))
+
 		user_firebase_id = getCurrentFirebaseId(request)
-		# print(profilestructs)
-		isvalid = validFirebaseId(user_firebase_id);
-		print("isvalid_id", isvalid)
+		isValid = validFirebaseId(user_firebase_id);
+		print("isvalid_id", isValid)
+		if(isValid == False):
+			return redirForce(request)
+
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		print(currentuserstruct)
-		if bool(currentuserstruct[0]) == False:
-			return redirForce(request)
 		user_alias = currentuserstruct[0]["alias"]
 		user_selected = currentuserstruct
 
@@ -262,6 +264,12 @@ class EditProfileView(TemplateView):
 		group_form = GroupForm()
 		edit_form = EditProfileForm()
 		def_prof_pic = getProfilePictureBase64("default_profile")
+		user_firebase_id = getCurrentFirebaseId(request)
+		isValid = validFirebaseId(user_firebase_id);
+		print("isvalid_id", isValid)
+			return redirForce(request)
+			
+
 		response = render(
 			request=request,
 			template_name=self.template_name,
@@ -285,8 +293,13 @@ class EditProfileView(TemplateView):
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
 
-	def get(self, request, group_name):
-		print("GROUP NAME:", group_name)
+	def dummy(self, request, group_name):
+		user_firebase_id = getCurrentFirebaseId(request)
+		isValid = validFirebaseId(user_firebase_id);
+		print("isvalid_id", isValid)
+		if(isValid == False):
+			return redirForce(request)
+
 		search_form = SearchForm()
 		group_form = GroupForm()
 		return render(
@@ -297,20 +310,16 @@ class GroupView(TemplateView):
 				"group_form" : group_form,
 				"calendar_mode" : "group",}
 		)
+
+
+	def get(self, request, group_name):
+		print("GROUP NAME:", group_name)
+		return self.dummy(request, group_name)
+
 	def post(self, request, group_name):
 		print("GROUP NAME:", group_name)
-		search_form = SearchForm()
-		group_form = GroupForm()
 		formController(request)
-		return render(
-			request=request,
-			template_name=self.template_name,
-			context={"search_form" : search_form, 
-				"calendarFrame" : "sub_templates/calendarFrame.html",
-				"group_form" : group_form,
-				"calendar_mode" : "group",
-				}
-		)
+		return self.dummy(request, group_name)
 
 class DefaultView(TemplateView):
 	template_name = 'user_interface/default.html'
