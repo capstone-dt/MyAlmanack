@@ -24,7 +24,7 @@ class EditProfileForm(forms.Form):
 	# ADDED
 	PIalias = forms.CharField(widget=forms.HiddenInput())
 	PIemail = forms.CharField(widget=forms.HiddenInput(), required=False)
-	PIbirthday = forms.DateField(widget=forms.HiddenInput())
+	PIbirthday = forms.CharField(widget=forms.HiddenInput())
 	PIphone = forms.CharField(widget=forms.HiddenInput(), required=False)
 	PIorganization = forms.CharField(widget=forms.HiddenInput(), required=False)
 	PIdescription = forms.CharField(widget=forms.HiddenInput(), required=False)
