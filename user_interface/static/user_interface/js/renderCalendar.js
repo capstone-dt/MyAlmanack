@@ -41,6 +41,7 @@ var member_events_all = [];
 var member_check_ids = [];
 var freetimeChecked = false;
 var timeout_mil = 20;
+var _calendar_mode = "";
 // Friends enabled test
 
 /*
@@ -1118,7 +1119,6 @@ function dayWeekUpdate(){
 	switchCalendarView(_cont_id, _switchType);
 	addEvents();
 }
-
 function populateMonthYear(){
 	var month_sel = document.getElementById("month_sel");
 	for(var i=0; i < _months_of_year.length; i++){
@@ -1257,6 +1257,19 @@ function rightArrowClick(){
 }
 function populateFriendsSelectDropdown(){
 	var friendsSelectDropdown = document.getElementById("friend_select_dropdown");
+	var friendsSelectDropdownButton = document.getElementById("friends_select_dropdown_button");
+	switch(_calendar_mode){
+		case "self":
+			break;
+		case "friend":
+			console.log(friendsSelectDropdown);
+			friendsSelectDropdownButton.style.display = "none";
+			return;
+		case "group":
+			friendsSelectDropdownButton.innerText = "Members";
+			break;
+		default:
+	}
 	var friends_to_pop = getFriendsUserData();
 	for(var i = 0; i < friends_to_pop.length; i++){
 		var curr_friend = friends_to_pop[i];
@@ -1962,7 +1975,7 @@ function loadCalendarDataProfile(user_events_data, friend_events_data){
 // -----------------------------------------------------------------
 
 
-function mainProf(){
+function mainProf(calendar_mode){
 	window.addEventListener("resize", windowResized);
 	document.body.addEventListener('click', clickAnywhere, true); 
 	switchCalendarView(_cont_id, "month");	
@@ -1972,6 +1985,12 @@ function mainProf(){
 	populateDay();
 	setCurrTime();
 	dayWeekUpdate();
+	_calendar_mode = calendar_mode;
+	console.log("CALENDAR MODE", _calendar_mode);
 	populateFriendsSelectDropdown();
 	windowResized();
 }
+
+
+// -----------------------------------------------------------------
+

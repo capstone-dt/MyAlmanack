@@ -4,15 +4,19 @@ from django.contrib.postgres.forms import SimpleArrayField
 
 class EventForm(forms.Form):
 	EIname = forms.CharField(widget=forms.HiddenInput())
-	EIstart = forms.DateField(widget=forms.HiddenInput())
-	EIend = forms.DateField(widget=forms.HiddenInput())
-	EIrepeat = forms.CharField(widget=forms.HiddenInput())
-	EIrepeat_pattern = forms.CharField(widget=forms.HiddenInput())
-	EIuntil = forms.DateField(widget=forms.HiddenInput())
+	EIstart = forms.CharField(widget=forms.HiddenInput())
+	EIend = forms.CharField(widget=forms.HiddenInput())
 	# Split manually
 	EIinvite = forms.CharField(widget=forms.HiddenInput())
 	EIwhitelist = forms.CharField(widget=forms.HiddenInput())
 	EIblacklist = forms.CharField(widget=forms.HiddenInput())
+	EIrepeat = forms.CharField(widget=forms.HiddenInput(), required=False)
+	EIrepeat_pattern = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+class GroupForm(forms.Form):
+	GIname = forms.CharField(widget=forms.HiddenInput())
+	GIdescription = forms.CharField(widget=forms.HiddenInput())
+	GIinvite = forms.CharField(widget=forms.HiddenInput())
 
 class EditProfileForm(forms.Form):
 	PIfirst = forms.CharField(widget=forms.HiddenInput())
@@ -26,6 +30,9 @@ class EditProfileForm(forms.Form):
 	PIdescription = forms.CharField(widget=forms.HiddenInput(), required=False)
 
 class FriendRequestForm(forms.Form):
+	FIalias = forms.CharField(widget=forms.HiddenInput())
+
+class FriendRemoveForm(forms.Form):
 	FIalias = forms.CharField(widget=forms.HiddenInput())
 
 class SearchForm(forms.Form):

@@ -16,6 +16,7 @@ urlpatterns = [
 	path("profile/edit/", views.EditProfileView.as_view(), name="editProfile"),
 	re_path(r'^profile/(?P<alias>[A-Za-z0-9]+)/$', views.ProfileView.as_view(), 
 		name="profile"),
+	path('group/', views.nullGroup, name="group"),
 	re_path(r'^group/(?P<group_name>[A-Za-z0-9]+)/$', views.GroupView.as_view(), 
 		name="group"),
 	path("default", views.DefaultView.as_view(), name="default"),
