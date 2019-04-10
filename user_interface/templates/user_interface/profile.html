@@ -10,7 +10,8 @@
 	    	<div id="name_display"> </div> 
 	    	</div>
 	    	<div class="col-4">
-	    	<button class="friendButton">Add Friend</button>
+	    	<button class="friendButton" id="friendButtonId" style="display:none;">Add Friend</button>
+	    	<button class="removeFriendButton" id="removeFriendButtonId" style="display:none;">Remove Friend</button>
 	    	</div>
 	    	</div>
 	    </h1>
@@ -57,14 +58,43 @@
 		.friendButton:hover{
 			background-color: #6AB76B;
 		}
+		.removeFriendButton{
+			background-color: #FF9999;
+			border: none;
+			color: white;
+			padding: 15px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 16px;
+			margin: 4px 2px;
+			cursor: pointer;
+		}
+		.removeFriendButton:hover{
+			background-color: #E57575;
+		}
 		
 		</style>
 
 <script type="text/javascript">
-		console.log("{{dummy_events}}");
+		var friendButton = document.getElementById("friendButtonId");
+		var removeFriendButton = document.getElementById("removeFriendButtonId");
+		if("{{profile_mode}}" != "self"){
+			if("{{is_friend}}" == "true"){
+				friendButton.style.display = "none";
+				removeFriendButton.style.display = "block";
+			}else{
+				friendButton.style.display = "block";
+				removeFriendButton.style.display = "none";
+			}
+		}else{
+			friendButton.style.display = "none";
+			removeFriendButton.style.display = "none";
+		}
+		
 		loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
 		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
-		mainProf();
+		mainProf("{{calendar_mode}}");
 
 
 </script>

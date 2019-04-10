@@ -3,10 +3,8 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
-from user_interface.forms import EventForm
-from user_interface.forms import EditProfileForm
-from user_interface.forms import SearchForm
 from database.models import *
+from user_interface.forms import *
 from django.db import connection
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db.models.functions import Greatest
@@ -15,10 +13,10 @@ from operator import itemgetter
 import base64
 import os
 import json
-import time
 from authentication.firebase import get_session_claims
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
+
 
 def getDummyData(dummy_file):
 	dummy_dir = "/user_interface/static/dummy_data/"
@@ -132,14 +130,19 @@ def filterAccessFriendEvents(friend_events, user_alias):
 	return ret_filtered
 
 def getCurrentFirebaseId(request):
-	User = get_user_model()
-	claims = get_session_claims(request, check_revoked=True)
-	user = User.objects.get(username=claims["uid"])
-	return user
+	return request.user.username;
 
 def nullAlias(request):
 	p = ProfileView()
+	if(request.method == "POST"):
+		return p.post(request, "")
 	return p.get(request, "")
+
+def nullGroup(request):
+	g = GroupView()
+	if(request.method == "POST"):
+		return g.post(request, "")
+	return g.get(request, "")
 
 def redirForce(request):
 	e = EditProfileView()
@@ -155,6 +158,7 @@ class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
 	def dummy(self, event_form, request, alias_requested):
+
 		search_form = SearchForm()
 		eventstructs = getDummyData("event_table")
 		eventjson = str(json.dumps(eventstructs))
@@ -162,19 +166,25 @@ class ProfileView(TemplateView):
 		profilejson = str(json.dumps(profilestructs))
 		contactstructs = getDummyData("contact_list_table")
 		contactjson = str(json.dumps(contactstructs))
+
 		user_firebase_id = getCurrentFirebaseId(request)
-		# print(profilestructs)
+		isValid = validFirebaseId(user_firebase_id);
+		print("isvalid_id", isValid)
+		if(isValid == False):
+			return redirForce(request)
+
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		print(currentuserstruct)
-		if bool(currentuserstruct[0]) == False:
-			return redirForce(request)
 		user_alias = currentuserstruct[0]["alias"]
 		user_selected = currentuserstruct
+
 		if(alias_requested != ""):
 			print("alias_requested:", alias_requested)
 			user_alias = alias_requested
-			sel_id = getFirebaseIDAliasDummy(profilestructs, user_alias)
+			sel_id = getFirebaseIDAliasDummy(profilestructs, alias_requested)
 			user_selected = getCurrUser(profilestructs, sel_id)
+			print("user_selected", user_selected)
+
 
 		currentuserjson = str(json.dumps(currentuserstruct))
 		user_events = filterDummyEventsAlias(eventstructs, user_alias)
@@ -183,6 +193,18 @@ class ProfileView(TemplateView):
 		friend_names = user_contact_list["contact_names"].replace(" ", "").split(",")
 		print(friend_names)
 		friend_events = []
+		is_friend = "false"
+		prof_mode = "friend"
+		if(currentuserstruct[0]["alias"] == user_alias or alias_requested == ""):
+			prof_mode = "self"
+		else:
+			prof_mode = "friend"
+			if alias_requested in friend_names:
+				is_friend = "true"
+			else:
+				is_friend = "false"
+
+
 		for friend_alias in friend_names:
 			curr_events = filterDummyEventsAlias(eventstructs, friend_alias)
 			for temp_event in curr_events:
@@ -195,12 +217,14 @@ class ProfileView(TemplateView):
 		print(user_contact_list)
 
 		def_prof_pic = getProfilePictureBase64("default_profile")
+		group_form = GroupForm()
 		response = render(
 			request=request,
 			template_name=self.template_name,
 			context={
 				"event_form" : event_form,
-				"search_form" : search_form, 
+				"search_form" : search_form,
+				"group_form" : group_form,
 				"dummy_events" : eventjson, 
 				"dummy_profiles" : profilejson,
 				"dummy_contacts" : contactjson,
@@ -209,7 +233,10 @@ class ProfileView(TemplateView):
 				"member_events" : filtered_friend_events_json,
 				"user_contact_list" : user_contact_list_json,
 				"calendarFrame" : "sub_templates/calendarFrame.html",
-				"default_profile" : def_prof_pic
+				"default_profile" : def_prof_pic,
+				"profile_mode" : prof_mode,
+				"is_friend" : is_friend,
+				"calendar_mode" : prof_mode,
 			}
 		)
 		return response
@@ -226,50 +253,73 @@ class ProfileView(TemplateView):
 		switchType = request.POST.get('formType')
 		print(request.POST.get('formType'))
 		event_form = EventForm()
-		if(switchType == "SubmitEvent"):
-			event_form = EventForm(request.POST)
-			print(event_form)
-			return self.dummy(event_form, request)
-		elif(switchType == "FriendRequest"):
-			event_form = EventForm(request.POST)
-			print(event_form)
-			return self.dummy(event_form, request)
+		formController(request)
+		return self.dummy(event_form, request, alias)
 
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
 
-	def dummy(self, request, edit_form):
+	def dummy(self, request):
 		search_form = SearchForm()
+		group_form = GroupForm()
+		edit_form = EditProfileForm()
 		def_prof_pic = getProfilePictureBase64("default_profile")
+		user_firebase_id = getCurrentFirebaseId(request)
+		isValid = validFirebaseId(user_firebase_id);
+		print("isvalid_id", isValid)
+			return redirForce(request)
+			
+
 		response = render(
 			request=request,
 			template_name=self.template_name,
 			context={"edit_form" : edit_form, 
 			"search_form" : search_form,
-			"default_profile" : def_prof_pic}
+			"default_profile" : def_prof_pic,
+			"group_form" : group_form
+			}
 		)
 		return response
 
 	def get(self, request):
-		edit_form = EditProfileForm()
-		return self.dummy(request, edit_form)
+		return self.dummy(request)
 
 	def post(self, request):
-		edit_form = EditProfileForm(request.POST)
-		print(edit_form)
-		return self.dummy(request, edit_form)
+		formController(request)
+		# createProfileData('404', 'heyjustin', ['callme'], 'wink', 'wonk',
+		# ['email'], '121312123', 'organization', 'user_desc')
+		return self.dummy(request)
 
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
 
-	def get(self, request, group_name):
-		print("GROUP NAME:", group_name)
+	def dummy(self, request, group_name):
+		user_firebase_id = getCurrentFirebaseId(request)
+		isValid = validFirebaseId(user_firebase_id);
+		print("isvalid_id", isValid)
+		if(isValid == False):
+			return redirForce(request)
+
 		search_form = SearchForm()
+		group_form = GroupForm()
 		return render(
 			request=request,
 			template_name=self.template_name,
-			context={"search_form" : search_form}
+			context={"search_form" : search_form, 
+				"calendarFrame" : "sub_templates/calendarFrame.html",
+				"group_form" : group_form,
+				"calendar_mode" : "group",}
 		)
+
+
+	def get(self, request, group_name):
+		print("GROUP NAME:", group_name)
+		return self.dummy(request, group_name)
+
+	def post(self, request, group_name):
+		print("GROUP NAME:", group_name)
+		formController(request)
+		return self.dummy(request, group_name)
 
 class DefaultView(TemplateView):
 	template_name = 'user_interface/default.html'
@@ -294,9 +344,7 @@ class SearchView(TemplateView):
 
 	def post(self, request):
 		search_form = SearchForm(request.POST)
-		print(search_form)
-		#form.data['field_name']
-		search_term = search_form.data['SIstring']
+		formController(request)
 		events = searchEvents(search_term)
 		friends = searchFriends(search_term)
 		users = searchUsers(search_term)
@@ -311,6 +359,56 @@ class SearchView(TemplateView):
 				"groups" : groups
 			}
 		)
+
+  
+def formController(request):
+	switchType = request.POST.get('formType')
+	if(switchType == "SubmitEvent"):
+		event_form_filled = EventForm(request.POST)
+		print(event_form_filled)
+	elif(switchType == "FriendRequest"):
+		friend_form = FriendRequestForm(request.POST)
+		print(friend_form)
+	elif(switchType == "GroupRequest"):
+		invite_form = GroupInviteForm(request.POST)
+		print(invite_form)
+	elif(switchType == "EditProfile"):
+		editProfile(request)
+	elif(switchType == "CreateGroup"):
+		group_form = GroupForm(request.POST)
+		print(group_form)
+
+def editProfile(request):
+	firebase_id = getCurrentFirebaseId(request)
+	isValid = validFirebaseId(firebase_id)
+	profile_form = EditProfileForm(request.POST)
+	alias = profile_form['PIalias'].value()
+	phone_num = [profile_form['PIphone'].value()]
+	last_name = profile_form['PIlast'].value()
+	first_name = profile_form['PIfirst'].value()
+	email = [profile_form['PIemail'].value()]
+	birth_date = profile_form['PIbirthday'].value()
+	organization = profile_form['PIorganization'].value()
+	print("\n\n\n")
+	print(type(organization), organization)
+	user_desc = profile_form['PIdescription'].value()
+	print("BELOW:")
+	print(firebase_id, alias, phone_num, last_name, first_name,
+		email, birth_date, organization, user_desc)
+	print("\n\n\n")
+	if(isValid):
+		# Modify current user
+		editProfileData(firebase_id, alias, phone_num, last_name, first_name,
+		email, birth_date, organization, user_desc)
+	else:
+		# Create new user
+		"""def createProfileData(firebase_id, alias, phone_num, last_name, first_name,
+	email, birth_date, organization, user_desc):"""
+		# createProfileData(firebase_id, 'heyjustin', ['callme'], 'wink', 'wonk',
+		# ['email'], '121312123', 'organization', 'user_desc')
+		createProfileData(firebase_id, alias, phone_num, last_name, first_name,
+		email, birth_date, organization, user_desc)
+
 
 # Query database using an alias to get the firebase_id.
 def aliasToFirebaseId(alias):
