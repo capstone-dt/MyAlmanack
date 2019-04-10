@@ -167,7 +167,7 @@ LOGOUT_REDIRECT_URL = "/"
 
 INSTALLED_APPS += ["authorization.App"]
 
-MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
+#MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
 
 
 # Django-Heroku
