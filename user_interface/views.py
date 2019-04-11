@@ -179,6 +179,8 @@ class ProfileView(TemplateView):
 
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		print(currentuserstruct)
+		if bool(currentuserstruct[0]) == False:
+			return redirForce(request)
 		user_alias = currentuserstruct[0]["alias"]
 		user_selected = currentuserstruct
 
