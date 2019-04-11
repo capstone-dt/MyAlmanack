@@ -2,8 +2,8 @@ from ..utilities.wrapper import Wrapper
 from ..utilities.reflection import is_subclass
 
 # MyAlmanack database (Justin's subsystem)
-#from database.models import Profile, ContactList
-from .stubs import Profile, ContactList
+from database.models import Profile, ContactList
+#from .stubs import Profile, ContactList
 
 
 class User(Wrapper):
@@ -48,8 +48,8 @@ class User(Wrapper):
         return self._object.username
     
     def get_profile(self):
-        #return Profile.objects.get(firebase_id=self._object.username)
-        return Profile(firebase_id=self._object.username) # STUB
+        return Profile.objects.get(firebase_id=self._object.username)
+        #return Profile(firebase_id=self._object.username) # STUB
     
     # This returns a list of users which are contacts to this user.
     def get_contacts(self):
