@@ -348,10 +348,10 @@ class SearchView(TemplateView):
 	def post(self, request):
 		search_form = SearchForm(request.POST)
 		formController(request)
-		events = searchEvents(search_term)
-		friends = searchFriends(search_term)
-		users = searchUsers(search_term)
-		groups = searchGroups(search_term)
+		# events = searchEvents(search_term)
+		# friends = searchFriends(search_term)
+		# users = searchUsers(search_term)
+		# groups = searchGroups(search_term)
 		return render(
 			request=request,
 			template_name=self.template_name,
