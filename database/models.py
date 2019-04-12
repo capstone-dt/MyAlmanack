@@ -18,7 +18,7 @@ class ContactList(models.Model):
 	sent_friend_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
 	received_friend_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
 	sent_group_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
-	received_group_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
+	received_group_invites = ArrayField(models.SmallIntegerField(blank=True, null=True))
 
 	class Meta:
 		managed = False
@@ -63,8 +63,8 @@ class Group(models.Model):
 	group_name = models.CharField(primary_key=True, max_length=20)
 	group_admin = ArrayField(models.CharField(max_length=128))
 	group_members = ArrayField(models.CharField(max_length=128))
-	incoming_requests = ArrayField(models.CharField(max_length=128, blank=True, null=True))
-	outgoing_requests = ArrayField(models.CharField(max_length=128, blank=True, null=True))
+	sent_group_invites = ArrayField(models.SmallIntegerField(blank=True, null=True))
+	received_group_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
 	group_desc = models.TextField(blank=True, null=True)
 
 	class Meta:
