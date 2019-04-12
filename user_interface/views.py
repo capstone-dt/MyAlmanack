@@ -356,10 +356,10 @@ class SearchView(TemplateView):
 			request=request,
 			template_name=self.template_name,
 			context={"search_form" : search_form,
-				"events" : events,
-				"friends" : friends,
-				"users" : users,
-				"groups" : groups
+				"events" : "[{}]",
+				"friends" : "[{}]",
+				"users" : "[{}]",
+				"groups" : "[{}]"
 			}
 		)
 
