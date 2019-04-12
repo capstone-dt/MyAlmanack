@@ -154,6 +154,7 @@ def getFirebaseIDAliasDummy(user_structs, alias):
 			return temp_user["firebase_id"]
 	return -1
 
+
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
@@ -175,7 +176,16 @@ class ProfileView(TemplateView):
 
 
 		profile_data = getProfileData(user_firebase_id)
-		
+		print(profile_data)
+		profile_events = []
+		if(profile_data['user_events'] != None):
+			profile_events = getUserEvents(user_firebase_id)
+		print(profile_events)
+		# data_contact_list = getContactListData(user_firebase_id)
+		# print(data_contact_list)
+		# data_friend_events = []
+
+
 
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		print(currentuserstruct)
@@ -243,6 +253,8 @@ class ProfileView(TemplateView):
 				"profile_mode" : prof_mode,
 				"is_friend" : is_friend,
 				"calendar_mode" : prof_mode,
+				"user_database" : profile_data,
+				"user_events_database" : profile_events,
 			}
 		)
 		return response
