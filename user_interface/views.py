@@ -704,50 +704,52 @@ def getUserEvents(firebase_id):
 	return all_event_data
 
 # Create an event and update the event creator's user_events.
-def createEvent(event_id, description, participating_users, event_admins, whitelist, blacklist, start_date,
+def createEvent(event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
 	end_date, event_creator_firebase_id):
 	with connection.cursor() as cursor:
+		event_id = Event.objects.count()
 		# Create an event using a raw SQL query.
-		cursor.execute('INSERT INTO "Event" (event_id, description, participating_users, event_admins,'
-			+ 'whitelist, blacklist, start_date, end_date, event_creator_firebase_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-			[event_id, description, participating_users, event_admins, whitelist, blacklist, start_date,
+		cursor.execute('INSERT INTO "Event" (event_id, event_title, description, participating_users, event_admins,'
+			+ ' whitelist, blacklist, start_date, end_date, event_creator_firebase_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+			[event_id, event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
 			end_date, event_creator_firebase_id])
 		# Update event creator's users_events using a raw SQL query.
-		cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, %s) WHERE firebase_id = %s',
+		cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, (SELECT CAST (%s AS SMALLINT))) WHERE firebase_id = %s',
 			[event_id, event_creator_firebase_id])
 
 # Create a repeat-event and update the repeat-event creator's user_events.
-def createRepeatEvent(event_id, description, participating_users, event_admins, whitelist, blacklist,
+def createRepeatEvent(event_title, description, participating_users, event_admins, whitelist, blacklist,
 	start_date, end_date, event_creator_firebase_id, rep_type, start_time, end_time, week_arr):
 	with connection.cursor() as cursor:
+		event_id = Event.objects.count()
 		re_id = RepeatEvent.objects.count()
 		# Create a repeat-event using a raw SQL query.
-		cursor.execute('INSERT INTO "Repeat_Event" (event_id, description, participating_users, event_admins,'
+		cursor.execute('INSERT INTO "Repeat_Event" (event_id, event_title, description, participating_users, event_admins,'
 			+ ' whitelist, blacklist, start_date, end_date, event_creator_firebase_id, rep_event_id,'
-			+ ' rep_type, start_time, end_time, week_arr) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-			[event_id, description, participating_users, event_admins, whitelist, blacklist, start_date,
+			+ ' rep_type, start_time, end_time, week_arr) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+			[event_id, event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
 			end_date, event_creator_firebase_id, re_id, rep_type, start_time, end_time, week_arr])
 		# Update repeat-event creator's users_events using a raw SQL query.
-		cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, %s) WHERE firebase_id = %s',
+		cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, (SELECT CAST (%s AS SMALLINT))) WHERE firebase_id = %s',
 			[event_id, event_creator_firebase_id])
 
 # Edit event data.
-def editEventData(event_id, description, participating_users, event_admins, whitelist, blacklist, start_date,
+def editEventData(event_id, event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
 	end_date):
 	# Update event data via the Django Profile model.
-	Event.objects.filter(pk=event_id).update(description=description,
+	Event.objects.filter(pk=event_id).update(event_title=event_title,description=description,
 		participating_users=participating_users, event_admins=event_admins, whitelist=whitelist,
 		blacklist=blacklist, start_date=start_date, end_date=end_date)
 
 # Edit repeat-event data.
-def editRepeatEventData(event_id, rep_event_id, description, participating_users, event_admins, whitelist,
+def editRepeatEventData(event_id, rep_event_id, event_title, description, participating_users, event_admins, whitelist,
 	blacklist, start_date, end_date, rep_type, week_arr, start_time, end_time):
 	# Update repeat-event data via a raw SQL query.
 	with connection.cursor() as cursor:
-		cursor.execute('UPDATE "Repeat_Event" SET description=%s, participating_users=%s, event_admins=%s,'
+		cursor.execute('UPDATE "Repeat_Event" SET event_title = %s, description=%s, participating_users=%s, event_admins=%s,'
 			+ ' whitelist=%s, blacklist=%s, start_date=%s, end_date=%s, rep_type=%s, start_time=%s, end_time=%s,'
-			+ 'week_arr=%s WHERE event_id=%s',
-			[description, participating_users, event_admins, whitelist, blacklist, start_date, end_date,
+			+ ' week_arr=%s WHERE event_id=%s',
+			[event_title, description, participating_users, event_admins, whitelist, blacklist, start_date, end_date,
 			rep_type, start_time, end_time, week_arr, event_id])
 
 # Filter contact's events based on the values of whitelists or blacklists.
@@ -758,6 +760,7 @@ def getContactEvents(user_f_id, contact_f_id):
 	# along with its corresponding event_id.
 	contact_events_data = [Event.objects.filter(pk=c_e_id).values('event_id','whitelist',
 		'blacklist')[0] for c_e_id in contact_events_ids]
+	print(contact_events_data)
 
 	contact_events_view_list = []
 	viewable_events = []
@@ -785,7 +788,10 @@ def getContactEvents(user_f_id, contact_f_id):
 		else:
 			viewable_events.append(e_id)
 
-	return viewable_events
+	# For every viewable contact event, get that event information and add it to a list.
+	# Then, return the list of event data in a dictionary format.
+	viewable_events_data = [Event.objects.filter(pk=ve).values()[0] for ve in viewable_events]
+	return viewable_events_data
 
 
 # SIMILARITY (search page) 
@@ -794,10 +800,10 @@ def getContactEvents(user_f_id, contact_f_id):
 # Search for events based on event_ids.
 def searchEvents(search_term):
 	# Run Trigram Similarity search on Event based on the search term.
-	search = Event.objects.annotate(similarity=TrigramSimilarity('event_id', search_term)).filter(
-		similarity__gt=0.3).order_by('-similarity').values('event_id')
+	search = Event.objects.annotate(similarity=TrigramSimilarity('event_title', search_term)).filter(
+		similarity__gt=0.3).order_by('-similarity').values('event_title')
 	# Return a list of event_ids similar to the search term.
-	return [item['event_id'] for item in search]
+	return [item['event_title'] for item in search]
 
 # Search for contacts based on user attributes.
 def searchContacts(search_term, user_f_id):
