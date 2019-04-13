@@ -1,8 +1,4 @@
-Django==2.1.7
-django-bootstrap4==0.0.7
-mysqlclient==1.4.2
-pytz==2018.9
-django
+Django
 gunicorn
 django-heroku
 requests
@@ -11,3 +7,4 @@ numpy
 opencv-python
 psycopg2
 firebase_admin
+fuzzywuzzy

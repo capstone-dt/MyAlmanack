@@ -1,1 +1,3 @@
+from .authorization_result import AuthorizationResult
+from .authorization_request import AuthorizationRequest
 from .enforcement_authority import EnforcementAuthority

@@ -1,12 +1,12 @@
-from authorization.attributes import Action
+from authorization.attributes.actions.user import BinaryUserAction
 from authorization import policies
 
 
-class ViewProfile(Action):
+class ViewProfile(BinaryUserAction):
     policies = [
-        # User must not be blacklisted.
-        ~policies.user.relationship.UserIsBlacklisted,
+        # A user can view his or her own profile.
+        policies.miscellaneous.SubjectIsResource,
         
-        # Users must be contacts.
+        # Users who are contacts can view each other's profile.
         policies.user.relationship.UsersAreContacts
     ]
