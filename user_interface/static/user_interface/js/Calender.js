@@ -302,7 +302,7 @@ class Event{
 
 							}
 						}
-					}console.log(grid);
+					}//console.log(grid);
 				}
 
 				events_per_day(list, start_date, end_date){
@@ -392,12 +392,12 @@ class Event{
 							arr[a].push(struc);
 						}
 					}
+
 				
 					return arr;
 			}
 
 				freeTime(list, threshold){
-					//console.log(list);
 					var i, j;
 					var newList = [];
 					var user_list = [];
@@ -431,7 +431,7 @@ class Event{
 						if (newList[i].end_date < newList[i+1].start_date){
 							var difference = newList[i+1].start_date - newList[i].end_date;
 							//console.log("difference: " + difference);
-							if (difference > threshold){               // 0 == no threshold so return any
+							if (difference >= threshold){               // 0 == no threshold so return any
 								var newTime = {};
 								newTime.start_date = newList[i].end_date;
 								newTime.end_date = newList[i+1].start_date;
@@ -441,7 +441,7 @@ class Event{
 						}
 					}
 					var struc = [user_list,free]
-					console.log(struc);
+					//console.log(struc);
 					return struc;
 				}
 
@@ -479,7 +479,7 @@ class Event{
 
 			function test(){
 				let soccer = new Event('soccer','soccer practice', 1552685400000,1552692600000);
-				console.log(soccer);
+				//console.log(soccer);
 				var x = soccer.rep('1','0','1','0','0','0','0','1', 1552685400000,1552692600000, 12345, [56789,51231]);
 				var y = soccer.rep('1','0','1','1','0','1','0','1', 1552680000000,1552683600000, 32415, [51231]);
 				var z = soccer.rep('1','1','1','1','1','1','1','1', 1552680000000,1552683600000, 98992, [56789,12345,56273]);
@@ -494,29 +494,30 @@ class Event{
 					list1.push(list[i][j]);
 				}
 				}
-				console.log("list");
-				console.log(list);
-				console.log("list1");
-				console.log(list1);
+				//console.log("list");
+				//console.log(list);
+				//console.log("list1");
+				//console.log(list1);
 
 
 				//Fri Mar 15 1996 21:30:00 GMT-0500 (Eastern Standard Time) | Fri Mar 15 1996 22:30:00 GMT-0500 (Eastern Standard Time)
 				let cal = new Calendar('my Calendar');
 				cal.genGrid('2019', '02');
 				var perday = cal.events_per_day(list1,1551416400000, 1554091200000);
-				console.log(cal);
-				console.log("perday");
-				console.log(perday);
+				//console.log(cal);
+				//console.log("perday");
+				//console.log(perday);
 				var event = {};
 				//1552862056000
 				//1552867159500
 				event.start_date = 1551416400000;
 				event.end_date = 1552684400000;
 				var bool = cal.conflict (event, list1);
-				console.log(bool);
+				//console.log(bool);
 				var threshold = (0); //1hr = 12323600
 				var freetime = cal.freeTime(list1 ,threshold);
-				console.log("freetime this:");
-				console.log(freetime);
-				console.log(cal.freetime_per_day(list1,1551416400000,1554091200000 ))
+				//console.log("freetime this:");
+				//console.log(freetime);
+				//console.log("freetime21231 : ");
+				//console.log(cal.freetime_per_day(list1,1551416400000,1554091200000 ))
 			}
