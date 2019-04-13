@@ -3,8 +3,7 @@ from ..utilities.wrapper import Wrapper
 from ..utilities.reflection import is_subclass
 
 # MyAlmanack database (Justin's subsystem)
-#from database.models import Group as _Group
-from .stubs import Group as _Group
+from database.models import Group as _Group
 
 
 class Group(Wrapper):
@@ -20,14 +19,13 @@ class Group(Wrapper):
     
     @classmethod
     def get_all_groups(cls):
-        #all_groups = _Group.objects.all()
-        all_groups = [_Group("12345"), _Group("67890")] # STUB
-        return [cls.from_uid(group.group_name) for group in all_groups]
+        return [
+            cls.from_uid(group.group_name) for group in _Group.objects.all()
+        ]
     
     @classmethod
     def from_uid(cls, uid):
-        #return cls(_Group.objects.get(group_name=uid))
-        return cls(_Group(uid)) # STUB
+        return cls(_Group.objects.get(group_name=uid))
     
     """
     Instance methods

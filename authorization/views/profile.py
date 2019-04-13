@@ -1,4 +1,4 @@
-import authorization
+import authorization.api
 from authentication.firebase import get_session_claims
 
 # Django
@@ -15,9 +15,9 @@ def profile(request, uid):
         raise PermissionDenied
     
     # Check authorization.
-    authorization.authorize(
+    authorization.api.authorize(
         request,
-        action=authorization.actions.user.profile.ViewProfile,
+        action=authorization.api.actions.user.profile.ViewProfile,
         resource=user
     )
     
