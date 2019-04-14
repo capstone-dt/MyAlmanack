@@ -143,8 +143,12 @@
 		database_user_json = parseQuotesJson("{{user_database}}");
 		database_selected_json = parseQuotesJson("{{name_selected_data}}");
 		database_user_events = parseQuotesJson("{{user_events_database}}");
+		database_contact_list = parseQuotesJson("{{user_contact_list}}");
+		database_header_info = parseQuotesJson("{{user_header_database}}");
 		console.log("user_database", database_user_json);
 		console.log("database_user_events", database_user_events);
+		console.log("database_contact_list", database_contact_list);
+		console.log("database_header_info", database_header_info);
 		loadSelectedData();
 		loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
 		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");

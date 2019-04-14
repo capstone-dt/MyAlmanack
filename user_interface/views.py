@@ -147,18 +147,6 @@ def filterAccessFriendEvents(friend_events, user_alias):
 def getCurrentFirebaseId(request):
 	return request.user.username;
 
-def nullAlias(request):
-	p = ProfileView()
-	if(request.method == "POST"):
-		return p.post(request, "")
-	return p.get(request, "")
-
-def nullGroup(request):
-	g = GroupView()
-	if(request.method == "POST"):
-		return g.post(request, "")
-	return g.get(request, "")
-
 def redirForce(request):
 	e = EditProfileView()
 	return e.get(request)
@@ -171,12 +159,57 @@ def redir404(request):
 	)
 
 
+def getHeaderDict(firebase_id):
+	retHeader = {
+		"event_invites" : [],
+		"friend_requests" : [],
+		"group_requests" : {
+			"join_requests" : [],
+			"invites" : []
+		}
+	}
+	user_firebase_id = firebase_id
+	isValid = validFirebaseId(user_firebase_id);
+	if(isValid == True):
+		return retHeader
+
+	contact_list = getContactListData(firebase_id)
+	if(contact_list["received_event_invites"] == None):
+		retHeader["event_invites"] = []
+	else:
+		event_invite_ids = contact_list["received_event_invites"]
+		retHeader["event_invites"] = event_invite_ids
+		# add event information based on id
+	if(contact_list["received_friend_requests"] == None):
+		retHeader["friend_requests"] = []
+	else:
+		friend_invite_firebase_ids = contact_list["received_friend_requests"]
+		for f_id in friend_invite_firebase_ids:
+			curr_user = getProfileData(f_id)
+			curr_user.profile_picture = getProfilePictureFirebaseId(f_id)
+			retHeader["friend_requests"].append(curr_user)
+	if(contact_list["received_group_invites"] == None):
+		retHeader["group_requests"]["invites"] = []
+	else:
+		group_invite_names = contact_list["received_group_invites"]
+		retHeader["group_requests"]["invites"] = group_invite_names
+		# add group information based on group_name
+	return retHeader
+
+
+
 def getFirebaseIDAliasDummy(user_structs, alias):
 	for temp_user in user_structs:
 		if(temp_user["alias"] == alias):
 			return temp_user["firebase_id"]
 	return -1
 
+
+def nullAlias(request):
+	p = ProfileView()
+	if(request.method == "POST"):
+		return p.post(request, "")
+	return p.get(request, "")
 
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
@@ -224,7 +257,7 @@ class ProfileView(TemplateView):
 			print("firebase_id_selected", firebase_id_selected)
 		else:
 			return redir404(request)
-
+		database_header = getHeaderDict(user_firebase_id)
       
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		# print(currentuserstruct)
@@ -297,6 +330,8 @@ class ProfileView(TemplateView):
 				"name_selected_data" : str(json.dumps(selected_user_data)),
 				"user_database" : str(json.dumps(profile_data)),
 				"user_events_database" : str(json.dumps(profile_events)),
+				"user_contact_list" : str(json.dumps(data_contact_list)),
+				"user_header_database" : str(json.dumps(database_header)),
 				"friend_req" :  FriendRequestForm(),
 				"friend_rem" : FriendRemoveForm(),
 			}
@@ -353,6 +388,14 @@ class EditProfileView(TemplateView):
 		formController(request)
 		print("\n REDIR HOME \n")
 		return redirect('/')
+
+
+def nullGroup(request):
+	g = GroupView()
+	if(request.method == "POST"):
+		return g.post(request, "")
+	return g.get(request, "")
+
 
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
