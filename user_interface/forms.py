@@ -28,12 +28,13 @@ class EditProfileForm(forms.Form):
 	PIphone = forms.CharField(widget=forms.HiddenInput(), required=False)
 	PIorganization = forms.CharField(widget=forms.HiddenInput(), required=False)
 	PIdescription = forms.CharField(widget=forms.HiddenInput(), required=False)
+	PIpicture = forms.CharField(widget=forms.HiddenInput(), required=False)
 
 class FriendRequestForm(forms.Form):
-	FIalias = forms.CharField(widget=forms.HiddenInput())
+	FIreqalias = forms.CharField(widget=forms.HiddenInput())
 
 class FriendRemoveForm(forms.Form):
-	FIalias = forms.CharField(widget=forms.HiddenInput())
+	FIremalias = forms.CharField(widget=forms.HiddenInput())
 
 class GroupInviteForm(forms.Form):
 	GIalias = forms.CharField(widget=forms.HiddenInput())

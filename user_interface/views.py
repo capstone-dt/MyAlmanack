@@ -42,21 +42,43 @@ def getDummyData(dummy_file):
 		structs.append(curr_struct)
 	return structs
 
-def getProfilePictureBase64(file_name):
+def getProfilePictureFirebaseId(firebase_id):
+	try:
+		file_loc = getProfilePictureLocation(firebase_id)
+		fh = open(file_loc, 'r')
+		return getProfilePictureBase64(firebase_id)
+	except FileNotFoundError:
+		return getProfilePictureBase64("default_profile")
+
+def getProfilePictureLocation(file_name):
 	picture_dir = "/user_interface/static/profile_pictures/"
 	extension = ".png"
 	cwd = os.getcwd()
 	file_loc = cwd + picture_dir + file_name + extension
+	return file_loc
+
+def getProfilePictureBase64(file_name):
+	file_loc = getProfilePictureLocation(file_name)
 	encoded_string = ""
 	with open(file_loc, "rb") as image_file:
 		encoded_string = base64.b64encode(image_file.read())
 	retval = encoded_string.decode('utf-8')
 	return retval
 
+def saveProfilePictueBase64(file_name, image_64_encode):
+	file_loc = getProfilePictureLocation(file_name)
+	if(image_64_encode == "$"):
+		return
+	split_string = image_64_encode.split(",")[1].encode('utf-8')
+	image_64_decode = base64.decodestring(split_string)
+	image_result = open(file_loc, 'wb')
+	image_result.write(image_64_decode)
+
+
 def getCurrUser(profile_json, firebase_id):
-	print("GET", firebase_id)
+	# print("GET", firebase_id)
 	for user in profile_json:
-		print(user["firebase_id"])
+		# print(user["firebase_id"])
 		if user["firebase_id"].replace(" ", "") == str(firebase_id).replace(" ", ""):
 			return [user]
 	return [{}]
@@ -158,7 +180,7 @@ def getFirebaseIDAliasDummy(user_structs, alias):
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
-	def dummy(self, event_form, request, alias_requested):
+	def dummy(self, request, alias_requested):
 
 		search_form = SearchForm()
 		eventstructs = getDummyData("event_table")
@@ -176,30 +198,50 @@ class ProfileView(TemplateView):
 
 
 		profile_data = getProfileData(user_firebase_id)
-		print(profile_data)
+		profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
+		data_prof_alias = profile_data["alias"]
+		print("data_prof_alias", data_prof_alias)
+		# print(profile_data)
 		profile_events = []
 		if(profile_data['user_events'] != None):
 			profile_events = getUserEvents(user_firebase_id)
-		print(profile_events)
-		# data_contact_list = getContactListData(user_firebase_id)
-		# print(data_contact_list)
-		# data_friend_events = []
+		print("profile_events", profile_events)
+		data_contact_list = getContactListData(user_firebase_id)
+		print("data_contact_list", data_contact_list)
+		data_friend_events = []
+		name_selected = data_prof_alias
+		if(alias_requested != "" and alias_requested != data_prof_alias):
+			#Other user selected
+			name_selected = alias_requested
+		print("name_selected", name_selected)
+		firebase_id_selected = -1
+		selected_user_data = {}
+		try:
+			firebase_id_selected = aliasToFirebaseId(name_selected)
+			selected_user_data = getProfileData(firebase_id_selected)
+			selected_user_data["profile_picture"] = getProfilePictureFirebaseId(firebase_id_selected)
+			print("firebase_id_selected", firebase_id_selected)
+		except:
+			print("INVALID FIREBASE ID. REDIR NOW")
+			selected_user_data = profile_data
+
+
 
 
 
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
-		print(currentuserstruct)
+		# print(currentuserstruct)
 		if bool(currentuserstruct[0]) == False:
 			return redirForce(request)
 		user_alias = currentuserstruct[0]["alias"]
 		user_selected = currentuserstruct
-
 		if(alias_requested != ""):
-			print("alias_requested:", alias_requested)
+			# print("alias_requested:", alias_requested)
 			user_alias = alias_requested
+			name_selected = alias_requested
 			sel_id = getFirebaseIDAliasDummy(profilestructs, alias_requested)
 			user_selected = getCurrUser(profilestructs, sel_id)
-			print("user_selected", user_selected)
+			# print("user_selected", user_selected)
 
 
 		currentuserjson = str(json.dumps(currentuserstruct))
@@ -207,7 +249,7 @@ class ProfileView(TemplateView):
 		user_contact_list_id = currentuserstruct[0]["contact_list_id"]
 		user_contact_list = filterDummyContactsAlias(contactstructs, user_contact_list_id)
 		friend_names = user_contact_list["contact_names"].replace(" ", "").split(",")
-		print(friend_names)
+		# print(friend_names)
 		friend_events = []
 		is_friend = "false"
 		prof_mode = "friend"
@@ -230,15 +272,17 @@ class ProfileView(TemplateView):
 		user_events_json = str(json.dumps(user_events))
 		filtered_friend_events_json = str(json.dumps(filtered_friend_events))
 		user_contact_list_json = str(json.dumps(user_contact_list))
-		print(user_contact_list)
+		# print(user_contact_list)
 
+
+		print("\n")
 		def_prof_pic = getProfilePictureBase64("default_profile")
 		group_form = GroupForm()
 		response = render(
 			request=request,
 			template_name=self.template_name,
 			context={
-				"event_form" : event_form,
+				"event_form" : EventForm(),
 				"search_form" : search_form,
 				"group_form" : group_form,
 				"dummy_events" : eventjson, 
@@ -253,26 +297,24 @@ class ProfileView(TemplateView):
 				"profile_mode" : prof_mode,
 				"is_friend" : is_friend,
 				"calendar_mode" : prof_mode,
-				"user_database" : profile_data,
+				"name_selected" : name_selected,
+				"name_selected_data" : str(json.dumps(selected_user_data)),
+				"user_database" : str(json.dumps(profile_data)),
 				"user_events_database" : profile_events,
+				"friend_req" :  FriendRequestForm(),
+				"friend_rem" : FriendRemoveForm(),
 			}
 		)
 		return response
 
 	def get(self, request, alias):
 		print("alias passed:", alias)
-		firebase_id = getCurrentFirebaseId(request)
-		print(firebase_id)
-		event_form = EventForm()
-		return self.dummy(event_form, request, alias)
+		return self.dummy(request, alias)
 
 	def post(self, request, alias):
 		print("POST REQUESTED")
-		switchType = request.POST.get('formType')
-		print(request.POST.get('formType'))
-		event_form = EventForm()
 		formController(request)
-		return self.dummy(event_form, request, alias)
+		return self.dummy(request, alias)
 
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
@@ -283,7 +325,18 @@ class EditProfileView(TemplateView):
 		edit_form = EditProfileForm()
 		def_prof_pic = getProfilePictureBase64("default_profile")
 		user_firebase_id = getCurrentFirebaseId(request)
-			
+		isValid = validFirebaseId(user_firebase_id);
+		print("isvalid_id", isValid)
+		profile_json = ""
+		if(isValid == True):
+			profile_data = getProfileData(user_firebase_id)
+			profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
+			profile_json = str(json.dumps(profile_data))
+		else:
+			profile_data = {}
+			profile_data["profile_picture"] = getProfilePictureFirebaseId("-1")
+			profile_json = str(json.dumps(profile_data))
+
 
 		response = render(
 			request=request,
@@ -291,6 +344,7 @@ class EditProfileView(TemplateView):
 			context={"edit_form" : edit_form, 
 			"search_form" : search_form,
 			"default_profile" : def_prof_pic,
+			"profile_info" : profile_json,
 			"group_form" : group_form
 			}
 		)
@@ -301,8 +355,6 @@ class EditProfileView(TemplateView):
 
 	def post(self, request):
 		formController(request)
-		# createProfileData('404', 'heyjustin', ['callme'], 'wink', 'wonk',
-		# ['email'], '121312123', 'organization', 'user_desc')
 		return self.dummy(request)
 
 class GroupView(TemplateView):
@@ -314,7 +366,7 @@ class GroupView(TemplateView):
 		print("isvalid_id", isValid)
 		if(isValid == False):
 			return redirForce(request)
-
+		name_requested = group_name
 		search_form = SearchForm()
 		group_form = GroupForm()
 		return render(
@@ -323,7 +375,9 @@ class GroupView(TemplateView):
 			context={"search_form" : search_form, 
 				"calendarFrame" : "sub_templates/calendarFrame.html",
 				"group_form" : group_form,
-				"calendar_mode" : "group",}
+				"calendar_mode" : "group",
+				"name_requested" : name_requested
+				}
 		)
 
 
@@ -378,12 +432,20 @@ class SearchView(TemplateView):
   
 def formController(request):
 	switchType = request.POST.get('formType')
+	print(switchType)
 	if(switchType == "SubmitEvent"):
 		event_form_filled = EventForm(request.POST)
 		print(event_form_filled)
 	elif(switchType == "FriendRequest"):
 		friend_form = FriendRequestForm(request.POST)
 		print(friend_form)
+		add_alias = friend_form["FIreqalias"].value()
+		print(add_alias)
+	elif(switchType == "FriendRemove"):
+		rem_form = FriendRemoveForm(request.POST)
+		print(rem_form)
+		rem_alias = rem_form["FIremalias"].value()
+		print(rem_alias)
 	elif(switchType == "GroupRequest"):
 		invite_form = GroupInviteForm(request.POST)
 		print(invite_form)
@@ -404,23 +466,14 @@ def editProfile(request):
 	email = [profile_form['PIemail'].value()]
 	birth_date = profile_form['PIbirthday'].value()
 	organization = profile_form['PIorganization'].value()
-	print("\n\n\n")
-	print(type(organization), organization)
 	user_desc = profile_form['PIdescription'].value()
-	print("BELOW:")
-	print(firebase_id, alias, phone_num, last_name, first_name,
-		email, birth_date, organization, user_desc)
-	print("\n\n\n")
+	new_prof = profile_form['PIpicture'].value()
+	saveProfilePictueBase64(firebase_id, new_prof)
 	if(isValid):
 		# Modify current user
 		editProfileData(firebase_id, alias, phone_num, last_name, first_name,
 		email, birth_date, organization, user_desc)
 	else:
-		# Create new user
-		"""def createProfileData(firebase_id, alias, phone_num, last_name, first_name,
-	email, birth_date, organization, user_desc):"""
-		# createProfileData(firebase_id, 'heyjustin', ['callme'], 'wink', 'wonk',
-		# ['email'], '121312123', 'organization', 'user_desc')
 		createProfileData(firebase_id, alias, phone_num, last_name, first_name,
 		email, birth_date, organization, user_desc)
 

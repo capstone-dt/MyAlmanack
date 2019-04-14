@@ -42,6 +42,7 @@ var member_check_ids = [];
 var freetimeChecked = false;
 var timeout_mil = 20;
 var _calendar_mode = "";
+var _name_selected = "";
 // Friends enabled test
 
 /*
@@ -1256,8 +1257,8 @@ function rightArrowClick(){
 	addEvents();
 }
 function populateFriendsSelectDropdown(){
-	var friendsSelectDropdown = document.getElementById("friend_select_dropdown");
-	var friendsSelectDropdownButton = document.getElementById("friends_select_dropdown_button");
+	var friendsSelectDropdown = document.getElementById("members_select_dropdown");
+	var friendsSelectDropdownButton = document.getElementById("members_select_dropdown_button");
 	switch(_calendar_mode){
 		case "self":
 			break;
@@ -1896,17 +1897,6 @@ function loadMemberEvents(){
 	addEvents();
 }
 
-function loadUserData(){
-	var name_div = document.getElementById("name_display");
-	name_div.innerText = _dummy_user_json.first_name + " " + _dummy_user_json.last_name;
-	var alias_div = document.getElementById("alias_display");
-	alias_div.innerText = "@" + _dummy_user_json.alias;
-	var desc_div = document.getElementById("description_display");
-	desc_div.innerText = _dummy_user_json.user_desc;
-}
-function parseQuotesJson(json_string){
-	return JSON.parse(json_string.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
-}
 function loadProfileDummyData(event_data, profile_data, contact_data, user, contact_list){
 	_dummy_events_json = parseQuotesJson(event_data);
 	_dummy_profiles_json = parseQuotesJson(profile_data);
@@ -1914,7 +1904,6 @@ function loadProfileDummyData(event_data, profile_data, contact_data, user, cont
 	_dummy_user_json = parseQuotesJson(user)[0];
 	user_contact_list = parseQuotesJson(contact_list);
 	console.log(_dummy_events_json, _dummy_profiles_json, _dummy_contacts_json, _dummy_user_json);
-	loadUserData();
 }
 function getDayPosition(day_num, year, month){
 	var count = 0;
@@ -1975,7 +1964,7 @@ function loadCalendarDataProfile(user_events_data, friend_events_data){
 // -----------------------------------------------------------------
 
 
-function mainProf(calendar_mode){
+function mainProf(calendar_mode, name_selected){
 	window.addEventListener("resize", windowResized);
 	document.body.addEventListener('click', clickAnywhere, true); 
 	switchCalendarView(_cont_id, "month");	
@@ -1986,6 +1975,7 @@ function mainProf(calendar_mode){
 	setCurrTime();
 	dayWeekUpdate();
 	_calendar_mode = calendar_mode;
+	_name_selected = name_selected;
 	console.log("CALENDAR MODE", _calendar_mode);
 	populateFriendsSelectDropdown();
 	windowResized();
