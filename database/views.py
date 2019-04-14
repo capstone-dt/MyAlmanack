@@ -6,6 +6,7 @@ from django.contrib.postgres.search import TrigramSimilarity
 from django.db.models.functions import Greatest
 from fuzzywuzzy import process
 from operator import itemgetter
+import time
 
 # Query database using an alias to get the firebase_id.
 def aliasToFirebaseId(alias):
@@ -39,15 +40,17 @@ def sendFriendRequest(sender_firebase_id, receiver_firebase_id):
 			+ ' WHERE contact_list_id = %s', [i_id, sender_cl_id])
 
 # Remove incoming / outgoing requests.
-def actionFriendRequest(sender_firebase_id, receiver_firebase_id, accept):
+def actionFriendRequest(invite_id, accept):
 	with connection.cursor() as cursor:
-		# Get invite_id using sender and receiver firebase_ids using raw SQL query.
-		cursor.execute('SELECT invite_id FROM "Invite" NATURAL JOIN "User_Request"'
-			+ ' WHERE sender_id = %s and receiver_id = %s', [sender_firebase_id, receiver_firebase_id])
-		i_id = cursor.fetchone()[0]
+		# Get sender and receiver firebase_ids using invite_id via raw SQL query.
+		cursor.execute('SELECT receiver_id, sender_id FROM "User_Request" WHERE invite_id = (SELECT CAST (%s AS SMALLINT))',
+			[invite_id])
+		ur = cursor.fetchone()
 		# Get contact_list_ids for receiver and sender from Django models.
-		receiver_cl_id = Profile.objects.get(firebase_id = receiver_firebase_id).contact_list_id
-		sender_cl_id = Profile.objects.get(firebase_id = sender_firebase_id).contact_list_id
+		receiver_firebase_id = ur[0]
+		sender_firebase_id = ur[1]
+		receiver_cl_id = Profile.objects.get(pk=receiver_firebase_id).contact_list_id
+		sender_cl_id = Profile.objects.get(pk=sender_firebase_id).contact_list_id
 
 		if accept == True:
 			# If user request acceptance is true, then update the sender's and receiver's (of the user request) contact_names.
@@ -59,10 +62,10 @@ def actionFriendRequest(sender_firebase_id, receiver_firebase_id, accept):
 
 		# Remove receiver's incoming user requests using raw SQL query.
 		cursor.execute('UPDATE "Contact_List" SET received_friend_requests = array_remove(received_friend_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, receiver_cl_id])
+			+ ' WHERE contact_list_id = %s', [invite_id, receiver_cl_id])
 		# Remove sender's incoming user requests using raw SQL query.
 		cursor.execute('UPDATE "Contact_List" SET sent_friend_requests = array_remove(sent_friend_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, sender_cl_id])
+			+ ' WHERE contact_list_id = %s', [invite_id, sender_cl_id])
 
 
 # EVENT INVITES
@@ -92,12 +95,12 @@ def sendEventInvites(sender_firebase_id, receiver_firebase_ids, event_id):
 			+ ' WHERE contact_list_id = %s', [i_id, sender_cl_id])
 
 # Remove incoming / outgoing invites.
-def actionEventInvite(event_id, receiver_firebase_id, accept):
+def actionEventInvite(invite_id, receiver_firebase_id, accept):
 	with connection.cursor() as cursor:
-		# Get invite_id using event_id using raw SQL query.
-		cursor.execute('SELECT invite_id FROM "Invite" NATURAL JOIN "Event_Invite"'
-			+ ' WHERE event_id = %s', [event_id])
-		i_id = cursor.fetchone()[0]
+		# Get event_id using invite_id via raw SQL query.
+		cursor.execute('SELECT event_id FROM "Invite" NATURAL JOIN "Event_Invite"'
+			+ ' WHERE invite_id = %s', [invite_id])
+		event_id = cursor.fetchone()[0]
 		# Get contact_list_id for receiver from Django models.
 		receiver_cl_id = Profile.objects.get(firebase_id=receiver_firebase_id).contact_list_id
 
@@ -111,7 +114,7 @@ def actionEventInvite(event_id, receiver_firebase_id, accept):
 
 		# Remove receiver's incoming event-invites using raw SQL query.
 		cursor.execute('UPDATE "Contact_List" SET received_event_invites = array_remove(received_event_invites, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, receiver_cl_id])
+			+ ' WHERE contact_list_id = %s', [invite_id, receiver_cl_id])
 
 
 # GROUP INVITES
@@ -140,12 +143,12 @@ def sendGroupInvites(group_id, receiver_firebase_ids):
 			+ ' WHERE group_name = %s', [i_id, group_id])
 			
 # Remove incoming / outgoing invites.
-def actionGroupInvite(group_id, receiver_firebase_id, accept):
+def actionGroupInvite(invite_id, receiver_firebase_id, accept):
 	with connection.cursor() as cursor:
-		# Get invite_id using group_id using raw SQL query.
-		cursor.execute('SELECT invite_id FROM "Invite" NATURAL JOIN "Group_Invite"'
-			+ ' WHERE group_name = %s', [group_id])
-		i_id = cursor.fetchone()[0]
+		# Get group_name using invite_id via raw SQL query.
+		cursor.execute('SELECT group_name FROM "Invite" NATURAL JOIN "Group_Invite"'
+			+ ' WHERE invite_id = %s', [invite_id])
+		group_id = cursor.fetchone()[0]
 		# Get contact_list_id for receiver from Django models.
 		receiver_cl_id = Profile.objects.get(firebase_id=receiver_firebase_id).contact_list_id
 
@@ -159,7 +162,7 @@ def actionGroupInvite(group_id, receiver_firebase_id, accept):
 
 		# Remove receiver's incoming group-invites using raw SQL query.
 		cursor.execute('UPDATE "Contact_List" SET received_group_invites = array_remove(received_group_invites, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, receiver_cl_id])
+			+ ' WHERE contact_list_id = %s', [invite_id, receiver_cl_id])
 
 
 # GROUP REQUESTS
@@ -182,12 +185,12 @@ def sendGroupRequest(group_id, sender_firebase_id):
 			+ ' WHERE contact_list_id = %s', [i_id, sender_cl_id])
 
 # Remove incoming / outgoing requests.
-def actionGroupRequest(group_id, sender_firebase_id, accept):
+def actionGroupRequest(invite_id, sender_firebase_id, accept):
 	with connection.cursor() as cursor:
-		# Get invite_id using group_id using raw SQL query.
-		cursor.execute('SELECT invite_id FROM "Invite" NATURAL JOIN "Group_Request"'
-			+ ' WHERE group_name = %s', [group_id])
-		i_id = cursor.fetchone()[0]
+		# Get group_name using invite_id via raw SQL query.
+		cursor.execute('SELECT group_name FROM "Invite" NATURAL JOIN "Group_Request"'
+			+ ' WHERE invite_id = %s', [invite_id])
+		group_id = cursor.fetchone()[0]
 		# Get contact_list_id for sender from Django models.
 		sender_cl_id = Profile.objects.get(firebase_id=sender_firebase_id).contact_list_id
 
@@ -201,7 +204,7 @@ def actionGroupRequest(group_id, sender_firebase_id, accept):
 
 		# Remove sender's incoming group-requests using raw SQL query.
 		cursor.execute('UPDATE "Group" SET received_group_requests = array_remove(received_group_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE group_name = %s', [i_id, group_id])
+			+ ' WHERE group_name = %s', [invite_id, group_id])
 
 
 # USER DATA
@@ -249,6 +252,24 @@ def createProfileData(firebase_id, alias, phone_num, last_name, first_name,
 			+ ' firebase_id, organization, contact_list_id, user_desc)'
 			+ ' VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
 			[alias, phone_num, last_name, first_name, email, birth_date, firebase_id, organization, cl_id, user_desc])
+
+# Delete a user profile.
+def deleteProfileData(firebase_id):
+	with connection.cursor() as cursor:
+		user_data = Profile.objects.filter(pk=firebase_id).values()[0]
+		cl_id = user_data['contact_list_id']
+		user_cl = ContactList.objects.filter(pk=cl_id)
+
+		for f_id in user_cl.values()[0]['contact_names']:
+			cursor.execute('UPDATE "Contact_List" SET contact_names = array_remove(contact_names, %s) '
+				+ ' WHERE contact_list_id = %s', [firebase_id, Profile.objects.get(pk=f_id).contact_list_id])
+
+		for g in user_cl.values()[0]['memberships']:
+			cursor.execute('UPDATE "Group" SET group_members = array_remove(group_members, %s) '
+				+ ' WHERE group_name = %s', [firebase_id, g])
+
+		for sei in user_cl.values()[0]['sent_event_invites']:
+			cursor.execute('')
 
 
 # CONTACT LIST
