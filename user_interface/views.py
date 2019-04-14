@@ -230,7 +230,7 @@ class ProfileView(TemplateView):
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		# print(currentuserstruct)
 		if bool(currentuserstruct[0]) == False:
-			return redirForce(request)
+			currentuserstruct = getCurrUser(profilestructs, "XJWoEcF4qsToA0NHnKnaIlqBnfO2")
 		user_alias = currentuserstruct[0]["alias"]
 		user_selected = currentuserstruct
 		if(alias_requested != ""):
@@ -275,14 +275,13 @@ class ProfileView(TemplateView):
 
 		print("\n")
 		def_prof_pic = getProfilePictureBase64("default_profile")
-		group_form = GroupForm()
 		response = render(
 			request=request,
 			template_name=self.template_name,
 			context={
 				"event_form" : EventForm(),
 				"search_form" : search_form,
-				"group_form" : group_form,
+				"group_form" : GroupForm(),
 				"dummy_events" : eventjson, 
 				"dummy_profiles" : profilejson,
 				"dummy_contacts" : contactjson,
@@ -353,7 +352,8 @@ class EditProfileView(TemplateView):
 
 	def post(self, request):
 		formController(request)
-		return self.dummy(request)
+		print("\n REDIR HOME \n")
+		return redirect('/')
 
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
