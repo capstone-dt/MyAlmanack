@@ -185,12 +185,14 @@ def sendGroupRequest(group_id, sender_firebase_id):
 			+ ' WHERE contact_list_id = %s', [i_id, sender_cl_id])
 
 # Remove incoming / outgoing requests.
-def actionGroupRequest(invite_id, sender_firebase_id, accept):
+def actionGroupRequest(invite_id, accept):
 	with connection.cursor() as cursor:
 		# Get group_name using invite_id via raw SQL query.
-		cursor.execute('SELECT group_name FROM "Invite" NATURAL JOIN "Group_Request"'
+		cursor.execute('SELECT group_name, sender_id FROM "Invite" NATURAL JOIN "Group_Request"'
 			+ ' WHERE invite_id = %s', [invite_id])
-		group_id = cursor.fetchone()[0]
+		gr = cursor.fetchone()
+		group_id = gr[0]
+		sender_firebase_id = gr[1]
 		# Get contact_list_id for sender from Django models.
 		sender_cl_id = Profile.objects.get(firebase_id=sender_firebase_id).contact_list_id
 
