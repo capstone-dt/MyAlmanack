@@ -10,8 +10,20 @@
 	    	<div id="name_display"> </div> 
 	    	</div>
 	    	<div class="col-4">
-	    	<button class="friendButton" id="friendButtonId" style="display:none;">Add Friend</button>
-	    	<button class="removeFriendButton" id="removeFriendButtonId" style="display:none;">Remove Friend</button>
+	    	<button class="friendButton" id="friendButtonId" onclick="addFriendClicked()" style="display:none;">Add Friend</button>
+	    	<form action="/profile/" method="post">
+				{% csrf_token %}
+				{{ friend_req.as_ul }}
+				<input type="hidden" name="formType" value="FriendRequest">
+				<input type="submit" style="display: none;" id="subitAddFriend">
+	    	</form>
+	    	<button class="removeFriendButton" id="removeFriendButtonId" onclick="remFriendClicked()" style="display:none;">Remove Friend</button>
+	    	<form action="/profile/" method="post">
+				{% csrf_token %}
+				{{ friend_rem.as_ul }}
+				<input type="hidden" name="formType" value="FriendRemove">
+				<input type="submit" style="display: none;" id="subitRemFriend">
+	    	</form>
 	    	</div>
 	    	</div>
 	    </h1>
@@ -20,7 +32,7 @@
 	      <!-- left column -->
 	      <div class="col-md-3">
 	        <div class="text-center">
-	          <img src="//placehold.it/100" class="avatar img-circle" alt="avatar">
+	          <img src="//placehold.it/100" class="avatar img-circle" alt="avatar" id="imageDisplay">
 	          <h6><div id="alias_display"></div></h6>
 	          
 	        </div>
@@ -91,10 +103,46 @@
 			friendButton.style.display = "none";
 			removeFriendButton.style.display = "none";
 		}
-		
+		function addFriendClicked(){
+			console.log("addFriendClicked");
+			console.log(_name_selected);
+			var addFormElem = document.getElementById("id_FIreqalias");
+			addFormElem.value = _name_selected;
+			console.log(addFormElem);
+			var submitAddFriend = document.getElementById("subitAddFriend");
+			submitAddFriend.click();
+		}
+		function remFriendClicked(){
+			console.log("remFriendClicked");
+			console.log(_name_selected);
+			var remFormElem = document.getElementById("id_FIremalias");
+			remFormElem.value = _name_selected;
+			console.log(remFormElem);
+			var submitRemFriend = document.getElementById("subitRemFriend");
+			submitRemFriend.click();
+		}
+		var database_user_json = {};
+		var database_selected_json = {};
+		function loadSelectedData(){
+			var name_div = document.getElementById("name_display");
+			name_div.innerText = database_selected_json.first_name + " " + database_selected_json.last_name;
+			var alias_div = document.getElementById("alias_display");
+			alias_div.innerText = "@" + database_selected_json.alias;
+			var desc_div = document.getElementById("description_display");
+			desc_div.innerText = database_selected_json.user_desc;
+			var prof_pic_div = document.getElementById("imageDisplay");
+			var img_div = base64ToImagePassed(database_selected_json.profile_picture, prof_pic_div);
+			img_div.style.width = "200px";
+			img_div.style.height = "200px";
+		}
+
+		database_user_json = parseQuotesJson("{{user_database}}");
+		database_selected_json = parseQuotesJson("{{name_selected_data}}");
+		console.log("user_database", database_user_json);
+		loadSelectedData();
 		loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
 		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
-		mainProf("{{calendar_mode}}");
+		mainProf("{{calendar_mode}}", "{{name_selected}}");
 
 
 </script>
