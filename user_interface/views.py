@@ -192,7 +192,6 @@ class ProfileView(TemplateView):
 		if(isValid == True):
 			return redirForce(request)
 
-
 		profile_data = getProfileData(user_firebase_id)
 		profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
 		data_prof_alias = profile_data["alias"]
@@ -321,7 +320,7 @@ class EditProfileView(TemplateView):
 		isValid = validFirebaseId(user_firebase_id);
 		print("isvalid_id", isValid)
 		profile_json = ""
-		if(isValid == True):
+		if(isValid == False):
 			profile_data = getProfileData(user_firebase_id)
 			profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
 			profile_json = str(json.dumps(profile_data))

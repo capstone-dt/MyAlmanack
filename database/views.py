@@ -273,6 +273,9 @@ def deleteProfileData(firebase_id):
 		for sei in user_cl.values()[0]['sent_event_invites']:
 			cursor.execute('')
 
+# Return all aliases currently in the database.
+def getAllAliases():
+	return [item['alias'] for item in Profile.objects.all().values('alias')]
 
 # CONTACT LIST
 # Generate contact_list_id based off the max id-value in the contact_list_id column.
@@ -336,6 +339,8 @@ def leaveGroup(firebase_id, group_name):
 		cursor.execute('UPDATE "Group" SET group_members = array_remove(group_members, %s)'
 			+ 'WHERE group_name=(SELECT CAST (%s AS SMALLINT))', [firebase_id, group_name])
 
+def getAllGroupNames():
+	return [item['group_name'] for item in Group.objects.all().values('group_name')]
 
 # EVENTS
 # Get all participating events of user and each event's corresponding details using firebase_id.
