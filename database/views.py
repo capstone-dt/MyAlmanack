@@ -339,8 +339,14 @@ def leaveGroup(firebase_id, group_name):
 		cursor.execute('UPDATE "Group" SET group_members = array_remove(group_members, %s)'
 			+ 'WHERE group_name=(SELECT CAST (%s AS SMALLINT))', [firebase_id, group_name])
 
+# Return all group names currently in the database.
 def getAllGroupNames():
 	return [item['group_name'] for item in Group.objects.all().values('group_name')]
+
+# Get group data based on group_name.
+def getGroupData(group_name):
+	return Group.objects.filter(pk=group_name).values()[0]
+
 
 # EVENTS
 # Get all participating events of user and each event's corresponding details using firebase_id.
@@ -358,6 +364,10 @@ def generateEventId():
 	else:
 		max_id_val = Event.objects.aggregate(Max('event_id'))
 		return max_id_val['event_id__max']
+
+# Get event data based on event_id.
+def getEventData(event_id):
+	return Event.objects.filter(pk=event_id).values()[0]
 
 # Create an event and update the event creator's user_events.
 def createEvent(event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
