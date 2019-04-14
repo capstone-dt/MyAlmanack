@@ -198,7 +198,6 @@ class ProfileView(TemplateView):
 		if(isValid == True):
 			return redirForce(request)
 
-
 		profile_data = getProfileData(user_firebase_id)
 		profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
 		data_prof_alias = profile_data["alias"]
