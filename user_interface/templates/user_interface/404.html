@@ -1,0 +1,31 @@
+{% extends "user_interface/header.html"%}
+
+{% block content %}
+	<div style="text-align: center;">
+		<br>
+		<br>
+		<br>
+		<h3> Error </h3>
+		<h1 style="font-size: 100;"> 404 </h1>
+		<br>
+		<h3> The page you've requested cannot be found.</h3>
+		<br>
+		<input type="button" class="confirmButton" onclick="redirHome()" style="width: 100px; height: 50px;" value="Home">
+		<script type="text/javascript">
+			function redirHome(){
+				var curr_loc = window.location.href;
+				var curr_array = [...curr_loc];
+				var new_loc = "";
+				var slash_count = 0;
+				for(var c_i = 0; c_i < curr_array.length && slash_count != 3; c_i++){
+					var curr_char = curr_array[c_i];
+					if(curr_char == "/"){
+						slash_count++;
+					}
+					new_loc+=curr_char;
+				}
+				window.location.replace(new_loc);
+			}
+		</script>
+	</div>
+{% endblock %}

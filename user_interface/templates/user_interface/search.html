@@ -19,9 +19,9 @@
 		</section>
 				<div class="row boxed" id="scroll_div_cont_row">
 					<div class="col" style="height:100%;">
-						<div class="anyclass" id="scroll_div_cont" style="height:100%;">
+						<div class="anyclass" id="scroll_div_cont" style="height:100%; width: 100%">
 							<div class=" col">
-							  <ul class="nav nav-pills nav-stacked" id="height_list">
+							  <ul class="nav nav-pills nav-stacked" id="height_list" style="width: 100%;">
 							</div>
 						</div>
 					</div>
@@ -191,10 +191,13 @@
 					image_url = "https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg";
 				}
 				var list_elem = document.createElement('li');
-				list_elem.className = "nav-item w-fill";
+				list_elem.className = "nav-item";
+				list_elem.style = "width:100%;"
 				var a_elem = document.createElement('a');
-				a_elem.className = "nav-link active";
+				a_elem.className = "navbar-text";
 				a_elem.innerHTML = name;
+				a_elem.style = "width:100%";
+				a_elem.style.borderBottom = "1px solid grey";
 				var list_div = document.getElementById("height_list");
 				list_elem.appendChild(a_elem);
 				list_div.appendChild(list_elem);
@@ -206,10 +209,13 @@
 				var alias = struct.alias;
 				var description = struct.description;
 				var list_elem = document.createElement('li');
-				list_elem.className = "nav-item w-fill";
+				list_elem.className = "nav-item";
+				list_elem.style = "width:100%;"
 				var a_elem = document.createElement('a');
-				a_elem.className = "nav-link active";
+				a_elem.className = "navbar-text";
 				a_elem.innerHTML = name;
+				a_elem.style = "width:100%";
+				a_elem.style.borderBottom = "1px solid grey";
 				var list_div = document.getElementById("height_list");
 				list_elem.appendChild(a_elem);
 				list_div.appendChild(list_elem);
@@ -218,10 +224,13 @@
 			function drawEventElement(struct){
 				var name = struct.name;
 				var list_elem = document.createElement('li');
-				list_elem.className = "nav-item w-fill";
+				list_elem.className = "nav-item";
+				list_elem.style = "width:100%;"
 				var a_elem = document.createElement('a');
-				a_elem.className = "nav-link active";
+				a_elem.className = "navbar-text";
 				a_elem.innerHTML = name;
+				a_elem.style = "width:100%";
+				a_elem.style.borderBottom = "1px solid grey";
 				var list_div = document.getElementById("height_list");
 				list_elem.appendChild(a_elem);
 				list_div.appendChild(list_elem);

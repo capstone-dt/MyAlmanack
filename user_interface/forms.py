@@ -4,6 +4,7 @@ from django.contrib.postgres.forms import SimpleArrayField
 
 class EventForm(forms.Form):
 	EIname = forms.CharField(widget=forms.HiddenInput())
+	EIdescription = forms.CharField(widget=forms.HiddenInput(), required=False)
 	EIstart = forms.CharField(widget=forms.HiddenInput())
 	EIend = forms.CharField(widget=forms.HiddenInput())
 	# Split manually

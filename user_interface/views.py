@@ -69,7 +69,6 @@ def saveProfilePictueBase64(file_name, image_64_encode):
 	image_result = open(file_loc, 'wb')
 	image_result.write(image_64_decode)
 
-
 def getCurrUser(profile_json, firebase_id):
 	# print("GET", firebase_id)
 	for user in profile_json:
@@ -105,7 +104,6 @@ def genHiddenEvent(passed_event):
 	hiddenstruct["event_creator_firebase_id"] = passed_event["event_creator_firebase_id"]
 	hiddenstruct["isHidden"] = "true"
 	return hiddenstruct
-
 
 def filterAccessFriendEvents(friend_events, user_alias):
 	print("FILTER FRIEND EVENTS", user_alias)
@@ -165,6 +163,14 @@ def redirForce(request):
 	e = EditProfileView()
 	return e.get(request)
 
+def redir404(request):
+	return render(
+		request=request,
+		template_name='user_interface/404.html',
+		context={}
+	)
+
+
 def getFirebaseIDAliasDummy(user_structs, alias):
 	for temp_user in user_structs:
 		if(temp_user["alias"] == alias):
@@ -212,14 +218,13 @@ class ProfileView(TemplateView):
 		print("name_selected", name_selected)
 		firebase_id_selected = -1
 		selected_user_data = {}
-		try:
+		if(validAlias(name_selected) == False):
 			firebase_id_selected = aliasToFirebaseId(name_selected)
 			selected_user_data = getProfileData(firebase_id_selected)
 			selected_user_data["profile_picture"] = getProfilePictureFirebaseId(firebase_id_selected)
 			print("firebase_id_selected", firebase_id_selected)
-		except:
-			print("INVALID FIREBASE ID. REDIR NOW")
-			selected_user_data = profile_data
+		else:
+			return redir404(request)
 
       
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
@@ -293,7 +298,7 @@ class ProfileView(TemplateView):
 				"name_selected" : name_selected,
 				"name_selected_data" : str(json.dumps(selected_user_data)),
 				"user_database" : str(json.dumps(profile_data)),
-				"user_events_database" : profile_events,
+				"user_events_database" : str(json.dumps(profile_events)),
 				"friend_req" :  FriendRequestForm(),
 				"friend_rem" : FriendRemoveForm(),
 			}
@@ -321,7 +326,7 @@ class EditProfileView(TemplateView):
 		isValid = validFirebaseId(user_firebase_id);
 		print("isvalid_id", isValid)
 		profile_json = ""
-		if(isValid == True):
+		if(isValid == False):
 			profile_data = getProfileData(user_firebase_id)
 			profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
 			profile_json = str(json.dumps(profile_data))
@@ -427,8 +432,7 @@ def formController(request):
 	switchType = request.POST.get('formType')
 	print(switchType)
 	if(switchType == "SubmitEvent"):
-		event_form_filled = EventForm(request.POST)
-		print(event_form_filled)
+		submitEvent(request)
 	elif(switchType == "FriendRequest"):
 		friend_form = FriendRequestForm(request.POST)
 		print(friend_form)
@@ -445,8 +449,50 @@ def formController(request):
 	elif(switchType == "EditProfile"):
 		editProfile(request)
 	elif(switchType == "CreateGroup"):
-		group_form = GroupForm(request.POST)
-		print(group_form)
+		createGroupLocal(request)
+
+def submitEvent(request):
+	user_firebase_id = getCurrentFirebaseId(request)
+	event_form = EventForm(request.POST)
+	event_name = event_form['EIname'].value()
+	event_desc = event_form['EIdescription'].value()
+	event_start = event_form['EIstart'].value()
+	event_end = event_form['EIend'].value()
+	invite = event_form['EIinvite'].value().split(",")
+	invite_ids = []
+	for alias in invite:
+		valid_alias = validAlias(alias)
+		if(valid_alias == False):
+			# In database
+			f_id = aliasToFirebaseId(alias)
+			invite_ids.append(str(f_id))
+
+	whitelist = event_form['EIwhitelist'].value().split(",")
+	whitelist_ids = []
+	for alias in whitelist:
+		valid_alias = validAlias(alias)
+		if(valid_alias == False):
+			# In database
+			f_id = aliasToFirebaseId(alias)
+			whitelist_ids.append(str(f_id))
+
+	blacklist = event_form['EIblacklist'].value().split(",")
+	blacklist_ids = []
+	for alias in blacklist:
+		valid_alias = validAlias(alias)
+		if(valid_alias == False):
+			# In database
+			f_id = aliasToFirebaseId(alias)
+			blacklist_ids.append(str(f_id))
+
+	repeat = event_form['EIrepeat'].value()
+	repeat_pattern = event_form['EIrepeat_pattern'].value()
+	if(repeat != "true" or repeat_pattern == "0000000"):
+		createEvent(event_name, event_desc, [user_firebase_id], [user_firebase_id], whitelist_ids, blacklist_ids, 
+			int(event_start), int(event_end), str(user_firebase_id))
+	else:
+		createRepeatEvent(event_name, event_desc, [user_firebase_id], [user_firebase_id], whitelist_ids, blacklist_ids,
+			int(event_start), int(event_end), str(user_firebase_id), "weekly", int(event_start), int(event_end), repeat_pattern)
 
 def editProfile(request):
 	firebase_id = getCurrentFirebaseId(request)
@@ -462,10 +508,21 @@ def editProfile(request):
 	user_desc = profile_form['PIdescription'].value()
 	new_prof = profile_form['PIpicture'].value()
 	saveProfilePictueBase64(firebase_id, new_prof)
-	if(isValid):
+	if(isValid == False):
 		# Modify current user
 		editProfileData(firebase_id, alias, phone_num, last_name, first_name,
 		email, birth_date, organization, user_desc)
 	else:
 		createProfileData(firebase_id, alias, phone_num, last_name, first_name,
 		email, birth_date, organization, user_desc)
+
+
+def createGroupLocal(request):
+	firebase_id = getCurrentFirebaseId(request)
+	group_form = GroupForm(request.POST)
+	print(group_form)
+	group_name = group_form["GIname"].value()
+	group_desc = group_form["GIdescription"].value()
+	group_invite = group_form["GIinvite"].value().split(",")
+	# def createGroup(firebase_id, group_name, group_admin, group_members, group_desc)
+	createGroup(firebase_id, group_name, [firebase_id], [firebase_id], group_desc)

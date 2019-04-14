@@ -349,6 +349,12 @@
 	      </div>
 	      <div class="modal-body">
 	        <form action="/profile/" method="post"> 
+				{% csrf_token %}
+				{{ group_form.as_ul }}
+				<input type="hidden" name="formType" value="CreateGroup">
+				<input type="submit" style="display:none;" id="submitCreateGroup">
+
+	        </form>
 				<div class="form-group">
 				    <label class="reqField" for="inputGroupName">Group Name</label>
 				    <input type="text"  onchange="updateGroupForm()" class="form-control" id="inputGroupName" pattern="[A-Za-z0-9]{1,}$" required>
@@ -361,8 +367,6 @@
 				    <label for="inputGroupInvites">Invites</label>
 				    <input type="text" onchange="updateGroupForm()"  class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites">
 				</div>
-				{% csrf_token %}
-				{{ group_form.as_ul }}
 				<script type="text/javascript">
 					function updateGroupForm(){
 						var form_group_name = document.getElementById("id_GIname");
@@ -376,12 +380,15 @@
 						var form_group_inv = document.getElementById("id_GIinvite");
 						var div_group_inv = document.getElementById("inputGroupInvites");
 						form_group_inv.value = div_group_inv.value;
-
+					}
+					function updateAndClickGroup(){
+						updateGroupForm();
+						var submitButton = document.getElementById("submitCreateGroup");
+						submitButton.click();
 					}
 				</script>
-				<input type="hidden" name="formType" value="CreateGroup">
-				<input type="submit" class="confirmButton" style="width:100%; height:50px;" value="Create Group">
-			</form>
+				<input type="button" class="confirmButton" style="width:100%; height:50px;" value="Create Group" onclick="updateAndClickGroup()">
+
 	      </div>
 	    </div>
 	  </div>

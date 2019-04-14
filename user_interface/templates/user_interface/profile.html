@@ -130,6 +130,10 @@
 			alias_div.innerText = "@" + database_selected_json.alias;
 			var desc_div = document.getElementById("description_display");
 			desc_div.innerText = database_selected_json.user_desc;
+			if(database_selected_json.user_desc == ""){
+				desc_div.innerText = "No description has been provided."
+				desc_div.style.color = "grey";
+			}
 			var prof_pic_div = document.getElementById("imageDisplay");
 			var img_div = base64ToImagePassed(database_selected_json.profile_picture, prof_pic_div);
 			img_div.style.width = "200px";
@@ -138,7 +142,9 @@
 
 		database_user_json = parseQuotesJson("{{user_database}}");
 		database_selected_json = parseQuotesJson("{{name_selected_data}}");
+		database_user_events = parseQuotesJson("{{user_events_database}}");
 		console.log("user_database", database_user_json);
+		console.log("database_user_events", database_user_events);
 		loadSelectedData();
 		loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
 		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
