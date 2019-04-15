@@ -88,6 +88,12 @@
 	{% block content %}
 	{% endblock %}
 
+	<form action="/profile/" method="post">
+		{% csrf_token %}
+		{{ header_forms.friend_response.as_ul }}
+		<input type="hidden" name="formType" value="FriendResponse">
+		<input type="submit"  style="display: none;" id="friendRespondRequest">
+	</form>
 	<style type="text/css">
 		.reqField:before{
 			content:"*" ;
@@ -163,6 +169,8 @@
 	</style>
 
 	<script type="text/javascript">
+		var database_header_info = parseQuotesJson("{{user_header_database}}");
+		console.log("database_header_info", database_header_info);
 
 		function d_scrollTop(drop_id){
 			var drop = document.getElementById(drop_id);
@@ -214,13 +222,16 @@
 
 		function populateFriendsDropdown(){
 			var notif_div = document.getElementById("f_drop");
-			for(var i = 0; i < 20; i++){
+			var friend_requests = database_header_info.friend_requests
+
+			for(var i = 0; i < friend_requests.length; i++){
+				var curr_user_req = friend_requests[i];
 				
 				// CHANGE USER PICTURE AND ALIAS BASED ON DATABASE
-				var def_image = base64ToImage("{{default_profile}}");
-				def_image.setAttribute("width", "20px");
-				def_image.setAttribute("height", "20px");
-				var user_alias = i;
+				var def_image = base64ToImage(curr_user_req.profile_picture);
+				def_image.setAttribute("width", "40px");
+				def_image.setAttribute("height", "40px");
+				var user_alias = curr_user_req.alias;
 
 				var curr_elem = document.createElement('a');
 				curr_elem.className= "dropdown-item overAll";
@@ -228,8 +239,8 @@
 				curr_elem.id = "fr_" + user_alias;
 				curr_elem.setAttribute("alias", user_alias);
 				var friend_text_div = document.createElement('div');
-				friend_text_div.innerHTML = "First Last " + i;
-				friend_text_div.style ="display:inline;";
+				friend_text_div.innerHTML = curr_user_req.first_name + " " + curr_user_req.last_name;
+				friend_text_div.style ="display:inline; font-size:16px;";
 				var image_div = document.createElement('div');
 				image_div.style = "display:inline; padding-right:20px; ";
 				image_div.appendChild(def_image);
@@ -242,11 +253,11 @@
 				var accept = document.createElement('div');
 				accept.className = "col acceptButton";
 				accept.innerText = "Accept";
-				accept.setAttribute("onclick", "acceptButtonRequest('" + curr_elem.id + "', '" + user_alias + "')");
+				accept.setAttribute("onclick", "acceptButtonRequest('" + curr_elem.id + "', '" + curr_user_req.invite_id + "')");
 				var reject = document.createElement('div');
 				reject.className = "col rejectButton";
 				reject.innerText = "Reject";
-				reject.setAttribute("onclick", "rejectButtonRequest('" + curr_elem.id + "', '" + user_alias + "')");
+				reject.setAttribute("onclick", "rejectButtonRequest('" + curr_elem.id + "', '" + curr_user_req.invite_id + "')");
 				button_row.appendChild(accept);
 				button_row.appendChild(reject);
 				button_cont.appendChild(button_row);
@@ -296,16 +307,27 @@
 			populateGroupDropdown();
 		}
 
-		function acceptButtonRequest(div_id, alias){
-			console.log("accept:" + alias);
-			var cont_div = document.getElementById(div_id);
-			cont_div.parentNode.removeChild(cont_div);
+		function respondFriendPost(invite_id, action){
+			var response_form_id = document.getElementById("id_FIinvite_id");
+			var response_form_action = document.getElementById("id_FIaction");
+			response_form_id.value = invite_id;
+			response_form_action.value = action;
+			var submitResponseButton = document.getElementById("friendRespondRequest");
+			submitResponseButton.click();
 		}
 
-		function rejectButtonRequest(div_id, alias){
-			console.log("reject:" + alias);
+		function acceptButtonRequest(div_id, invite_id){
+			console.log("accept:" + invite_id);
 			var cont_div = document.getElementById(div_id);
 			cont_div.parentNode.removeChild(cont_div);
+			respondFriendPost(invite_id, "accept");
+		}
+
+		function rejectButtonRequest(div_id, invite_id){
+			console.log("reject:" + invite_id);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+			respondFriendPost(invite_id, "reject");
 		}
 
 		function confirmButtonEvent(div_id, event_id){

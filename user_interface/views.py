@@ -155,7 +155,8 @@ def redir404(request):
 	return render(
 		request=request,
 		template_name='user_interface/404.html',
-		context={}
+		context={"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+			"header_forms" : getHeaderForms(),}
 	)
 
 
@@ -178,32 +179,40 @@ def getHeaderDict(firebase_id):
 		retHeader["event_invites"] = []
 	else:
 		event_invite_ids = contact_list["received_event_invites"]
-		# retHeader["event_invites"] = event_invite_ids
 		for e_id in event_invite_ids:
 			curr_event_data = getEventData(e_id)
 			retHeader["event_invites"].append(curr_event_data)
-		# add event information based on id
 	if(contact_list["received_friend_requests"] == None):
 		retHeader["friend_requests"] = []
 	else:
 		friend_invite_ids = contact_list["received_friend_requests"]
 		print("recieved:", friend_invite_ids)
-		# for f_id in friend_invite_ids:
-		# 	request_data = UserRequest.objects.filter(pk=f_id).values()[0]
-		# 	sender_id = request_data["sender_id"]
-		# 	curr_user = getProfileData(sender_id)
-		# 	curr_user.profile_picture = getProfilePictureFirebaseId(sender_id)
-		# 	retHeader["friend_requests"].append(curr_user)
+		for f_id in friend_invite_ids:
+			request_data = getFriendRequestData(f_id)
+			print("request_data", request_data)
+			sender_id = request_data["sender_id"]
+			curr_user = getProfileData(sender_id)
+			curr_user["profile_picture"] = getProfilePictureFirebaseId(sender_id)
+			curr_user["invite_id"] = f_id
+			retHeader["friend_requests"].append(curr_user)
 	if(contact_list["received_group_invites"] == None):
 		retHeader["group_requests"]["invites"] = []
 	else:
 		group_invite_names = contact_list["received_group_invites"]
-		# retHeader["group_requests"]["invites"] = group_invite_names
-		# add group information based on group_name
 		for g_name in group_invite_names:
 			curr_group_data = getGroupData(g_name)
 			retHeader["group_requests"]["invites"].append(curr_group_data)
 	return retHeader
+
+def getHeaderForms():
+	retDict = {
+		"event_response" : EventRespondRequest(),
+		"search_form" : SearchForm(),
+		"friend_response" : FriendRespondRequest(),
+		"group_response" : GroupRespondRequest(),
+	}
+	return retDict
+
 
 def getFriendInfo(firebase_id):
 	return None
@@ -272,7 +281,6 @@ class ProfileView(TemplateView):
 			print("firebase_id_selected", firebase_id_selected)
 		else:
 			return redir404(request)
-		database_header = getHeaderDict(user_firebase_id)
 		database_contact_names = data_contact_list["contact_names"]
 		if(database_contact_names == None):
 			database_contact_names = []
@@ -352,7 +360,8 @@ class ProfileView(TemplateView):
 				"user_database" : str(json.dumps(profile_data)),
 				"user_events_database" : str(json.dumps(profile_events)),
 				"user_contact_list" : str(json.dumps(data_contact_list)),
-				"user_header_database" : str(json.dumps(database_header)),
+				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"header_forms" : getHeaderForms(),
 				"friend_req" :  FriendRequestForm(),
 				"friend_rem" : FriendRemoveForm(),
 			}
@@ -397,6 +406,8 @@ class EditProfileView(TemplateView):
 			"search_form" : search_form,
 			"default_profile" : def_prof_pic,
 			"profile_info" : profile_json,
+			"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+			"header_forms" : getHeaderForms(),
 			"group_form" : group_form
 			}
 		)
@@ -437,7 +448,9 @@ class GroupView(TemplateView):
 				"calendarFrame" : "sub_templates/calendarFrame.html",
 				"group_form" : group_form,
 				"calendar_mode" : "group",
-				"name_requested" : name_requested
+				"name_requested" : name_requested,
+				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"header_forms" : getHeaderForms(),
 				}
 		)
 
@@ -469,16 +482,14 @@ class SearchView(TemplateView):
 		return render(
 			request=request,
 			template_name=self.template_name,
-			context={"search_form" : search_form}
+			context={"search_form" : search_form,
+				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+			}
 		)
 
 	def post(self, request):
 		search_form = SearchForm(request.POST)
 		formController(request)
-		# events = searchEvents(search_term)
-		# friends = searchFriends(search_term)
-		# users = searchUsers(search_term)
-		# groups = searchGroups(search_term)
 		return render(
 			request=request,
 			template_name=self.template_name,
@@ -486,7 +497,9 @@ class SearchView(TemplateView):
 				"events" : "[{}]",
 				"friends" : "[{}]",
 				"users" : "[{}]",
-				"groups" : "[{}]"
+				"groups" : "[{}]",
+				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"header_forms" : getHeaderForms(),
 			}
 		)
 
@@ -495,7 +508,9 @@ def formController(request):
 	switchType = request.POST.get('formType')
 	user_firebase_id = getCurrentFirebaseId(request)
 	print(switchType)
-	if(switchType == "SubmitEvent"):
+	if(switchType == "FriendResponse"):
+		respondFriend(request)
+	elif(switchType == "SubmitEvent"):
 		submitEvent(request)
 	elif(switchType == "FriendRequest"):
 		friend_form = FriendRequestForm(request.POST)
@@ -515,6 +530,18 @@ def formController(request):
 		editProfile(request)
 	elif(switchType == "CreateGroup"):
 		createGroupLocal(request)
+
+def respondFriend(request):
+	friend_response_form = FriendRespondRequest(request.POST)
+	print(friend_response_form)
+	invite_id = friend_response_form["FIinvite_id"].value()
+	action_s = friend_response_form["FIaction"].value()
+	action = False
+	if(action_s == "accept"):
+		action = True
+	else:
+		action = False
+	actionFriendRequest(invite_id, action)
 
 def submitEvent(request):
 	user_firebase_id = getCurrentFirebaseId(request)

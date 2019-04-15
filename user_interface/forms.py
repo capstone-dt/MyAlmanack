@@ -14,10 +14,18 @@ class EventForm(forms.Form):
 	EIrepeat = forms.CharField(widget=forms.HiddenInput(), required=False)
 	EIrepeat_pattern = forms.CharField(widget=forms.HiddenInput(), required=False)
 
+class EventRespondRequest(forms.Form):
+	EIinvite_id = forms.CharField(widget=forms.HiddenInput())
+	EIaction = forms.CharField(widget=forms.HiddenInput())
+
 class GroupForm(forms.Form):
 	GIname = forms.CharField(widget=forms.HiddenInput())
 	GIdescription = forms.CharField(widget=forms.HiddenInput())
 	GIinvite = forms.CharField(widget=forms.HiddenInput())
+
+class GroupRespondRequest(forms.Form):
+	GIinvite_id = forms.CharField(widget=forms.HiddenInput())
+	GIaction = forms.CharField(widget=forms.HiddenInput())
 
 class EditProfileForm(forms.Form):
 	PIfirst = forms.CharField(widget=forms.HiddenInput())
@@ -36,6 +44,10 @@ class FriendRequestForm(forms.Form):
 
 class FriendRemoveForm(forms.Form):
 	FIremalias = forms.CharField(widget=forms.HiddenInput())
+
+class FriendRespondRequest(forms.Form):
+	FIinvite_id = forms.CharField(widget=forms.HiddenInput())
+	FIaction = forms.CharField(widget=forms.HiddenInput())
 
 class GroupInviteForm(forms.Form):
 	GIalias = forms.CharField(widget=forms.HiddenInput())
