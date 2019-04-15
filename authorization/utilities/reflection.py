@@ -17,6 +17,6 @@ def is_subclass(object, superclass):
 def assert_subclass(object, superclass):
     if not is_subclass(object, superclass):
         raise ValueError(
-            "%s is not a subclass of %s: %s" %
-            (get_class_name(object), get_class_name(superclass), object)
+            "A subclass of %s was expected, but %s was given: %s" %
+            (get_class_name(superclass), get_class_name(object), object)
         )

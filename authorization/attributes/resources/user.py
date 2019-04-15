@@ -1,8 +1,6 @@
 from .. import Resource
-
-# Django
-from django.contrib.auth import get_user_model
+from authorization.information import User as WrappedUser
 
 
-class User(Resource):
-    _root = get_user_model()
+class User(Resource, WrappedUser):
+    pass

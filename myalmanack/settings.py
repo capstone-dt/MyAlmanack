@@ -23,8 +23,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = None
 
-ALLOWED_HOSTS = []
-
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 SECURE_BROWSER_XSS_FILTER = True
@@ -47,7 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'user_interface'
+    'user_interface',
+    'database'
 ]
 
 MIDDLEWARE = [
@@ -91,30 +90,6 @@ DATABASES = {
     }
 }
 
-import dj_database_url
-
-db_from_env = dj_database_url.config()
-DATABASES['default'].update(db_from_env)
-
-
-# Password validation
-# https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
@@ -140,10 +115,7 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface\\static")]
-
-print(STATIC_ROOT)
-print(STATICFILES_DIRS)
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "user_interface/static")]
 
 
 # Authentication
@@ -167,17 +139,7 @@ LOGOUT_REDIRECT_URL = "/"
 
 INSTALLED_APPS += ["authorization.App"]
 
-MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
-
-
-# Django-Heroku
-# TODO: Move this to local_settings.py
-
-#import django_heroku
-#django_heroku.settings(locals())
-
-#import dj_database_url
-#DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+# MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
 
 
 # Override default settings with local settings for development environments
