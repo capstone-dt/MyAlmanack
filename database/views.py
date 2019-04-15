@@ -18,13 +18,22 @@ def firebaseIdToAlias(firebase_id):
 	alias = Profile.objects.get(firebase_id = firebase_id).alias
 	return alias
 
+# INVITES
+# Generate invite_id based off the max id-value in the invite_id column.
+def generateInviteId():
+	if Invite.objects.all().count() == 0:
+		return 0
+	else:
+		max_id_val = Invite.objects.aggregate(Max('invite_id'))
+		return max_id_val['invite_id__max'] + 1
+
 
 # FRIEND REQUESTS
 # Insert incoming / outgoing requests.
 def sendFriendRequest(sender_firebase_id, receiver_firebase_id):
 	with connection.cursor() as cursor:
 		current_time = time.time()
-		i_id = Invite.objects.count()
+		i_id = generateInviteId()
 		# Get contact_list_ids for receiver and sender from Django models.
 		receiver_cl_id = Profile.objects.get(firebase_id = receiver_firebase_id).contact_list_id
 		sender_cl_id = Profile.objects.get(firebase_id = sender_firebase_id).contact_list_id
@@ -67,13 +76,23 @@ def actionFriendRequest(invite_id, accept):
 		cursor.execute('UPDATE "Contact_List" SET sent_friend_requests = array_remove(sent_friend_requests, (SELECT CAST (%s AS SMALLINT)))'
 			+ ' WHERE contact_list_id = %s', [invite_id, sender_cl_id])
 
+# Get friend-request data based on invite_id.
+def getFriendRequestData(invite_id):
+	with connection.cursor() as cursor:
+		cursor.execute('SELECT * FROM "User_Request" WHERE invite_id = %s', [invite_id])
+		user_request_data = cursor.fetchone()
+		# Return dictionary containing user-request information.
+		user_request_cols = ['sender_id','receiver_id','time_sent','invite_id']
+		user_request_data = dict((col, item) for col, item in zip(user_request_cols, user_request_data))
+		return user_request_data
+
 
 # EVENT INVITES
 # Insert incoming / outgoing invites.
 def sendEventInvites(sender_firebase_id, receiver_firebase_ids, event_id):
 	with connection.cursor() as cursor:
 		current_time = time.time()
-		i_id = Invite.objects.count()
+		i_id = generateInviteId()
 		# Get contact_list_ids for receiver and sender from Django models.
 		receiver_cl_ids = [Profile.objects.get(firebase_id=fid).contact_list_id for fid in receiver_firebase_ids]
 		sender_cl_id = Profile.objects.get(firebase_id=sender_firebase_id).contact_list_id
@@ -116,13 +135,23 @@ def actionEventInvite(invite_id, receiver_firebase_id, accept):
 		cursor.execute('UPDATE "Contact_List" SET received_event_invites = array_remove(received_event_invites, (SELECT CAST (%s AS SMALLINT)))'
 			+ ' WHERE contact_list_id = %s', [invite_id, receiver_cl_id])
 
+# Get event-invite data based on invite_id.
+def getEventInviteData(invite_id):
+	with connection.cursor() as cursor:
+		cursor.execute('SELECT * FROM "Event_Invite" WHERE invite_id = %s', [invite_id])
+		event_invite_data = cursor.fetchone()
+		# Return dictionary containing event-invite information.
+		event_invite_data_cols = ['time_sent','invite_id','event_id','invited_users']
+		event_invite_data = dict((col, item) for col, item in zip(event_invite_data_cols, event_invite_data))
+		return event_invite_data
+
 
 # GROUP INVITES
 # Insert incoming / outgoing invites.
 def sendGroupInvites(group_id, receiver_firebase_ids):
 	with connection.cursor() as cursor:
 		current_time = time.time()
-		i_id = Invite.objects.count()
+		i_id = generateInviteId()
 		# Get contact_list_id for receiver from Django models.
 		receiver_cl_ids = [Profile.objects.get(firebase_id = fid).contact_list_id for fid in receiver_firebase_ids]
 		# Create new event-invite using raw SQL query.
@@ -164,13 +193,23 @@ def actionGroupInvite(invite_id, receiver_firebase_id, accept):
 		cursor.execute('UPDATE "Contact_List" SET received_group_invites = array_remove(received_group_invites, (SELECT CAST (%s AS SMALLINT)))'
 			+ ' WHERE contact_list_id = %s', [invite_id, receiver_cl_id])
 
+# Get group-invite data based on invite_id.
+def getGroupInviteData(invite_id):
+	with connection.cursor() as cursor:
+		cursor.execute('SELECT * FROM "Group_Invite" WHERE invite_id = %s', [invite_id])
+		group_invite_data = cursor.fetchone()
+		# Return dictionary containing group-invite information.
+		group_invite_data_cols = ['group_name','invitee_list','time_sent','invite_id']
+		group_invite_data = dict((col, item) for col, item in zip(group_invite_data_cols, group_invite_data))
+		return group_invite_data
+
 
 # GROUP REQUESTS
 # Insert incoming / outgoing requests.
 def sendGroupRequest(group_id, sender_firebase_id):
 	with connection.cursor() as cursor:
 		current_time = time.time()
-		i_id = Invite.objects.count()
+		i_id = generateInviteId()
 		# Get contact_list_id for sender from Django models.
 		sender_cl_id = Profile.objects.get(firebase_id=sender_firebase_id).contact_list_id
 		# Create new group-request using raw SQL query.
@@ -207,6 +246,16 @@ def actionGroupRequest(invite_id, accept):
 		# Remove sender's incoming group-requests using raw SQL query.
 		cursor.execute('UPDATE "Group" SET received_group_requests = array_remove(received_group_requests, (SELECT CAST (%s AS SMALLINT)))'
 			+ ' WHERE group_name = %s', [invite_id, group_id])
+
+# Get group-request data based on invite_id.
+def getGroupRequestData(invite_id):
+	with connection.cursor() as cursor:
+		cursor.execute('SELECT * FROM "Group_Request" WHERE invite_id = %s', [invite_id])
+		group_request_data = cursor.fetchone()
+		# Return dictionary containing group-request information.
+		group_request_data_cols = ['time_sent','invite_id','sender_id','group_name']
+		group_request_data = dict((col, item) for col, item in zip(group_request_data_cols, group_request_data))
+		return group_request_data
 
 
 # USER DATA
@@ -248,7 +297,7 @@ def editProfileData(firebase_id, alias, phone_num, last_name, first_name,
 def createProfileData(firebase_id, alias, phone_num, last_name, first_name,
 	email, birth_date, organization, user_desc):
 	with connection.cursor() as cursor:
-		cl_id = generateContactListId() + 1
+		cl_id = generateContactListId()
 		cursor.execute('INSERT INTO "Contact_List" (contact_list_id) VALUES (%s)', [cl_id])
 		cursor.execute('INSERT INTO "Profile" (alias, phone_num, last_name, first_name, email, birth_date,'
 			+ ' firebase_id, organization, contact_list_id, user_desc)'
@@ -284,7 +333,7 @@ def generateContactListId():
 		return 0
 	else:
 		max_id_val = ContactList.objects.aggregate(Max('contact_list_id'))
-		return max_id_val['contact_list_id__max']
+		return max_id_val['contact_list_id__max'] + 1
 
 # Get user's contact-list data based on firebase_id.
 def getContactListData(firebase_id):
@@ -345,8 +394,9 @@ def getAllGroupNames():
 
 # Get group data based on group_name.
 def getGroupData(group_name):
-	return Group.objects.filter(pk=group_name).values()[0]
-
+	group_data =  Group.objects.filter(pk=group_name).values()[0]
+	# Return dictionary containing group data information.
+	return group_data
 
 # EVENTS
 # Get all participating events of user and each event's corresponding details using firebase_id.
@@ -363,17 +413,19 @@ def generateEventId():
 		return 0
 	else:
 		max_id_val = Event.objects.aggregate(Max('event_id'))
-		return max_id_val['event_id__max']
+		return max_id_val['event_id__max'] + 1
 
 # Get event data based on event_id.
 def getEventData(event_id):
-	return Event.objects.filter(pk=event_id).values()[0]
+	event_data = Event.objects.filter(pk=event_id).values()[0]
+	# Return dictionary containing event data information.
+	return event_data
 
 # Create an event and update the event creator's user_events.
 def createEvent(event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
 	end_date, event_creator_firebase_id):
 	with connection.cursor() as cursor:
-		event_id = generateEventId() + 1
+		event_id = generateEventId()
 		# Create an event using a raw SQL query.
 		cursor.execute('INSERT INTO "Event" (event_id, event_title, description, participating_users, event_admins,'
 			+ ' whitelist, blacklist, start_date, end_date, event_creator_firebase_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
