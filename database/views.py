@@ -372,7 +372,7 @@ def validGroupName(group_name):
 	gn = Group.objects.filter(pk=group_name).count()
 	valid_id = True
 
-	if gn == 0:
+	if gn > 0:
 		valid_id = False
 
 	return valid_id
