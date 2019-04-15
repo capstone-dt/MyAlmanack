@@ -37,11 +37,18 @@
             </div>
           </li>
         </ul>
-        <form class="form-inline justify-content-center" style="width:75%;" action="/search/" method="post">
-			{% csrf_token %}
-			{{ search_form.as_ul }}
+        <div class="form-inline justify-content-center" style="width:75%;" action="#">
           <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onclick="searchBarUpdate();" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
           <script type="text/javascript">
+          	$(document).ready(function(){
+			    $('#firstSearch').keypress(function(e){
+			      if(e.keyCode==13){
+			      	console.log("enter pressed");
+			      	searchBarUpdate();
+			      	submitSearch();
+			      }
+			    });
+			});
           	function searchBarUpdate(){
           		var search_form_param = document.getElementById("id_SIstring");
           		var firstSearch = document.getElementById("firstSearch");
@@ -50,8 +57,12 @@
           			search_form_param.value = " ";
           		}
           	}
+          	function submitSearch(){
+          		var search_submit_button = document.getElementById("searchSubmitButton");
+          		search_submit_button.click();
+          	}
           </script>
-        </form>
+        </div>
         <ul class= "navbar-nav ml-auto">
           <li class="nav-item dropdown overAll">
             <a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">person</i></a>
@@ -94,6 +105,21 @@
 		<input type="hidden" name="formType" value="FriendResponse">
 		<input type="submit"  style="display: none;" id="friendRespondRequest">
 	</form>
+
+	<form action="/search/" method="post">
+		{% csrf_token %}
+		{{ header_forms.search_form.as_ul }}
+		<input type="hidden" name="formType" value="SearchTerm">
+		<input type="submit" style="display: none;" id="searchSubmitButton">
+	</form>
+
+	<form action="/profile/" method="post">
+		{% csrf_token %}
+		{{ header_forms.group_form.as_ul }}
+		<input type="hidden" name="formType" value="CreateGroup">
+		<input type="submit" style="display: none;" id="submitCreateGroup">
+	</form>
+
 	<style type="text/css">
 		.reqField:before{
 			content:"*" ;
@@ -370,13 +396,6 @@
 	        </button>
 	      </div>
 	      <div class="modal-body">
-	        <form action="/profile/" method="post"> 
-				{% csrf_token %}
-				{{ group_form.as_ul }}
-				<input type="hidden" name="formType" value="CreateGroup">
-				<input type="submit" style="display:none;" id="submitCreateGroup">
-
-	        </form>
 				<div class="form-group">
 				    <label class="reqField" for="inputGroupName">Group Name</label>
 				    <input type="text"  onchange="updateGroupForm()" class="form-control" id="inputGroupName" pattern="[A-Za-z0-9]{1,}$" required>

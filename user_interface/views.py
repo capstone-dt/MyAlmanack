@@ -152,6 +152,7 @@ def redirForce(request):
 	return e.get(request)
 
 def redir404(request):
+	user_firebase_id = getCurrentFirebaseId(request)
 	return render(
 		request=request,
 		template_name='user_interface/404.html',
@@ -210,6 +211,7 @@ def getHeaderForms():
 		"search_form" : SearchForm(),
 		"friend_response" : FriendRespondRequest(),
 		"group_response" : GroupRespondRequest(),
+		"group_form" : GroupForm(),
 	}
 	return retDict
 
@@ -436,11 +438,14 @@ class GroupView(TemplateView):
 		user_firebase_id = getCurrentFirebaseId(request)
 		isValid = validFirebaseId(user_firebase_id);
 		print("isvalid_id", isValid)
-		if(isValid == False):
+		if(isValid == True):
 			return redirForce(request)
 		name_requested = group_name
+		if(validGroupName(group_name) == False):
+			return redir404(request)
 		search_form = SearchForm()
 		group_form = GroupForm()
+		group_data = getGroupData(group_name)
 		return render(
 			request=request,
 			template_name=self.template_name,
@@ -449,6 +454,7 @@ class GroupView(TemplateView):
 				"group_form" : group_form,
 				"calendar_mode" : "group",
 				"name_requested" : name_requested,
+				"group_data" : str(json.dumps(group_data)),
 				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
 				"header_forms" : getHeaderForms(),
 				}
@@ -479,6 +485,7 @@ class SearchView(TemplateView):
 
 	def get(self, request):
 		search_form = SearchForm()
+		user_firebase_id = getCurrentFirebaseId(request)
 		return render(
 			request=request,
 			template_name=self.template_name,
@@ -489,6 +496,7 @@ class SearchView(TemplateView):
 
 	def post(self, request):
 		search_form = SearchForm(request.POST)
+		user_firebase_id = getCurrentFirebaseId(request)
 		formController(request)
 		return render(
 			request=request,
@@ -508,6 +516,7 @@ def formController(request):
 	switchType = request.POST.get('formType')
 	user_firebase_id = getCurrentFirebaseId(request)
 	print(switchType)
+	#SearchTerm
 	if(switchType == "FriendResponse"):
 		respondFriend(request)
 	elif(switchType == "SubmitEvent"):
@@ -527,6 +536,8 @@ def formController(request):
 		editProfile(request)
 	elif(switchType == "CreateGroup"):
 		createGroupLocal(request)
+	elif(switchType == "SearchTerm"):
+		return getSearchResults(request)
 
 def respondFriend(request):
 	friend_response_form = FriendRespondRequest(request.POST)
@@ -628,3 +639,8 @@ def createGroupLocal(request):
 	group_invite = group_form["GIinvite"].value().split(",")
 	# def createGroup(firebase_id, group_name, group_admin, group_members, group_desc)
 	createGroup(firebase_id, group_name, [firebase_id], [firebase_id], group_desc)
+
+def getSearchResults(request):
+	search_form = SearchForm(request.POST)
+	user_firebase_id = getCurrentFirebaseId(request)
+	print(search_form)
