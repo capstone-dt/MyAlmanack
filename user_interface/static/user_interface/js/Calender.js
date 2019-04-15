@@ -341,33 +341,108 @@ class Event{
 				
 				freetime_per_day(list, start_date, end_date){
 					var ONE_DAY = 86400000;// milliseconds
-					var start_datedate = new Date(start_date);
-					var end_datedate = new Date(end_date);
+					var ONE_MINUTE = 60000;
 					list.sort((elemA, elemB) => elemA.start_date - elemB.start_date);
 					var arrsize = (Math.abs(end_date - start_date)/ONE_DAY);
 					arrsize = Math.floor(arrsize);
-					var arr = new Array(arrsize).fill(null);
+					var arr = new Array(arrsize+1).fill(null);
+					var newArray = [];
+					for (w =0; w < list.length; w++){
+						var start_getter = new Date(list[w].start_date);
+						start_getter.setHours(0);
+						start_getter.setMinutes(0);
+						var start_of_day = new Date(start_getter.getTime());
+						var end_getter = new Date(list[w].end_date);
+						end_getter.setHours(23);
+						end_getter.setMinutes(59);
+						var end_of_day = new Date(end_getter.getTime());
+						var startstruc = {};
+						var endstruc = {};
+						startstruc.start_date=start_of_day.getTime();
+						startstruc.end_date=start_of_day.getTime();
+						endstruc.start_date=end_of_day.getTime();
+						endstruc.end_date=end_of_day.getTime();
+						if (newArray.includes(startstruc)== false){
+							newArray.push(startstruc);
+						}
+						
+						newArray.push(list[w]);
+						if (newArray.includes(endstruc)== false){
+							newArray.push(endstruc);
+						}
+						
+						//console.log(startstruc.start_date);
+						//console.log(endstruc.start_date);
+						//console.log(newArray);
+					}
+					list = newArray;
 					var freetime = this.freeTime(list,0);
 					var freetime_list = freetime[1];
-					var i, j, indexS=0, indexE;
+					//console.log(freetime_list);
+					var i, j, w, indexS=0, indexE;
 					var tempList = [];
+					
+
+					
 					for (i =0; i< arr.length; i++){//
-						var dayUnixS = start_date+(86400000*i);
-						var dayUnixE = start_date+(86400000*i)+86400000;
+						var dayUnixS = start_date+(ONE_DAY*i);
+						var dayUnixE = start_date+(ONE_DAY*i)+ONE_DAY-ONE_MINUTE;
+						var start_datedate = new Date(start_date);
+						var end_datedate = new Date(start_date);
+							var start_datedate = new Date(start_date);
+						var end_datedate = new Date(start_date);
+						start_datedate.setDate(start_datedate.getDate() + i);
+						start_datedate.setHours(0);
+						start_datedate.setMinutes(0);
+						//console.log("start_datedate2 "+start_datedate);
+						end_datedate.setDate(end_datedate.getDate() + i);
+						end_datedate.setHours(23);
+						end_datedate.setMinutes(59);
+						//console.log("end_datedate2 "+end_datedate);
+						var tempdate1 = new Date(dayUnixS);
+						var tempdate2 = new Date(dayUnixE);
+						//console.log("tempdate1 "+tempdate1);
+						//console.log("tempdate2 "+tempdate2);
+						if (tempdate1.getHours() != 0){
+							tempdate1.setHours(0);
+							dayUnixS =  tempdate1.getTime();
+						}
+						if (tempdate2.getHours() != 23){
+							dayUnixE =  tempdate2.getTime();
+						}
+						if (tempdate2.getDate() != tempdate1.getDate()){
+							tempdate2.setDate(tempdate1.getDate());
+						}
+
+						//console.log("tempdate1 "+tempdate1);
+						//console.log("tempdate2 "+tempdate2);
+						//console.log("S "+tempdate1.getHours());
+						//console.log("E "+tempdate2.getHours());
+						//console.log("S1 "+dayUnixS);
+						//console.log("E1 "+dayUnixE);
 						for (j=0; j< freetime_list.length;j++){
 							if (freetime_list[j].start_date == 0){
-								freetime_list[j].start_date ==freetime_list[j].end_date-86400000;
+								freetime_list[j].start_date ==start_date;
 							}
-							if (freetime_list[j].end_date == 99999999999999){
-								indexE= j;
-								freetime_list[j].end_date == freetime_list[j].start_date+86400000;
-							}
-							if (dayUnixS < freetime_list[j].start_date && freetime_list[j].start_date < dayUnixE){
+							
+							if (start_datedate.getTime() <= freetime_list[j].start_date && freetime_list[j].start_date <= end_datedate.getTime()){
+						//console.log("dayUnixSdayUnixS ASDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+
+							//console.log("dayUnixSdayUnixS "+dayUnixS);
+							//console.log("dayUnixEdayUnixE "+dayUnixE);
 								if (arr[i] == null){
 									arr[i] = [];
 									if (indexS ==0){
 										indexS =i;
 									}
+									indexE= i;
+								}
+								if (freetime_list[j].end_date == 99999999999999){
+									//console.log("HELLOOOOOO "+i);
+								//console.log(freetime_list[j].end_date);
+								freetime_list[j].end_date = end_datedate.getTime();
+								//console.log("HELLOOOOOOSSSS "+dayUnixE);
+								//console.log(freetime_list[j].end_date);
 								}
 								arr[i].push(freetime_list[j]);
 							}
@@ -375,25 +450,37 @@ class Event{
 					}
 						var a;
 					for (a=0; a < arr.length;a++){
-						var dayUnixS = start_date+(86400000*a);
-						var dayUnixE = start_date+(86400000*a)+86400000;
+						var dayUnixS2 = start_date+(ONE_DAY*a);
+						var dayUnixE2 = start_date+(ONE_DAY*i)+ONE_DAY-ONE_MINUTE;
+						var tempdate3 = new Date(dayUnixS2);
+						var tempdate4 = new Date(dayUnixE2);
+						var start_datedate = new Date(start_date);
+						var end_datedate = new Date(start_date);
+						start_datedate.setDate(start_datedate.getDate() + a);
+						start_datedate.setHours(0);
+						start_datedate.setMinutes(0);
+						//console.log("start_datedate2 "+start_datedate);
+						end_datedate.setDate(end_datedate.getDate() + a);
+						end_datedate.setHours(23);
+						end_datedate.setMinutes(59);
+						//console.log("end_datedate2 "+end_datedate);
 						if (arr[a] == null && a <indexS){
 							var struc = {};
-							struc.start_date = dayUnixS;
-							struc.end_date = dayUnixE;
+							struc.start_date = start_datedate.getTime();
+							struc.end_date = end_datedate.getTime();
 							arr[a] =[];
 							arr[a].push(struc);
 						}
 						if (arr[a] == null && a >indexE){
 							var struc = {};
-							struc.start_date = dayUnixS;
-							struc.end_date = dayUnixE;
+							struc.start_date = start_datedate.getTime();
+							struc.end_date = end_datedate.getTime();
 							arr[a] =[];
 							arr[a].push(struc);
 						}
 					}
-
-				
+					//console.log(indexS);
+					//console.log(indexE);
 					return arr;
 			}
 
@@ -519,5 +606,5 @@ class Event{
 				//console.log("freetime this:");
 				//console.log(freetime);
 				//console.log("freetime21231 : ");
-				//console.log(cal.freetime_per_day(list1,1551416400000,1554091200000 ))
+				console.log(cal.freetime_per_day(list1,1551416400000,1554091200000 ))
 			}
