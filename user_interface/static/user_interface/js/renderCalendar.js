@@ -1903,7 +1903,7 @@ function loadProfileDummyData(event_data, profile_data, contact_data, user, cont
 	_dummy_contacts_json = parseQuotesJson(contact_data);
 	_dummy_user_json = parseQuotesJson(user)[0];
 	user_contact_list = parseQuotesJson(contact_list);
-	console.log(_dummy_events_json, _dummy_profiles_json, _dummy_contacts_json, _dummy_user_json);
+	// console.log(_dummy_events_json, _dummy_profiles_json, _dummy_contacts_json, _dummy_user_json);
 }
 function getDayPosition(day_num, year, month){
 	var count = 0;

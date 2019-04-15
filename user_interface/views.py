@@ -178,24 +178,35 @@ def getHeaderDict(firebase_id):
 		retHeader["event_invites"] = []
 	else:
 		event_invite_ids = contact_list["received_event_invites"]
-		retHeader["event_invites"] = event_invite_ids
+		# retHeader["event_invites"] = event_invite_ids
+		for e_id in event_invite_ids:
+			curr_event_data = getEventData(e_id)
+			retHeader["event_invites"].append(curr_event_data)
 		# add event information based on id
 	if(contact_list["received_friend_requests"] == None):
 		retHeader["friend_requests"] = []
 	else:
-		friend_invite_firebase_ids = contact_list["received_friend_requests"]
-		for f_id in friend_invite_firebase_ids:
-			curr_user = getProfileData(f_id)
-			curr_user.profile_picture = getProfilePictureFirebaseId(f_id)
-			retHeader["friend_requests"].append(curr_user)
+		friend_invite_ids = contact_list["received_friend_requests"]
+		print("recieved:", friend_invite_ids)
+		# for f_id in friend_invite_ids:
+		# 	request_data = UserRequest.objects.filter(pk=f_id).values()[0]
+		# 	sender_id = request_data["sender_id"]
+		# 	curr_user = getProfileData(sender_id)
+		# 	curr_user.profile_picture = getProfilePictureFirebaseId(sender_id)
+		# 	retHeader["friend_requests"].append(curr_user)
 	if(contact_list["received_group_invites"] == None):
 		retHeader["group_requests"]["invites"] = []
 	else:
 		group_invite_names = contact_list["received_group_invites"]
-		retHeader["group_requests"]["invites"] = group_invite_names
+		# retHeader["group_requests"]["invites"] = group_invite_names
 		# add group information based on group_name
+		for g_name in group_invite_names:
+			curr_group_data = getGroupData(g_name)
+			retHeader["group_requests"]["invites"].append(curr_group_data)
 	return retHeader
 
+def getFriendInfo(firebase_id):
+	return None
 
 
 def getFirebaseIDAliasDummy(user_structs, alias):
@@ -262,7 +273,24 @@ class ProfileView(TemplateView):
 		else:
 			return redir404(request)
 		database_header = getHeaderDict(user_firebase_id)
-      
+		database_contact_names = data_contact_list["contact_names"]
+		if(database_contact_names == None):
+			database_contact_names = []
+		prof_mode = "friend"
+		is_friend = "false"
+		if name_selected == data_prof_alias:
+			prof_mode = "self"
+		else:
+			prof_mode = "friend"
+			if firebase_id_selected in database_contact_names:
+				is_friend = "true"
+			else:
+				is_friend = "false"
+
+
+
+
+
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
 		# print(currentuserstruct)
 		if bool(currentuserstruct[0]) == False:
@@ -285,17 +313,6 @@ class ProfileView(TemplateView):
 		friend_names = user_contact_list["contact_names"].replace(" ", "").split(",")
 		# print(friend_names)
 		friend_events = []
-		is_friend = "false"
-		prof_mode = "friend"
-		if(currentuserstruct[0]["alias"] == user_alias or alias_requested == ""):
-			prof_mode = "self"
-		else:
-			prof_mode = "friend"
-			if alias_requested in friend_names:
-				is_friend = "true"
-			else:
-				is_friend = "false"
-
 
 		for friend_alias in friend_names:
 			curr_events = filterDummyEventsAlias(eventstructs, friend_alias)
@@ -476,6 +493,7 @@ class SearchView(TemplateView):
   
 def formController(request):
 	switchType = request.POST.get('formType')
+	user_firebase_id = getCurrentFirebaseId(request)
 	print(switchType)
 	if(switchType == "SubmitEvent"):
 		submitEvent(request)
@@ -484,6 +502,7 @@ def formController(request):
 		print(friend_form)
 		add_alias = friend_form["FIreqalias"].value()
 		print(add_alias)
+		sendFriendRequestUI(user_firebase_id, add_alias)
 	elif(switchType == "FriendRemove"):
 		rem_form = FriendRemoveForm(request.POST)
 		print(rem_form)
@@ -539,6 +558,10 @@ def submitEvent(request):
 	else:
 		createRepeatEvent(event_name, event_desc, [user_firebase_id], [user_firebase_id], whitelist_ids, blacklist_ids,
 			int(event_start), int(event_end), str(user_firebase_id), "weekly", int(event_start), int(event_end), repeat_pattern)
+
+def sendFriendRequestUI(sender_firebase_id, reciever_alias):
+	reciever_firebase_id = aliasToFirebaseId(reciever_alias)
+	sendFriendRequest(sender_firebase_id, reciever_firebase_id)
 
 def editProfile(request):
 	firebase_id = getCurrentFirebaseId(request)
