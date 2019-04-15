@@ -237,8 +237,12 @@ class ProfileView(TemplateView):
 		print("data_prof_alias", data_prof_alias)
 		# print(profile_data)
 		profile_events = []
-		if(profile_data['user_events'] != None):
-			profile_events = getUserEvents(user_firebase_id)
+		try:
+			if(profile_data['user_events'] != None):
+				profile_events = getUserEvents(user_firebase_id)
+		except:
+			#don't add
+			print("doesnt exist")
 		print("profile_events", profile_events)
 		data_contact_list = getContactListData(user_firebase_id)
 		print("data_contact_list", data_contact_list)
