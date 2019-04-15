@@ -441,7 +441,7 @@ class GroupView(TemplateView):
 		if(isValid == True):
 			return redirForce(request)
 		name_requested = group_name
-		if(validGroupName(group_name) == False):
+		if(validGroupName(group_name) == True):
 			return redir404(request)
 		search_form = SearchForm()
 		group_form = GroupForm()

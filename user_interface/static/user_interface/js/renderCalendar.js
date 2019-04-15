@@ -125,6 +125,21 @@ function clickAnywhere(event){
 		console.log(clicked_structs);
 	}
 }
+function populateShowEvents(clicked_structs){
+	var view_events_div = document.getElementById("viewEventsScrollCont");
+	for(var i = 0; i < clicked_structs.length; i++){
+		var curr_struct = clicked_structs[i];
+		var curr_elem = document.createElement("a");
+		curr_elem.className = "dropdown-item";
+		curr_elem.id = "ve_" + curr_struct.event_id;
+		curr_elem.href = "#";
+		var event_text_div = document.createElement("div");
+		event_text_div.innerHTML = curr_struct.description;
+		event_text_div.innerHTML += "<br>@" + curr_struct.event_creator_alias;
+		curr_elem.appendChild(event_text_div);
+		view_events_div.appendChild(curr_elem);
+	}
+}
 
 function ensureBoxSize(){
 	// console.log(calArray);

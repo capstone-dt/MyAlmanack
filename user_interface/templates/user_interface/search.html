@@ -184,12 +184,8 @@
 
 
 			function drawUserElement(struct){
-				var image_url = struct.image_url;
 				var name = struct.name;
 				var alias = struct.alias;
-				if(image_url == null){
-					image_url = "https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg";
-				}
 				var list_elem = document.createElement('li');
 				list_elem.className = "nav-item";
 				list_elem.style = "width:100%;"
