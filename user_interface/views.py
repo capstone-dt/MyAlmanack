@@ -519,10 +519,7 @@ def formController(request):
 		print(add_alias)
 		sendFriendRequestUI(user_firebase_id, add_alias)
 	elif(switchType == "FriendRemove"):
-		rem_form = FriendRemoveForm(request.POST)
-		print(rem_form)
-		rem_alias = rem_form["FIremalias"].value()
-		print(rem_alias)
+		removeFriend(request)
 	elif(switchType == "GroupRequest"):
 		invite_form = GroupInviteForm(request.POST)
 		print(invite_form)
@@ -611,6 +608,15 @@ def editProfile(request):
 	else:
 		createProfileData(firebase_id, alias, phone_num, last_name, first_name,
 		email, birth_date, organization, user_desc)
+
+def removeFriend(request):
+	rem_form = FriendRemoveForm(request.POST)
+	print(rem_form)
+	rem_alias = rem_form["FIremalias"].value()
+	print(rem_alias)
+	user_firebase_id = getCurrentFirebaseId(request)
+	friend_firebase_id = aliasToFirebaseId(rem_alias)
+	removeContact(user_firebase_id, friend_firebase_id)
 
 
 def createGroupLocal(request):
