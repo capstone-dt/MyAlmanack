@@ -149,10 +149,15 @@
 		console.log("database_user_events", database_user_events);
 		console.log("database_contact_list", database_contact_list);
 		console.log("database_selected_json", database_selected_json);
+		var database_calendar_struct = parseQuotesJson("{{database_calendar_dict}}");
+		console.log("database_calendar_struct", database_calendar_struct);
 		loadSelectedData();
-		loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
+		// Need to comment out and replace.
+		// loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
 		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
-		mainProf("{{calendar_mode}}", "{{name_selected}}");
+		// mainProf("{{calendar_mode}}", "{{name_selected}}");
+		_name_selected = "{{name_selected}}";
+		main_renderCalendar(database_calendar_struct);
 
 
 </script>

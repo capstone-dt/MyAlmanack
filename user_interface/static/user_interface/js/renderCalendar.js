@@ -43,6 +43,7 @@ var freetimeChecked = false;
 var timeout_mil = 20;
 var _calendar_mode = "";
 var _name_selected = "";
+var _calendar_struct = {};
 // Friends enabled test
 
 /*
@@ -122,11 +123,21 @@ function clickAnywhere(event){
 		clicked_structs.push(getEventStruct(curr_id));
 	}
 	if(clicked_structs.length > 0){
+		clearShowEvents();
+		populateShowEvents(clicked_structs);
+		showEventsModal();
 		console.log(clicked_structs);
+	}
+}
+function clearShowEvents(){
+	var view_events_div = document.getElementById("viewEventsScrollCont");
+	while(view_events_div.firstChild){
+		view_events_div.removeChild(view_events_div.firstChild);
 	}
 }
 function populateShowEvents(clicked_structs){
 	var view_events_div = document.getElementById("viewEventsScrollCont");
+	console.log("populateShowEvents");
 	for(var i = 0; i < clicked_structs.length; i++){
 		var curr_struct = clicked_structs[i];
 		var curr_elem = document.createElement("a");
@@ -134,11 +145,15 @@ function populateShowEvents(clicked_structs){
 		curr_elem.id = "ve_" + curr_struct.event_id;
 		curr_elem.href = "#";
 		var event_text_div = document.createElement("div");
-		event_text_div.innerHTML = curr_struct.description;
+		event_text_div.innerHTML = curr_struct.event_title;
 		event_text_div.innerHTML += "<br>@" + curr_struct.event_creator_alias;
 		curr_elem.appendChild(event_text_div);
 		view_events_div.appendChild(curr_elem);
 	}
+}
+function showEventsModal(){
+	var open_events = document.getElementById("viewEventsOpenButton");
+	open_events.click();
 }
 
 function ensureBoxSize(){
@@ -1275,18 +1290,18 @@ function populateFriendsSelectDropdown(){
 	var friendsSelectDropdown = document.getElementById("members_select_dropdown");
 	var friendsSelectDropdownButton = document.getElementById("members_select_dropdown_button");
 	switch(_calendar_mode){
-		case "self":
+		case "USER":
 			break;
-		case "friend":
+		case "FRIEND":
 			console.log(friendsSelectDropdown);
 			friendsSelectDropdownButton.style.display = "none";
 			return;
-		case "group":
+		case "GROUP":
 			friendsSelectDropdownButton.innerText = "Members";
 			break;
 		default:
 	}
-	var friends_to_pop = getFriendsUserData();
+	var friends_to_pop = _calendar_struct.calendar_data.member_info;
 	for(var i = 0; i < friends_to_pop.length; i++){
 		var curr_friend = friends_to_pop[i];
 		var curr_a = document.createElement("a");
@@ -1964,16 +1979,16 @@ function getFriendsProfilePictures(){
 	// stubbed
 }
 
-function loadCalendarDataProfile(user_events_data, friend_events_data){
-	var user_events_json = parseQuotesJson(user_events_data);
-	var friend_events_json = parseQuotesJson(friend_events_data);
-	for(var i = 0; i < user_events_json.length; i++){
-		user_events_all.push(user_events_json[i]);
-	}
-	for(var j = 0; j < friend_events_json.length; j++){
-		member_events_all.push(friend_events_json[j]);
-	}
-}
+// function loadCalendarDataProfile(user_events_data, friend_events_data){
+// 	var user_events_json = parseQuotesJson(user_events_data);
+// 	var friend_events_json = parseQuotesJson(friend_events_data);
+// 	for(var i = 0; i < user_events_json.length; i++){
+// 		user_events_all.push(user_events_json[i]);
+// 	}
+// 	for(var j = 0; j < friend_events_json.length; j++){
+// 		member_events_all.push(friend_events_json[j]);
+// 	}
+// }
 
 
 // -----------------------------------------------------------------
@@ -1991,6 +2006,26 @@ function mainProf(calendar_mode, name_selected){
 	dayWeekUpdate();
 	_calendar_mode = calendar_mode;
 	_name_selected = name_selected;
+	console.log("CALENDAR MODE", _calendar_mode);
+	populateFriendsSelectDropdown();
+	windowResized();
+}
+
+function main_renderCalendar(calendar_struct){
+	_calendar_struct = calendar_struct;
+	user_events_all = _calendar_struct.calendar_data.user_events;
+	member_events_all = _calendar_struct.calendar_data.member_events;
+	console.log("main_renderCalendar", _calendar_struct);
+	window.addEventListener("resize", windowResized);
+	document.body.addEventListener('click', clickAnywhere, true); 
+	switchCalendarView(_cont_id, "month");	
+	loadUserEvents();
+	loadMemberEvents();
+	populateMonthYear();
+	populateDay();
+	setCurrTime();
+	dayWeekUpdate();
+	_calendar_mode = calendar_struct.mode;
 	console.log("CALENDAR MODE", _calendar_mode);
 	populateFriendsSelectDropdown();
 	windowResized();

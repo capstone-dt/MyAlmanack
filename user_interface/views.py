@@ -227,6 +227,53 @@ def getFirebaseIDAliasDummy(user_structs, alias):
 	return -1
 
 
+def getCalendarDict(user_firebase_id, selected_id, mode):
+	retDict = {
+		"mode" : "",
+		"calendar_data" : {
+			"user_events" : [],
+			"member_events" : [],
+			"member_info" : [],
+		},
+	}
+	retDict["mode"] = mode
+	profile_data = getProfileData(user_firebase_id)
+	user_events = []
+	if(profile_data['user_events'] != None):
+		user_events = getUserEvents(user_firebase_id)
+	retDict["calendar_data"]["user_events"] = user_events
+	if(mode == "USER"):
+		data_contact_list = getContactListData(user_firebase_id)
+		database_contact_ids = data_contact_list["contact_names"]
+		if(database_contact_ids == None):
+			database_contact_ids = []
+		member_events = []
+		member_info = []
+		for f_id in database_contact_ids:
+			member_profile_data = getProfileData(f_id)
+			curr_events_friend = []
+			if(member_profile_data["user_events"] != None):
+				curr_events_friend = getUserEvents(f_id)
+			for ev in curr_events_friend:
+				member_events.append(ev)
+			member_info.append(member_profile_data)
+		retDict["calendar_data"]["member_events"] = member_events
+		retDict["calendar_data"]["member_info"] = member_info
+
+	elif(mode == "FRIEND"):
+		member_info = getProfileData(selected_id)
+		member_events = []
+		if(member_info["user_events"] != None):
+			member_events = getUserEvents(selected_id)
+		if(member_events == None):
+			member_events = []
+		retDict["calendar_data"]["member_events"] = member_events
+		retDict["calendar_data"]["member_info"] = [getProfileData(selected_id)]
+	elif(mode == "GROUP"):
+		print("group selected")
+	return retDict
+
+
 def nullAlias(request):
 	p = ProfileView()
 	if(request.method == "POST"):
@@ -287,15 +334,23 @@ class ProfileView(TemplateView):
 		if(database_contact_names == None):
 			database_contact_names = []
 		prof_mode = "friend"
+		cal_mode = "USER"
 		is_friend = "false"
 		if name_selected == data_prof_alias:
 			prof_mode = "self"
+			cal_mode = "USER"
 		else:
 			prof_mode = "friend"
+			cal_mode = "FRIEND"
 			if firebase_id_selected in database_contact_names:
 				is_friend = "true"
 			else:
 				is_friend = "false"
+		print("validAlias:",name_selected, validAlias(name_selected), firebase_id_selected)
+
+		database_calendar_dict = getCalendarDict(user_firebase_id, firebase_id_selected, cal_mode)
+		if cal_mode == "FRIEND" and is_friend == "false":
+			database_calendar_dict["calendar_data"]["member_events"] = []
 
 
 
@@ -363,6 +418,7 @@ class ProfileView(TemplateView):
 				"user_events_database" : str(json.dumps(profile_events)),
 				"user_contact_list" : str(json.dumps(data_contact_list)),
 				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
 				"header_forms" : getHeaderForms(),
 				"friend_req" :  FriendRequestForm(),
 				"friend_rem" : FriendRemoveForm(),
@@ -638,7 +694,7 @@ def createGroupLocal(request):
 	group_desc = group_form["GIdescription"].value()
 	group_invite = group_form["GIinvite"].value().split(",")
 	# def createGroup(firebase_id, group_name, group_admin, group_members, group_desc)
-	createGroup(firebase_id, group_name, [firebase_id], [firebase_id], group_desc)
+	createGroup(firebase_id, group_name, [], [], group_desc)
 
 def getSearchResults(request):
 	search_form = SearchForm(request.POST)
