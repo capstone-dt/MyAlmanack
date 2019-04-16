@@ -4,8 +4,8 @@ from authorization import policies
 
 class ViewGroupCalendar(UserGroupAction):
     policies = [
-        # Users who are contacts can view each other's calendar.
-        policies.user.relationship.UsersAreContacts
+        # A user who is in a group can view the group's profile.
+        policies.user.group.UserIsInGroup
     ]
 
 

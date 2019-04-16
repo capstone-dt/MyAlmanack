@@ -8,11 +8,11 @@ class ViewUserProfile(BinaryUserAction):
         policies.miscellaneous.SubjectIsResource,
         
         # Users who are contacts can view each other's profile.
-        policies.user.relationship.UsersAreContacts,
+        policies.user._user.UsersAreContacts,
         
         # Users who are in one or more groups together can view each other's
         #     profile.
-        policies.user.relationship.UsersHaveACommonGroup
+        policies.user._user.UsersShareCommonGroup
     ]
 
 

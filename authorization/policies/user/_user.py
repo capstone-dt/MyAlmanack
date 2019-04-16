@@ -11,7 +11,7 @@ class UsersAreContacts(Policy):
         )
 
 
-class UsersHaveACommonGroup(Policy):
+class UsersShareCommonGroup(Policy):
     @classmethod
     def evaluate(cls, request):
         return len(
