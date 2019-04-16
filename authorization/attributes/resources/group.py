@@ -1,4 +1,4 @@
-from .. import Resource
+from ..resource import Resource
 from authorization.information import Group as WrappedGroup
 
 

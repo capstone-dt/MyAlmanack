@@ -1,4 +1,5 @@
 from .user import User
+from ..utilities.decorators import classproperty
 from ..utilities.wrapper import Wrapper
 
 # MyAlmanack database (Justin's subsystem)
@@ -20,37 +21,36 @@ class Group(Wrapper):
     def from_uid(cls, uid):
         return cls(_Group.objects.get(group_name=uid))
     
-    @classmethod
-    def get_all_groups(cls):
-        return frozenset(
-            cls.from_uid(group.group_name) for group in _Group.objects.all()
-        )
+    @classproperty
+    def all_groups(cls):
+        return frozenset(cls(group) for group in _Group.objects.all())
     
     """
     Instance methods
     """
     
     def __eq__(self, other):
-        return isinstance(other, Group) and self.get_uid() == other.get_uid()
+        return isinstance(other, Group) and self.uid == other.uid
     
-    def get_uid(self):
+    @property
+    def uid(self):
         return self._object.group_name
     
     # This returns a list of members who are members of this group.
-    def get_members(self):
+    @property
+    def members(self):
         return frozenset(
             User.from_uid(uid) for uid in self._object.group_members
         )
     
     # This returns a list of administrators who are members of this group.
-    def get_administrators(self):
+    @property
+    def administrators(self):
         return frozenset(
-            user for user in self.get_members()
-            if user.get_uid() in self._object.group_admin
+            user for user in self.members
+            if user.uid in self._object.group_admin
         )
     
     # This returns whether a user is a member or an administrator of this group.
     def contains_user(self, user):
-        return (
-            user in self.get_members() or user in self.get_administrators()
-        )
+        return user in self.members or user in self.administrators
