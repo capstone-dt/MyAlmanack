@@ -8,7 +8,7 @@ class ViewUserCalendar(BinaryUserAction):
         policies.miscellaneous.SubjectIsResource,
         
         # Users who are contacts can view each other's calendar.
-        policies.user._user.UsersAreContacts
+        policies.user.user.UsersAreContacts
     ]
 
 

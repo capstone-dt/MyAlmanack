@@ -1,3 +1,6 @@
-from .user import *
-#from .group import *
 from .miscellaneous import Tautology, SubjectIsResource
+
+# The following imports must be done using the following syntax or Python will
+#     not import correctly!
+import authorization.policies.user as user
+import authorization.policies.group as group

@@ -5,7 +5,7 @@ from authorization import policies
 class SendUserInvite(BinaryUserAction):
     policies = [
         # A user cannot send an invite to someone who's already their contact.
-        ~policies.user._user.UsersAreContacts
+        ~policies.user.user.UsersAreContacts
     ]
 
 
