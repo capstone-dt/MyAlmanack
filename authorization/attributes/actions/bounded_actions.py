@@ -1,7 +1,15 @@
 from authorization.attributes import Action
-from authorization.attributes.subjects import User as UserSubject
-from authorization.attributes.resources import User as UserResource, Group
-from authorization.attributes.contexts import HttpRequestContext
+from authorization.attributes.subjects import (
+    User as UserSubject,
+    Group as GroupSubject
+)
+from authorization.attributes.resources import (
+    User as UserResource,
+    Group as GroupResource,
+    UserInvite as UserInviteResource,
+    GroupInvite as GroupInviteResource,
+    EventInvite as EventInviteResource
+)
 
 
 class BinaryUserAction(Action):
@@ -9,23 +17,31 @@ class BinaryUserAction(Action):
     _resource_class = UserResource
 
 
-class BinaryUserHttpAction(BinaryUserAction):
-    _context_class = HttpRequestContext
+class BinaryGroupAction(Action):
+    _subject_class = GroupSubject
+    _resource_class = GroupResource
 
 
 class UserGroupAction(Action):
     _subject_class = UserSubject
-    _resource_class = Group
-
-
-class UserGroupHttpAction(UserGroupAction):
-    _context_class = HttpRequestContext
+    _resource_class = GroupResource
 
 
 class GroupUserAction(Action):
-    _subject_class = Group
+    _subject_class = GroupSubject
     _resource_class = UserResource
 
 
-class GroupUserHttpAction(GroupUserAction):
-    _context_class = HttpRequestContext
+class BinaryUserInviteAction(Action):
+    _subject_class = UserSubject
+    _resource_class = UserInviteResource
+
+
+class UserGroupInviteAction(Action):
+    _subject_class = UserSubject
+    _resource_class = GroupInviteResource
+
+
+class UserEventInviteAction(Action):
+    _subject_class = UserSubject
+    _resource_class = EventInviteResource
