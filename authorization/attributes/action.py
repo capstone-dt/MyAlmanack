@@ -1,34 +1,7 @@
-from ..enforcement import AuthorizationResult
-from ..utilities.reflection import get_class_name, assert_subclass
+from ..utilities.reflection import assert_subclass
 
 
 class Action:
-    @classmethod
-    def authorize(cls, request):
-        # Make sure that policies have been provided by the action.
-        if not hasattr(cls, "policies"):
-            raise NotImplementedError(
-                "%s has not provided any policies to evaluate!" %
-                get_class_name(cls)
-            )
-        
-        print("Action:", cls)
-        print("Policies:", cls.policies)
-        
-        # Evaluate all the policies of this action.
-        for policy in cls.policies:
-            print("Evaluating policy:", policy)
-            try:
-                if policy.evaluate(request):
-                    return AuthorizationResult.PERMIT
-                else:
-                    return AuthorizationResult.DENY
-            except Exception as error:
-                print("Unable to evaluate action authorization:", error)
-        
-        # If we get to this point, then none of the policies were applicable.
-        return AuthorizationResult.NOT_APPLICABLE
-    
     @classmethod
     def assert_attribute_classes(cls, subject, resource, context):
         # Assert the subject attribute's class if available.
