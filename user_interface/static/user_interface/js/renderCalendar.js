@@ -421,6 +421,10 @@ function combinedFreeToHours(combined_free, month_start, month_end){
 			// console.log(delta_h);
 		}
 	}
+	for(var i = 0; i < retArray.length; i++){
+		var currStruct = retArray[i];
+		
+	}
 	return retArray;
 }
 
@@ -1085,7 +1089,13 @@ function getEventsOnDate(date_obj){
 		if(inRange(beginning_day.getTime(), curr_event.start_date, end_day.getTime())
 			|| inRange(beginning_day.getTime(), curr_event.end_date, end_day.getTime())){
 			retArr.push(populatedEvents_d[i]);
+			continue;
 		}
+		var day_aff = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+		console.log("day_aff", day_aff, "curr_event", curr_event);
+		// if(day_aff = date_obj.getTime()){
+		// 	retArr.push(populatedEvents_d[i]);
+		// }
 	}
 	return retArr;
 }
@@ -1929,9 +1939,9 @@ function containsStruct_w(curr_struct){
 function containsStruct_d(curr_struct){
 	var contains = false;
 	for(var i = 0; i < populatedEvents_d.length; i++){
-		if(populatedEvents_d[i].event_object.event_id == curr_struct.event_object.event_id && 
-			populatedEvents_d[i].start_time == curr_struct.start_time && 
-			populatedEvents_d[i].length == curr_struct.length){
+		if(populatedEvents_d[i].event_object.start_date == curr_struct.event_object.start_date
+			&& populatedEvents_d[i].event_object.start_date == curr_struct.event_object.start_date &&
+			populatedEvents_d[i].event_object.event_id == curr_struct.event_object.event_id){
 			contains = true;
 			break;
 		}
