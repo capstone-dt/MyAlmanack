@@ -26,15 +26,15 @@ class User(Wrapper):
     """
     
     @classmethod
+    def from_uid(cls, uid):
+        return cls(cls.get_user_model().objects.get(username=uid))
+    
+    @classmethod
     def get_user_model(cls):
         if not hasattr(cls, "_user_model"):
             from django.contrib.auth import get_user_model
             cls._user_model = get_user_model()
         return cls._user_model
-    
-    @classmethod
-    def from_uid(cls, uid):
-        return cls(cls.get_user_model().objects.get(username=uid))
     
     """
     Instance methods
@@ -52,9 +52,16 @@ class User(Wrapper):
     # This returns a list of users which are contacts to this user.
     def get_contacts(self):
         contact_ids = self.get_profile().contact_list.contact_names
-        return [User.from_uid(uid) for uid in contact_ids]
+        return frozenset(User.from_uid(uid) for uid in contact_ids)
     
     def get_groups(self):
-        from .group import Group
-        all_groups = Group.get_all_groups()
-        return [group for group in all_groups if group.contains_user(self)]
+        from .group import Group; all_groups = Group.get_all_groups()
+        return frozenset(
+            group for group in all_groups if group.contains_user(self)
+        )
+    
+    def get_events(self):
+        from .event import Event; all_events = Event.get_all_events()
+        return frozenset(
+            event for event in all_events if event.contains_user(self)
+        )

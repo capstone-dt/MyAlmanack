@@ -8,7 +8,7 @@ from django.utils.html import escape
 def index(request):
     authorization_request = authorization.api.AuthorizationRequest(
         subject=request.user,
-        action=authorization.api.actions.user.profile.EditProfile,
+        action=authorization.api.actions.user.profile.EditUserProfile,
         resource=request.user,
         context=request
     )

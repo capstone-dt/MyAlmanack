@@ -1,10 +1,17 @@
 from ..enforcement import AuthorizationResult
-from ..utilities.reflection import assert_subclass
+from ..utilities.reflection import get_class_name, assert_subclass
 
 
 class Action:
     @classmethod
     def authorize(cls, request):
+        # Make sure that policies have been provided by the action.
+        if not hasattr(cls, "policies"):
+            raise NotImplementedError(
+                "%s has not provided any policies to evaluate!" %
+                get_class_name(cls)
+            )
+        
         print("Action:", cls)
         print("Policies:", cls.policies)
         

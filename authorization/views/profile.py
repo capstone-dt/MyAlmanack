@@ -17,7 +17,7 @@ def profile(request, uid):
     # Check authorization.
     authorization.api.authorize(
         request,
-        action=authorization.api.actions.user.profile.ViewProfile,
+        action=authorization.api.actions.user.profile.ViewUserProfile,
         resource=user
     )
     

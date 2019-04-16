@@ -1,4 +1,4 @@
-from .binary_user_action import BinaryUserAction
+from ..bounded_actions import BinaryUserAction
 from authorization import policies
 
 
@@ -8,7 +8,11 @@ class ViewUserProfile(BinaryUserAction):
         policies.miscellaneous.SubjectIsResource,
         
         # Users who are contacts can view each other's profile.
-        policies.user.relationship.UsersAreContacts
+        policies.user.relationship.UsersAreContacts,
+        
+        # Users who are in one or more groups together can view each other's
+        #     profile.
+        policies.user.relationship.UsersHaveACommonGroup
     ]
 
 

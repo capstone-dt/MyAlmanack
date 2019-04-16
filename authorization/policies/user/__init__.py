@@ -1,1 +1,1 @@
-from .relationship import *
+from .relationship import UsersAreContacts, UsersHaveACommonGroup

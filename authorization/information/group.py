@@ -1,6 +1,5 @@
 from .user import User
 from ..utilities.wrapper import Wrapper
-from ..utilities.reflection import is_subclass
 
 # MyAlmanack database (Justin's subsystem)
 from database.models import Group as _Group
@@ -18,14 +17,14 @@ class Group(Wrapper):
     """
     
     @classmethod
-    def get_all_groups(cls):
-        return [
-            cls.from_uid(group.group_name) for group in _Group.objects.all()
-        ]
-    
-    @classmethod
     def from_uid(cls, uid):
         return cls(_Group.objects.get(group_name=uid))
+    
+    @classmethod
+    def get_all_groups(cls):
+        return frozenset(
+            cls.from_uid(group.group_name) for group in _Group.objects.all()
+        )
     
     """
     Instance methods
@@ -39,14 +38,19 @@ class Group(Wrapper):
     
     # This returns a list of members who are members of this group.
     def get_members(self):
-        return [User.from_uid(uid) for uid in self._object.group_members]
+        return frozenset(
+            User.from_uid(uid) for uid in self._object.group_members
+        )
     
     # This returns a list of administrators who are members of this group.
     def get_administrators(self):
-        return [
+        return frozenset(
             user for user in self.get_members()
             if user.get_uid() in self._object.group_admin
-        ]
+        )
     
+    # This returns whether a user is a member or an administrator of this group.
     def contains_user(self, user):
-        return user in self.get_members()
+        return (
+            user in self.get_members() or user in self.get_administrators()
+        )

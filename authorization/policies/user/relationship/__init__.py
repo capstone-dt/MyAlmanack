@@ -1,1 +1,0 @@
-from .users_are_contacts import UsersAreContacts
