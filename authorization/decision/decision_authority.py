@@ -18,13 +18,12 @@ class DecisionAuthority:
             try:
                 if policy.evaluate(request):
                     return AuthorizationResult.PERMIT
-                else:
-                    return AuthorizationResult.DENY
             except Exception as error:
-                print("Unable to evaluate action authorization:", error)
+                print("Inapplicable action authorization policy:", error)
+                return AuthorizationResult.NOT_APPLICABLE
         
-        # If we get to this point, then none of the policies were applicable.
-        return AuthorizationResult.NOT_APPLICABLE
+        # If we get to this point, then none of the policies evaluated to true.
+        return AuthorizationResult.DENY
     
     @classmethod
     def is_permitted(cls, request):
