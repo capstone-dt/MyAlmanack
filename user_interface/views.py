@@ -238,6 +238,7 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 	}
 	retDict["mode"] = mode
 	profile_data = getProfileData(user_firebase_id)
+	retDict["calendar_data"]["user_info"] = profile_data
 	user_events = []
 	if(profile_data['user_events'] != None):
 		user_events = getUserEvents(user_firebase_id)
@@ -250,16 +251,19 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 		member_events = []
 		member_info = []
 		for f_id in database_contact_ids:
+			curr_dict_f = {}
+			curr_dict_f["firebase_id"] = f_id
+			curr_dict_f["participating_events"] = []
 			member_profile_data = getProfileData(f_id)
 			curr_events_friend = []
 			if(member_profile_data["user_events"] != None):
 				curr_events_friend = getUserEvents(f_id)
 			for ev in curr_events_friend:
-				member_events.append(ev)
+				curr_dict_f["participating_events"].append(ev)
+			member_events.append(curr_dict_f)
 			member_info.append(member_profile_data)
 		retDict["calendar_data"]["member_events"] = member_events
 		retDict["calendar_data"]["member_info"] = member_info
-
 	elif(mode == "FRIEND"):
 		member_info = getProfileData(selected_id)
 		member_events = []
@@ -271,6 +275,8 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 		retDict["calendar_data"]["member_info"] = [getProfileData(selected_id)]
 	elif(mode == "GROUP"):
 		print("group selected")
+		retDict["calendar_data"]["member_events"] = []
+		retDict["calendar_data"]["member_info"] = []
 	return retDict
 
 
@@ -502,6 +508,7 @@ class GroupView(TemplateView):
 		search_form = SearchForm()
 		group_form = GroupForm()
 		group_data = getGroupData(group_name)
+		database_calendar_dict = getCalendarDict(user_firebase_id, group_name, cal_mode)
 		return render(
 			request=request,
 			template_name=self.template_name,
@@ -512,6 +519,7 @@ class GroupView(TemplateView):
 				"name_requested" : name_requested,
 				"group_data" : str(json.dumps(group_data)),
 				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
 				"header_forms" : getHeaderForms(),
 				}
 		)

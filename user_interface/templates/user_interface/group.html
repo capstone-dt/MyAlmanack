@@ -157,7 +157,8 @@
 		}
 
 		updateGroupDataVisual();
-		mainProf("{{calendar_mode}}", "{{name_selected}}");
+		var database_calendar_struct = parseQuotesJson("{{database_calendar_dict}}");
+		main_renderCalendar(database_calendar_struct);
 </script>
 
 {% endblock %}
