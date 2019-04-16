@@ -4,13 +4,13 @@ from authorization.decision import Policy
 class UserIsGroupMember(Policy):
     @classmethod
     def evaluate(cls, request):
-        return request.subject in request.resource.get_members()
+        return request.subject in request.resource.members
 
 
 class UserIsGroupAdministrator(Policy):
     @classmethod
     def evaluate(cls, request):
-        return request.subject in request.resource.get_administrators()
+        return request.subject in request.resource.administrators
 
 
 # This checks whether the user subject is a member or administrator of a group.

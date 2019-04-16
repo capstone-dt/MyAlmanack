@@ -5,15 +5,13 @@ class UsersAreContacts(Policy):
     @classmethod
     def evaluate(cls, request):
         return (
-            request.subject in request.resource.get_contacts()
+            request.subject in request.resource.contacts
             and # Just to make sure...
-            request.resource in request.subject.get_contacts()
+            request.resource in request.subject.contacts
         )
 
 
 class UsersShareCommonGroup(Policy):
     @classmethod
     def evaluate(cls, request):
-        return len(
-            request.subject.get_groups() & request.resource.get_groups()
-        ) > 0
+        return len(request.subject.groups & request.resource.groups) > 0
