@@ -6,6 +6,7 @@ from authorization.attributes.subjects import (
 from authorization.attributes.resources import (
     User as UserResource,
     Group as GroupResource,
+    Event as EventResource,
     UserInvite as UserInviteResource,
     GroupInvite as GroupInviteResource,
     EventInvite as EventInviteResource
@@ -30,6 +31,11 @@ class UserGroupAction(Action):
 class GroupUserAction(Action):
     _subject_class = GroupSubject
     _resource_class = UserResource
+
+
+class UserEventAction(Action):
+    _subject_class = UserSubject
+    _resource_class = EventResource
 
 
 class BinaryUserInviteAction(Action):
