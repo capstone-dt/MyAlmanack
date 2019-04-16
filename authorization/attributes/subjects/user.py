@@ -1,4 +1,4 @@
-from .. import Subject
+from ..subject import Subject
 from authorization.information import User as WrappedUser
 
 

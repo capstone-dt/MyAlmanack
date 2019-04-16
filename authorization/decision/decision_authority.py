@@ -1,19 +1,36 @@
+from ..attributes.action import Action
 from ..enforcement.authorization_result import AuthorizationResult
+from ..utilities.reflection import assert_subclass
 
 
 class DecisionAuthority:
     @classmethod
     def authorize(cls, request):
-        result = request.action.authorize(request)
+        # Make sure that the authorization request's action is an Action class.
+        assert_subclass(request.action, Action)
         
-        # Make sure that the authorization result is one of enumeration values.
-        if not isinstance(result, AuthorizationResult):
-            raise ValueError(
-                "The authorization request returned an invalid result: %s" %
-                result
-            )
+        print("Action:", request.action)
+        print("Policies:", request.action.policies)
         
-        return result
+        # Evaluate all the policies of this action.
+        inapplicable_count = 0
+        for policy in request.action.policies:
+            print("Evaluating policy:", policy)
+            try:
+                if policy.evaluate(request):
+                    return AuthorizationResult.PERMIT
+            except Exception as error:
+                print("Inapplicable policy:", error)
+                inapplicable_count += 1
+        
+        # If we get to this point, then none of the policies evaluated to true.
+        if len(request.action.policies) == inapplicable_count:
+            # If every policy threw an error, then the authorization request is
+            #     inapplicable.
+            return AuthorizationResult.NOT_APPLICABLE
+        else:
+            # Otherwise, at least one policy evaluated to false.
+            return AuthorizationResult.DENY
     
     @classmethod
     def is_permitted(cls, request):
