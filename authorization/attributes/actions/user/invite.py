@@ -1,6 +1,7 @@
 from ..bounded_actions import (
     BinaryUserAction, BinaryUserInviteAction, UserGroupAction, UserEventAction
 )
+from authorization.attributes.contexts import GroupContext, EventContext
 from authorization import policies
 
 
@@ -46,13 +47,16 @@ Group invites
 
 
 class SendGroupInvite(BinaryUserAction):
+    # Special case: subject = user1, resource = user2, context = group
+    _context_class = GroupContext
+    
     policies = [
         # A user cannot send an invite to himself or herself.
         ~policies.miscellaneous.SubjectIsResource
         
         # A user cannot send an invite to someone who's already in the group.
-        # & ~policies.user.group.UserIsInGroup
-        # TODO: subject = user1, resource = user2, context = group
+        & ~policies.user.group.UserResourceIsInGroupContext
+        
     ]
 
 
@@ -83,12 +87,15 @@ Event invites
 
 
 class SendEventInvite(BinaryUserAction):
+    # Special case: subject = user1, resource = user2, context = event
+    _context_class = EventContext
+    
     policies = [
         # A user cannot send an invite to himself or herself.
         ~policies.miscellaneous.SubjectIsResource
         
-        # TODO: Same as group invite
-        # &
+        # A user cannot send an invite to someone who's already in the event.
+        & ~policies.user.event.UserResourceIsInEventContext
     ]
 
 
