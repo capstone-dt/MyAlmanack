@@ -519,9 +519,9 @@ def getContactEvents(user_f_id, contact_f_id):
 def searchEvents(search_term):
 	# Run Trigram Similarity search on Event based on the search term.
 	search = Event.objects.annotate(similarity=TrigramSimilarity('event_title', search_term)).filter(
-		similarity__gt=0.3).order_by('-similarity').values('event_title')
+		similarity__gt=0.3).order_by('-similarity').values('event_id')
 	# Return a list of event_ids similar to the search term.
-	return [item['event_title'] for item in search]
+	return [item['event_id'] for item in search]
 
 # Search for contacts based on user attributes.
 def searchContacts(search_term, user_f_id):
