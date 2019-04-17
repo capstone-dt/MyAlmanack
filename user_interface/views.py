@@ -53,6 +53,9 @@ def saveProfilePictueBase64(file_name, image_64_encode):
 
 # CALENDAR DATA
 
+def getCalendarForms():
+	retDict = {}
+	retDict["event_form"] = EventForm()
 
 def getCalendarDict(user_firebase_id, selected_id, mode):
 	retDict = {
@@ -235,6 +238,13 @@ def redir404(request):
 
 # PROFILE
 
+def getProfileForms():
+	retDict = {}
+	retDict["friend_req"] = FriendRequestForm();
+	retDict["friend_rem"] = FriendRemoveForm();
+
+
+
 def nullAlias(request):
 	p = ProfileView()
 	if(request.method == "POST"):
@@ -255,6 +265,7 @@ class ProfileView(TemplateView):
 
 		profile_data = getProfileData(user_firebase_id)
 		profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
+		
 		data_prof_alias = profile_data["alias"]
 		data_friend_events = []
 		name_selected = data_prof_alias
@@ -297,12 +308,11 @@ class ProfileView(TemplateView):
 		calendarFrame = "sub_templates/calendarFrame.html"
 		# else:
 		# calendarFrame = "sub_templates/blankFrame.html"
+
 		response = render(
 			request=request,
 			template_name=self.template_name,
 			context={
-				"event_form" : EventForm(),
-				"group_form" : GroupForm(),
 				"calendarFrame" : calendarFrame,
 				"profile_mode" : prof_mode,
 				"is_friend" : is_friend,
@@ -310,9 +320,11 @@ class ProfileView(TemplateView):
 				"name_selected" : name_selected,
 				"name_selected_data" : str(json.dumps(selected_user_data)),
 				"user_database" : str(json.dumps(profile_data)),
-				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
-				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
 				"header_forms" : getHeaderForms(),
+				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"calendar_forms" : getCalendarForms(),
+				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
+				"profile_forms" : getProfileForms(),
 				"friend_req" :  FriendRequestForm(),
 				"friend_rem" : FriendRemoveForm(),
 			}
@@ -418,6 +430,7 @@ class GroupView(TemplateView):
 				"name_requested" : name_requested,
 				"group_data" : str(json.dumps(group_data)),
 				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"calendar_forms" : getCalendarForms(),
 				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
 				"header_forms" : getHeaderForms(),
 				}

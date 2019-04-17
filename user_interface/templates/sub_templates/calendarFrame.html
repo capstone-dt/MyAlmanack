@@ -300,7 +300,7 @@
 					}
 				</script>
 				{% csrf_token %}
-				{{ event_form.as_ul }}
+				{{ calendar_forms.event_form.as_ul }}
 				<input type="hidden" name="formType" value="SubmitEvent">
 				<input type="submit"  style="display: none;" id="createEventHidden">
 			</form>
