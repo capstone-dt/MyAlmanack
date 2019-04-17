@@ -7,7 +7,8 @@
 	    <h1>
 	    	<div class="row">
 	    	<div class="col-8">
-	    	<div id="name_display"> </div> 
+	    		<div id="name_display"> 
+	    		</div> 
 	    	</div>
 	    	<div class="col-4">
 	    	<button class="friendButton" id="friendButtonId" onclick="addFriendClicked()" style="display:none;">Add Friend</button>
@@ -130,19 +131,33 @@
 			alias_div.innerText = "@" + database_selected_json.alias;
 			var desc_div = document.getElementById("description_display");
 			desc_div.innerText = database_selected_json.user_desc;
+			if(database_selected_json.user_desc == ""){
+				desc_div.innerText = "No description has been provided."
+				desc_div.style.color = "grey";
+			}
 			var prof_pic_div = document.getElementById("imageDisplay");
 			var img_div = base64ToImagePassed(database_selected_json.profile_picture, prof_pic_div);
-			img_div.style.width = "200px";
-			img_div.style.height = "200px";
+			img_div.style.width = "175px";
+			img_div.style.height = "175px";
 		}
 
 		database_user_json = parseQuotesJson("{{user_database}}");
 		database_selected_json = parseQuotesJson("{{name_selected_data}}");
+		database_user_events = parseQuotesJson("{{user_events_database}}");
+		database_contact_list = parseQuotesJson("{{user_contact_list}}");
 		console.log("user_database", database_user_json);
+		console.log("database_user_events", database_user_events);
+		console.log("database_contact_list", database_contact_list);
+		console.log("database_selected_json", database_selected_json);
+		var database_calendar_struct = parseQuotesJson("{{database_calendar_dict}}");
+		console.log("database_calendar_struct", database_calendar_struct);
 		loadSelectedData();
-		loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
-		loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
-		mainProf("{{calendar_mode}}", "{{name_selected}}");
+		// Need to comment out and replace.
+		// loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
+		// loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
+		// mainProf("{{calendar_mode}}", "{{name_selected}}");
+		_name_selected = "{{name_selected}}";
+		main_renderCalendar(database_calendar_struct);
 
 
 </script>

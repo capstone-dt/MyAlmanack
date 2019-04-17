@@ -144,6 +144,10 @@
 				    <label class="reqField" for="inputEventName">Event Name</label>
 				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputEventName" pattern="^[a-zA-Z0-9 ]*$" required>
 				</div>
+			  	<div class="form-group">
+				    <label for="inputEventDesc">Description</label>
+				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputEventDesc" pattern="^[a-zA-Z0-9 ]*$">
+				</div>
 				<div class="form-row">
 				  <div class="form-group col-md-6">
 				    <label class="reqField" for="inputStartDate">Start Date</label>
@@ -223,21 +227,24 @@
 					</div>
 				  </div>
 				</div>
-				
-				{% csrf_token %}
-				{{ event_form.as_ul }}
-				<input type="hidden" name="formType" value="SubmitEvent">
+			  	<input type="button" class="confirmButton" style="width:100%; height:50px;" onclick="updateAndSubmit()" value="Create Event">
 				<script type="text/javascript">
 					function updateEventForm(){
 						// Event Name
 						var enter_name = document.getElementById("inputEventName");
 						var form_name = document.getElementById("id_EIname");
 						form_name.value = enter_name.value;
+						var enter_desc = document.getElementById("inputEventDesc");
+						var form_desc = document.getElementById("id_EIdescription");
+						form_desc.value = enter_desc.value;
+
 						var enter_start_date = document.getElementById("inputStartDate");
-						var enter_start_time = document.getElementById("inputEndTime");
+						var enter_start_time = document.getElementById("inputStartTime");
+						
 						var form_start = document.getElementById("id_EIstart");
 						var start_date_day = new Date(enter_start_date.value + " " + enter_start_time.value);
 						form_start.value = start_date_day.getTime() + "";
+						console.log(form_start);
 						// ADD DATE FORMATTING
 
 						// form_start.value = enter_start.value;
@@ -246,6 +253,7 @@
 						var form_end = document.getElementById("id_EIend");
 						var end_date_day = new Date(enter_end_date.value + " " + enter_end_time.value);
 						form_end.value = end_date_day.getTime() + "";
+						console.log(form_end);
 						// ADD DATE FORMATTING
 
 						// form_end.value = enter_end.value;
@@ -285,8 +293,16 @@
 						var form_blacklist = document.getElementById("id_EIblacklist");
 						form_blacklist.value = enter_blacklist.value;
 					}
+					function updateAndSubmit(){
+						updateEventForm();
+						var submitButton = document.getElementById("createEventHidden");
+						submitButton.click();
+					}
 				</script>
-			  <input type="submit" class="confirmButton" style="width:100%; height:50px;" value="Create Event">
+				{% csrf_token %}
+				{{ event_form.as_ul }}
+				<input type="hidden" name="formType" value="SubmitEvent">
+				<input type="submit"  style="display: none;" id="createEventHidden">
 			</form>
 	      </div>
 	    </div>
@@ -308,6 +324,28 @@
 				    <input type="text" class="form-control" id="inputEmailLogin" pattern="^([\w\-\.]+)@((\[([0-9]{1,3}\.){3}[0-9]{1,3}\])|(([\w\-]+\.)+)([a-zA-Z]{2,4}))$" required>
 				</div>
 				<button type="submit" class="btn btn-primary">Login Button Here</button>
+				</form>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<div class="" href="#" id="viewEventsOpenButton" data-toggle="modal" data-target="#viewEventsModal" style="display:none;"></div>
+	<div class="modal fade" id="viewEventsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="viewEventsModalLongTitle">View Events Selected</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	        <form>
+				<div class="dropdown-divider"></div>
+				<div class="form-group">
+					<div id="viewEventsScrollCont" style="height:400px; width:100%; overflow-y: scroll;">
+					</div>
+				</div>
 				</form>
 	      </div>
 	    </div>

@@ -127,7 +127,10 @@
 				const reader = new FileReader();
 				reader.onload = function(e) {
 				picture_form.value = e.target.result;
-				console.log(picture_form);
+				var prof_pic_div = document.getElementById("imageDisplay");
+				prof_pic_div.setAttribute('src', e.target.result);
+				prof_pic_div.style.width = "200px";
+				prof_pic_div.style.height = "200px";
 				};
 				reader.readAsDataURL(picture_file);
 			}else{
