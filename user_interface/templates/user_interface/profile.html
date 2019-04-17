@@ -14,14 +14,14 @@
 	    	<button class="friendButton" id="friendButtonId" onclick="addFriendClicked()" style="display:none;">Add Friend</button>
 	    	<form action="/profile/" method="post">
 				{% csrf_token %}
-				{{ friend_req.as_ul }}
+				{{ profile_forms.friend_req.as_ul }}
 				<input type="hidden" name="formType" value="FriendRequest">
 				<input type="submit" style="display: none;" id="subitAddFriend">
 	    	</form>
 	    	<button class="removeFriendButton" id="removeFriendButtonId" onclick="remFriendClicked()" style="display:none;">Remove Friend</button>
 	    	<form action="/profile/" method="post">
 				{% csrf_token %}
-				{{ friend_rem.as_ul }}
+				{{ profile_forms.friend_rem.as_ul }}
 				<input type="hidden" name="formType" value="FriendRemove">
 				<input type="submit" style="display: none;" id="subitRemFriend">
 	    	</form>

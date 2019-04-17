@@ -315,20 +315,20 @@ class ProfileView(TemplateView):
 			request=request,
 			template_name=self.template_name,
 			context={
-				"calendarFrame" : calendarFrame,
+				# PROFILE DATA
+				"profile_forms" : getProfileForms(),
 				"profile_mode" : prof_mode,
 				"is_friend" : is_friend,
-				"calendar_mode" : prof_mode,
 				"name_selected" : name_selected,
 				"name_selected_data" : str(json.dumps(selected_user_data)),
 				"user_database" : str(json.dumps(profile_data)),
+				# HEADER DATA
 				"header_forms" : getHeaderForms(),
 				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				# CALENDAR DATA
+				"calendarFrame" : calendarFrame,
 				"calendar_forms" : getCalendarForms(),
 				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
-				"profile_forms" : getProfileForms(),
-				"friend_req" :  FriendRequestForm(),
-				"friend_rem" : FriendRemoveForm(),
 			}
 		)
 		return response
@@ -358,7 +358,6 @@ class EditProfileView(TemplateView):
 		search_form = SearchForm()
 		group_form = GroupForm()
 		edit_form = EditProfileForm()
-		def_prof_pic = getProfilePictureBase64("default_profile")
 		user_firebase_id = getCurrentFirebaseId(request)
 		isValid = validFirebaseId(user_firebase_id);
 		print("isvalid_id", isValid)
@@ -376,13 +375,13 @@ class EditProfileView(TemplateView):
 		response = render(
 			request=request,
 			template_name=self.template_name,
-			context={"edit_form" : edit_form, 
-			"search_form" : search_form,
-			"default_profile" : def_prof_pic,
+			context={
+			# EDIT PROFILE DATA
+			"edit_form" : edit_form,
 			"profile_info" : profile_json,
-			"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+			# HEADER DATA
 			"header_forms" : getHeaderForms(),
-			"group_form" : group_form
+			"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
 			}
 		)
 		return response
@@ -410,7 +409,7 @@ class GroupView(TemplateView):
 
 	def dummy(self, request, group_name):
 		user_firebase_id = getCurrentFirebaseId(request)
-		isValid = validFirebaseId(user_firebase_id);
+		isValid = validFirebaseId(user_firebase_id)
 		print("isvalid_id", isValid)
 		if(isValid == True):
 			return redirForce(request)
@@ -465,39 +464,67 @@ class DefaultView(TemplateView):
 
 # SEARCH
 
-def getSearchDict():
-	return None
+def getBlankSearchDict():
+	retDict = {
+		"events" : [],
+		"friends" : [],
+		"users" : [],
+		"groups" :[]
+	}
+	return retDict
+
+def getSearchDict(search_term, user_firebase_id):
+	retDict = getBlankSearchDict()
+	isValid = validFirebaseId(user_firebase_id)
+	if(isValid == True):
+		return retDict
+	temp_events = searchEvents(search_term)
+	user_contact_list = getContactListData(user_firebase_id)
+	temp_contacts = []
+	if(user_contact_list["contact_names"] != None):
+		temp_contacts = searchContacts(search_term, user_firebase_id)
+	temp_users = searchUsers(search_term)
+	temp_groups = searchGroups(search_term)
+	print("temp_events", temp_events)
+	print("temp_contacts", temp_contacts)
+	print("temp_users", temp_users)
+	print("temp_groups", temp_groups)
+	return retDict
 
 class SearchView(TemplateView):
 	template_name = 'user_interface/search.html'
 
-	def get(self, request):
-		search_form = SearchForm()
+	def dummy(self, request, search_dict):
 		user_firebase_id = getCurrentFirebaseId(request)
+		isValid = validFirebaseId(user_firebase_id)
+		if(isValid == True):
+			return redirForce(request)
 		return render(
 			request=request,
 			template_name=self.template_name,
-			context={"search_form" : search_form,
-				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
-			}
-		)
-
-	def post(self, request):
-		search_form = SearchForm(request.POST)
-		user_firebase_id = getCurrentFirebaseId(request)
-		formController(request)
-		return render(
-			request=request,
-			template_name=self.template_name,
-			context={"search_form" : search_form,
-				"events" : "[{}]",
-				"friends" : "[{}]",
-				"users" : "[{}]",
-				"groups" : "[{}]",
+			context={
+				"search_data" : str(json.dumps(search_dict)),
 				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
 				"header_forms" : getHeaderForms(),
 			}
 		)
+
+	def get(self, request):
+		# NEEDS SUPPORT
+		search_dict = getBlankSearchDict()
+		return self.dummy(request, search_dict)
+
+	def post(self, request):
+		formController(request)
+		formType = request.POST.get('formType')
+		search_dict = getBlankSearchDict()
+		if(formType == "SearchTerm"):
+			search_form = SearchForm(request.POST)
+			user_firebase_id = getCurrentFirebaseId(request)
+			search_term = search_form["SIstring"].value()
+			search_dict = getSearchDict(search_term, user_firebase_id)
+		return self.dummy(request, search_dict)
+		
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
@@ -527,8 +554,6 @@ def formController(request):
 		editProfile(request)
 	elif(switchType == "CreateGroup"):
 		createGroupLocal(request)
-	elif(switchType == "SearchTerm"):
-		return getSearchResults(request)
 
 def respondFriend(request):
 	friend_response_form = FriendRespondRequest(request.POST)
@@ -634,6 +659,7 @@ def getSearchResults(request):
 	search_form = SearchForm(request.POST)
 	user_firebase_id = getCurrentFirebaseId(request)
 	print(search_form)
+
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
