@@ -1,4 +1,4 @@
-from .. import Context
+from ..context import Context
 
 
 class GenericContext(Context):

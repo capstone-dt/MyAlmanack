@@ -18,7 +18,7 @@ class ContactList(models.Model):
 	sent_friend_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
 	received_friend_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
 	sent_group_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
-	received_group_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
+	received_group_invites = ArrayField(models.SmallIntegerField(blank=True, null=True))
 
 	class Meta:
 		managed = False
@@ -35,15 +35,16 @@ class Invite(models.Model):
 
 
 class Event(models.Model):
-	event_id = models.CharField(primary_key=True, max_length=300)
+	event_id = models.SmallIntegerField(primary_key=True)
+	event_title = models.CharField(max_length=300)
 	description = models.TextField(blank=True, null=True)
 	participating_users = ArrayField(models.CharField(max_length=128, blank=True, null=True))
 	event_admins = ArrayField(models.CharField(max_length=128))
-	whitelist = ArrayField(models.CharField(max_length=128))
-	blacklist = ArrayField(models.CharField(max_length=128))
+	whitelist = ArrayField(models.CharField(max_length=128, blank=True, null=True))
+	blacklist = ArrayField(models.CharField(max_length=128, blank=True, null=True))
 	start_date = models.BigIntegerField()
 	end_date = models.BigIntegerField()
-	event_creator_firebase_id = models.ForeignKey('Profile', models.CASCADE)
+	event_creator_firebase = models.ForeignKey('Profile', models.CASCADE)
 
 	class Meta:
 		managed = False
@@ -63,8 +64,8 @@ class Group(models.Model):
 	group_name = models.CharField(primary_key=True, max_length=20)
 	group_admin = ArrayField(models.CharField(max_length=128))
 	group_members = ArrayField(models.CharField(max_length=128))
-	incoming_requests = ArrayField(models.CharField(max_length=128, blank=True, null=True))
-	outgoing_requests = ArrayField(models.CharField(max_length=128, blank=True, null=True))
+	sent_group_invites = ArrayField(models.SmallIntegerField(blank=True, null=True))
+	received_group_requests = ArrayField(models.SmallIntegerField(blank=True, null=True))
 	group_desc = models.TextField(blank=True, null=True)
 
 	class Meta:
@@ -82,7 +83,7 @@ class GroupInvite(Invite):
 
 
 class Profile(models.Model):
-	alias = models.CharField(max_length=20)
+	alias = models.CharField(unique=True, max_length=20)
 	phone_num = ArrayField(models.CharField(max_length=11, blank=True, null=True))
 	last_name = models.CharField(max_length=20)
 	first_name = models.CharField(max_length=20)
@@ -92,7 +93,7 @@ class Profile(models.Model):
 	firebase_id = models.CharField(max_length=128, primary_key=True)
 	organization = models.CharField(max_length=255, blank=True, null=True)
 	user_desc = models.TextField(blank=True, null=True)
-	user_events = ArrayField(models.CharField(max_length=300, blank=True, null=True))
+	user_events = ArrayField(models.SmallIntegerField(blank=True, null=True))
 
 	class Meta:
 		managed = False

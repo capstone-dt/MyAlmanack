@@ -7,6 +7,3 @@ authorize = AuthorizationEnforcer.authorize_http
 
 # Expose action attributes.
 from .attributes import actions
-
-# Expose decorators.
-#from .decorators import *
