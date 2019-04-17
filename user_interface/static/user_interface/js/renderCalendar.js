@@ -25,10 +25,6 @@ var _day_selected = "1";
 var _week_selected = [];
 var _curr_month = "currMonth";
 var _curr_month_not = "currMonthNot";
-var _dummy_events_json;
-var _dummy_profiles_json;
-var _dummy_contacts_json;
-var _dummy_user_json;
 var _prev_scroll_y = 0;
 
 var user_contact_list;
@@ -393,6 +389,187 @@ function testEventHoursSplit(){
 	console.log(eventHoursSplit(temp_struct));
 }
 
+function testCombineEventsDayAffected(){
+	var test1 = {
+		start_date : new Date("April 4 2019 10:00 AM").getTime(),
+		end_date : new Date("April 4 2019 3:00 PM").getTime()
+	};
+	var test2 = {
+		start_date : new Date("April 4 2019 1:00 PM").getTime(),
+		end_date : new Date("April 4 2019 5:00 PM").getTime()
+	};
+	var test3 = {
+		start_date : new Date("April 5 2019 5:00 PM").getTime(),
+		end_date : new Date("April 5 2019 10:00 PM").getTime()
+	};
+	var test4 = {
+		start_date : new Date("April 5 2019 8:00 PM").getTime(),
+		end_date : new Date("April 5 2019 11:00 PM").getTime()
+	};
+	var res = combineEventsDayAffected([test1, test2, test3, test4]);
+	for(var i = 0; i < res.length; i++){
+		var curr_struct = res[i];
+		console.log(curr_struct.affected);
+		for(var j = 0; j < curr_struct.events.length; j++){
+			var curr_event = curr_struct.events[j];
+			console.log("start", new Date(curr_event.start_date), "end", new Date(curr_event.end_date));
+		}
+	}
+}
+
+// Assumes already split using splitEventStructure(event)
+function combineEventsDayAffected(event_arr_passed){
+	var retArray = [];
+	var dates_affected = [];
+	for(var i = 0; i < event_arr_passed.length; i++){
+		var curr_event = event_arr_passed[i];
+		var date_affected = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+		var loc_contains = false;
+		for(var j = 0; j < dates_affected.length; j++){
+			if(dates_affected[j].getTime() == date_affected.getTime()){
+				loc_contains = true;
+				break;
+			}
+		}
+		if(loc_contains == false){
+			dates_affected.push(date_affected);
+		}
+	}
+	for(var k=0; k < dates_affected.length; k++){
+		var affected_array = [];
+		for(var i = 0; i < event_arr_passed.length; i++){
+			var curr_event = event_arr_passed[i];
+			var date_affected = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+			if(date_affected.getTime() == dates_affected[k].getTime()){
+				affected_array.push(curr_event);
+			}
+		}
+		var tempDict = {};
+		tempDict.affected = dates_affected[k];
+		tempDict.events = affected_array;
+		retArray.push(tempDict);
+	}
+	return retArray;
+}
+
+function unionEventsTwo(event1, event2){
+	if(inRange(event1.start_date, event2.start_date, event1.end_date) ||
+		inRange(event1.start_date, event2.end_date, event1.end_date)
+		|| inRange(event2.start_date, event1.start_date, event2.end_date) ||
+		inRange(event2.start_date, event1.end_date, event2.end_date)){
+		var unionedEvent = {};
+		unionedEvent.start_date = Math.min(event1.start_date, event2.start_date);
+		unionedEvent.end_date = Math.max(event1.end_date, event2.end_date);
+		return [unionedEvent];
+	}else{
+		return [event1, event2];
+	}
+}
+
+function testUnionEvents(){
+	var test1 = {
+		start_date : new Date("April 4 2019 10:00 AM").getTime(),
+		end_date : new Date("April 4 2019 3:00 PM").getTime()
+	};
+	var test2 = {
+		start_date : new Date("April 4 2019 1:00 PM").getTime(),
+		end_date : new Date("April 4 2019 5:00 PM").getTime()
+	};
+	var test3 = {
+		start_date : new Date("April 4 2019 5:00 PM").getTime(),
+		end_date : new Date("April 4 2019 10:00 PM").getTime()
+	};
+	var test4 = {
+		start_date : new Date("April 4 2019 8:00 PM").getTime(),
+		end_date : new Date("April 4 2019 11:00 PM").getTime()
+	};
+	var res = unionEvents([test1, test2, test3, test4]);
+	for(var i = 0; i < res.length; i++){
+		console.log("start", new Date(res[i].start_date), "end", new Date(res[i].end_date));
+	}
+}
+
+// Creates a convex hull in one dimension
+function unionEvents(event_arr_passed){
+	var allOne = false;
+	var deep_clone = [];
+	for(var i = 0; i < event_arr_passed.length; i++){
+		var curr_event = event_arr_passed[i];
+		var cloned = {};
+		cloned.start_date = curr_event.start_date;
+		cloned.end_date = curr_event.end_date;
+		deep_clone.push(cloned);
+	}
+	while(allOne == false){
+		var forAll = true;
+		for(var i =0; i < deep_clone.length; i++){
+			var curr_event = deep_clone[i];
+			for(var j=0; j < deep_clone.length; j++){
+				// Don't union with self
+				if(i == j){
+					break;
+				}
+				var postUnion = unionEventsTwo(curr_event, deep_clone[j]);
+				if(postUnion.length == 2){
+					forAll &= true;
+					continue;
+				}else{
+					deep_clone.splice(i, 1);
+					deep_clone.splice(j, 1);
+					deep_clone.push(postUnion[0]);
+					forAll = false;
+					continue;
+				}
+
+			}
+		}
+		allOne = forAll;
+	}
+	return deep_clone;
+}
+
+
+function testUnionDaysAffected(){
+	var test2 = {
+		start_date : new Date("April 17 2019 12:00 AM").getTime(),
+		end_date : new Date("April 17 2019 11:59 PM").getTime()
+	};
+	var test1 = {
+		start_date : new Date("April 17 2019 11:00 AM").getTime(),
+		end_date : new Date("April 17 2019 12:00 PM").getTime()
+	};
+	var res = unionEventsTwo(test1, test2);
+	for(var i = 0; i < res.length; i++){
+		console.log("start", new Date(res[i].start_date), "end", new Date(res[i].end_date));
+	}
+}
+
+// Assumes events passed are already split
+function unionDaysAffected(event_arr_passed){
+	var retArray = [];
+	console.log("event_arr_passed", event_arr_passed);
+	var combinedDaysAffected = combineEventsDayAffected(event_arr_passed);
+	// console.log("daysAffected");
+	// console.log(combinedDaysAffected);
+	// for(var i = 0; i < combinedDaysAffected.length; i++){
+	// 	var temp_events = combinedDaysAffected[i].events;
+	// 	for(var j = 0; j < temp_events.length; j++){
+	// 		console.log("start", new Date(temp_events[j].start_date), "end", new Date(temp_events[j].end_date));
+	// 	}
+	// }
+	console.log("unioned");
+	for(var i = 0; i < combinedDaysAffected.length; i++){
+		var curr_struct = combinedDaysAffected[i];
+		var unioned_day = unionEvents(curr_struct.events);
+		for(var j = 0; j < unioned_day.length; j++){
+			console.log("start", new Date(unioned_day[j].start_date), "end", new Date(unioned_day[j].end_date));
+			retArray.push(unioned_day[j]);
+		}
+	}
+	return retArray;
+}
+
+
 function combinedFreeToHours(combined_free, month_start, month_end){
 	var retArray = [];
 	// Populate retarray with basic structures
@@ -402,7 +579,7 @@ function combinedFreeToHours(combined_free, month_start, month_end){
 		){
 		var currStruct = {};
 		currStruct.date = new Date(currDate.getTime());
-		currStruct.hours = 24;
+		currStruct.hours = 0;
 		retArray.push(currStruct);
 	}
 	for(var i = 0; i < combined_free.length; i++){
@@ -410,8 +587,11 @@ function combinedFreeToHours(combined_free, month_start, month_end){
 		var curr_split = splitEventStructure(combined_free[i]);
 		// console.log("curr_split:",curr_split);
 		for(var j = 0; j < curr_split.length; j++){
+			// console.log("j:" + j,"start_date", new Date(curr_split[j].start_date), "end_date", new Date(curr_split[j].end_date));
 			var delta_h = Math.abs(curr_split[j].end_date - curr_split[j].start_date)/(1000*60*60);
+			// console.log("delta_h", delta_h);
 			var date_affected = new Date(new Date(curr_split[j].start_date).setHours(0,0,0));
+			// console.log("date_affected", date_affected);
 			var temp_hours = 0;
 			for(var k = 0; k < retArray.length; k++){
 				if(retArray[k].date.getTime() == date_affected.getTime()){
@@ -419,10 +599,14 @@ function combinedFreeToHours(combined_free, month_start, month_end){
 					break;
 				}
 			}
-			retArray[k].hours = temp_hours % 24;
+			retArray[k].hours += temp_hours;
 			// console.log(delta_h);
 		}
 	}
+	// for(var i = 0; i < retArray.length; i++){
+	// 	retArray[i].hours %= 24;
+	// }
+	console.log("combined_free", retArray);
 	return retArray;
 }
 
@@ -450,14 +634,20 @@ function drawColorGrid(isRainbow) {
 		}
 	}
 	console.log("temp_convert_split", temp_convert_split);
+	var unioned_split = unionDaysAffected(temp_convert_split);
+	// console.log("unioned_split", unioned_split);
+	// for(var i = 0; i < unioned_split.length; i++){
+	// 	console.log("start", new Date(unioned_split[i].start_date), "end", new Date(unioned_split[i].end_date));
+	// }
+	// console.log("temp_convert_split", temp_convert_split);
 	var month_start = new Date(_year_selected, _month_selected, 1);
 	var month_end = new Date(_year_selected, _month_selected + 1, 0);
 	month_end = new Date(month_end.setHours(23,59,59));
 	var temp_cal = new Calendar("temp_cal");
-	var freetimeArray = temp_cal.freetime_per_day(temp_convert_split, month_start.getTime(), month_end.getTime());
+	var freetimeArray = temp_cal.freetime_per_day(unioned_split, month_start.getTime(), month_end.getTime());
 	var combined_free = [];
 
-	console.log("freetimeArray", freetimeArray);
+	// console.log("freetimeArray", freetimeArray);
 	for(var i = 0; i < freetimeArray.length; i++){
 		var curr_arr = freetimeArray[i];
 		if(curr_arr != null){
@@ -473,13 +663,10 @@ function drawColorGrid(isRainbow) {
 			}
 		}
 	}			
-	console.log("combinedFree", combined_free);
-	for(var i = 0; i < combined_free.length; i++){
-		console.log("i:",i, new Date(combined_free[i].start_date), new Date(combined_free[i].end_date));
-	}
-	console.log("month_start", month_start, "month_end", month_end);
+	// console.log("combinedFree", combined_free);
+	// console.log("month_start", month_start, "month_end", month_end);
 	var hours_temp = combinedFreeToHours(combined_free, month_start, month_end);
-	console.log(hours_temp);
+	// console.log(hours_temp);
 	var count = 0;
 	for(var i = 0; i < calArray.length; i++){
 		for(var j = 0; j < calArray[i].length; j++){
@@ -822,12 +1009,12 @@ function aliasToFirebaseID(alias){
 		return _calendar_struct.calendar_data.user_info.firebase_id;
 	}
 	var temp_member_info = _calendar_struct.calendar_data.member_info;
-	console.log("temp_member_info", temp_member_info);
+	// console.log("temp_member_info", temp_member_info);
 	for(var i = 0; i < temp_member_info.length; i++){
 		var curr_member_info = temp_member_info[i];
-		console.log("curr_member_info", curr_member_info);
+		// console.log("curr_member_info", curr_member_info);
 		if(alias == curr_member_info.alias){
-			console.log("MATCH");
+			// console.log("MATCH");
 			return temp_member_info[i].firebase_id;
 		}
 	}
@@ -1531,10 +1718,10 @@ function select(select_id){
 		return;
 	}
 	_select_id = select_id;
-	console.log("select_new:" + select_id);
+	// console.log("select_new:" + select_id);
 }
 function dayClickM(click_id){
-	console.log("dayClick:" + click_id);
+	// console.log("dayClick:" + click_id);
 	_prev_scroll_y = window.scrollY;
 	var temp_div = document.getElementById(click_id);
 	if(temp_div.className.includes(_curr_month_not)){
@@ -1546,7 +1733,7 @@ function dayClickM(click_id){
 	switchCalendarView(_cont_id, _switchType);
 	addEvents();
 	if(pre_check == false){
-		console.log(temp_div.style.backgroundColor);
+		// console.log(temp_div.style.backgroundColor);
 		temp_div = document.getElementById(click_id);
 		temp_div.style.backgroundColor = select_color;
 	}
@@ -1746,7 +1933,6 @@ function drawEventUnsafe_w_color(start, day_width, start_time, length, event_obj
 function drawEventUnsafe_m(start, day_width, flags, event_object){
 	drawEventUnsafe_m_color(start, day_width, flags, event_object, user_color);
 }
-
 function drawEventUnsafe_m_color(start, day_width, flags, event_object, color){
 	var coords = getRowCol(start);
 	// console.log("drawEventUnsafe_m:");
@@ -1812,11 +1998,13 @@ function splitEventStructure(curr_event){
 	var day_event_ends =  new Date((new Date(Number(curr_event.end_date))).setHours(23,59,59));
 	if(day_event_starts.getTime() == day_event_ends.getTime()){
 		return [curr_event];
+		console.log("SAME TIME");
 	}
-	if(inRange(day_event_starts.getTime(), curr_event.start_date, day_event_ends.getTime())
-		&& inRange(day_event_starts.getTime(), curr_event.end_date, day_event_ends.getTime())
-		){
+	var day_affected_start = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+	var day_affected_end = new Date(new Date(curr_event.end_date).setHours(0,0,0));
+	if(day_affected_start.getTime() == day_affected_end.getTime()){
 		return [curr_event];
+		console.log("IN SAME DAY");
 	}
 	var retArray = [];
 	var initDate = {};

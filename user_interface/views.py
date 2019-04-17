@@ -56,6 +56,7 @@ def saveProfilePictueBase64(file_name, image_64_encode):
 def getCalendarForms():
 	retDict = {}
 	retDict["event_form"] = EventForm()
+	return retDict
 
 def getCalendarDict(user_firebase_id, selected_id, mode):
 	retDict = {
@@ -242,6 +243,7 @@ def getProfileForms():
 	retDict = {}
 	retDict["friend_req"] = FriendRequestForm();
 	retDict["friend_rem"] = FriendRemoveForm();
+	return retDict
 
 
 
@@ -462,6 +464,9 @@ class DefaultView(TemplateView):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
 # SEARCH
+
+def getSearchDict():
+	return None
 
 class SearchView(TemplateView):
 	template_name = 'user_interface/search.html'
