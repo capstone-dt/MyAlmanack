@@ -15,7 +15,7 @@ class User(Wrapper):
         _User = self.user_model
         if isinstance(object, _User):
             return object
-        elif isinstance(object, Profile):
+        elif isinstance(object, _Profile):
             return _User.objects.get(username=object.firebase_id)
     
     @classmethod
