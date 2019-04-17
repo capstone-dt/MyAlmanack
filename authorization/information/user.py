@@ -15,7 +15,7 @@ class User(Wrapper):
         _User = self.user_model
         if isinstance(object, _User):
             return object
-        elif isinstance(object, Profile):
+        elif isinstance(object, _Profile):
             return _User.objects.get(username=object.firebase_id)
     
     @classmethod
@@ -47,6 +47,9 @@ class User(Wrapper):
     
     def __eq__(self, other):
         return isinstance(other, User) and self.uid == other.uid
+    
+    def __hash__(self):
+        return hash(self.uid)
     
     @property
     def uid(self):

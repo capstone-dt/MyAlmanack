@@ -8,12 +8,6 @@
 <body>
 	<div>Congratulations, you have permission to view {{ name }}'s profile!</div>
 	<div><a href="{% url 'logout' %}?next={% url 'index' %}">Click here to logout.</a></div>
-	<div><img src="{{ image }}"></div>
-	<br>
-	<div>
-	    Firebase session claims:
-	    <div>{{ claims }}</div>
-	</div>
 </body>
 
 </html>

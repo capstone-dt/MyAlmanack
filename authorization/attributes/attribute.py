@@ -22,7 +22,7 @@ def wrap_attribute(attribute_class, object, wrappers_directory):
     for file in filter(lambda file: file.endswith(".py"), files):
         # Dynamically import the wrapper module.
         wrapper_module = import_module(
-            ".%s.%s" % (wrappers_directory, file.rstrip(".py")),
+            ".%s.%s" % (wrappers_directory, file.rsplit(".py", 1)[0]),
             "authorization.attributes"
         )
         
