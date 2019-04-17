@@ -1,8 +1,8 @@
 from .user import User
 from .group import Group
 from .event import Event
-from ..utilities.decorators import classproperty
 from ..utilities.wrapper import Wrapper
+from ..utilities.decorators import classproperty
 
 # MyAlmanack database (Justin's subsystem)
 from database.models import (

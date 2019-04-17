@@ -1,6 +1,6 @@
 from .user import User
-from ..utilities.decorators import classproperty
 from ..utilities.wrapper import Wrapper
+from ..utilities.decorators import classproperty
 
 # MyAlmanack database (Justin's subsystem)
 from database.models import Group as _Group
