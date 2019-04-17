@@ -1,9 +1,9 @@
-import authorization
+import authorization.api
 from authentication.firebase import get_session_claims
 
 # Django
 from django.contrib.auth import get_user_model
-from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.shortcuts import render
 
 
@@ -12,12 +12,12 @@ def profile(request, uid):
     try:
         user = get_user_model().objects.get(username=uid)
     except get_user_model().DoesNotExist:
-        raise PermissionDenied
+        raise Http404
     
     # Check authorization.
-    authorization.authorize(
+    authorization.api.authorize(
         request,
-        action=authorization.actions.user.profile.ViewProfile,
+        action=authorization.api.actions.user.profile.ViewUserProfile,
         resource=user
     )
     

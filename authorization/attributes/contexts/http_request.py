@@ -1,4 +1,4 @@
-from .. import Context
+from ..context import Context
 
 # Django
 from django.http.request import HttpRequest
