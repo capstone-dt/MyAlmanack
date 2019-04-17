@@ -234,6 +234,7 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 			"user_events" : [],
 			"member_events" : [],
 			"member_info" : [],
+			"user_info" : {},
 		},
 	}
 	retDict["mode"] = mode
@@ -508,6 +509,7 @@ class GroupView(TemplateView):
 		search_form = SearchForm()
 		group_form = GroupForm()
 		group_data = getGroupData(group_name)
+		cal_mode = "GROUP"
 		database_calendar_dict = getCalendarDict(user_firebase_id, group_name, cal_mode)
 		return render(
 			request=request,
