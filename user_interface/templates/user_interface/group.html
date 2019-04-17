@@ -98,6 +98,7 @@
 	  	</div>
 	<hr>
 	</div>
+
     <div id="calendarLoc">
     	{% with calendarFrame as sub_template %}
     		{% include calendarFrame %}
@@ -140,8 +141,7 @@
      		color:red;
 		}
 		</style>
-
-<script type="text/javascript">
+	<script type="text/javascript">
 		var group_data = parseQuotesJson("{{group_data}}");
 		console.log("group_data", group_data);
 
@@ -155,10 +155,8 @@
 				group_desc_div.style.color = "grey";
 			}
 		}
-
 		updateGroupDataVisual();
-		var database_calendar_struct = parseQuotesJson("{{database_calendar_dict}}");
-		main_renderCalendar(database_calendar_struct);
-</script>
+		loadCalendarIfNonNull();
+	</script>
 
 {% endblock %}

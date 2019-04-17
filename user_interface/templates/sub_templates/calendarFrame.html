@@ -351,3 +351,12 @@
 	    </div>
 	  </div>
 	</div>
+	<div style="display:none;" onclick="loadCalendarFrame()" id="loadCalendarFrameID"></div>
+
+	<script type="text/javascript">
+		var database_calendar_struct = parseQuotesJson("{{database_calendar_dict}}");
+		console.log("database_calendar_struct", database_calendar_struct);
+		function loadCalendarFrame(){
+			main_renderCalendar(database_calendar_struct);
+		}
+	</script>

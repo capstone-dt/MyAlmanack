@@ -402,7 +402,7 @@ function combinedFreeToHours(combined_free, month_start, month_end){
 		){
 		var currStruct = {};
 		currStruct.date = new Date(currDate.getTime());
-		currStruct.hours = 0;
+		currStruct.hours = 24;
 		retArray.push(currStruct);
 	}
 	for(var i = 0; i < combined_free.length; i++){
@@ -412,18 +412,16 @@ function combinedFreeToHours(combined_free, month_start, month_end){
 		for(var j = 0; j < curr_split.length; j++){
 			var delta_h = Math.abs(curr_split[j].end_date - curr_split[j].start_date)/(1000*60*60);
 			var date_affected = new Date(new Date(curr_split[j].start_date).setHours(0,0,0));
+			var temp_hours = 0;
 			for(var k = 0; k < retArray.length; k++){
 				if(retArray[k].date.getTime() == date_affected.getTime()){
-					retArray[k].hours += delta_h;
+					temp_hours += delta_h;
 					break;
 				}
 			}
+			retArray[k].hours = temp_hours % 24;
 			// console.log(delta_h);
 		}
-	}
-	for(var i = 0; i < retArray.length; i++){
-		var currStruct = retArray[i];
-		
 	}
 	return retArray;
 }
@@ -482,7 +480,6 @@ function drawColorGrid(isRainbow) {
 	console.log("month_start", month_start, "month_end", month_end);
 	var hours_temp = combinedFreeToHours(combined_free, month_start, month_end);
 	console.log(hours_temp);
-	var eventsHours = getEventsDays(combined_free);
 	var count = 0;
 	for(var i = 0; i < calArray.length; i++){
 		for(var j = 0; j < calArray[i].length; j++){
@@ -496,11 +493,11 @@ function drawColorGrid(isRainbow) {
 			temp_date = temp_date.getTime();
 			var hoursFree = 24;
 			// console.log(temp_date);
-			for(var k = 0; k < eventsHours.length; k++){
+			for(var k = 0; k < hours_temp.length; k++){
 				// console.log(eventsHours[k]);
-				if(Number(temp_date) == Number(eventsHours[k].start_time)){
+				if(Number(temp_date) == hours_temp[k].date.getTime()){
 					// console.log("FOUND");
-					hoursFree = eventsHours[k].hours;
+					hoursFree = hours_temp[k].hours;
 					break;
 				}
 			}
@@ -1317,8 +1314,9 @@ function leftArrowClick(){
 			_day_selected = temp_date.getDate();
 			// console.log(temp_date);
 			// console.log(_day_selected);
-			selectDayHard(temp_date.getDate());
-			updateMonthYearHard(_month_selected, _year_selected, _day_selected);
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
+			selectDayHard(_day_selected);
 			break;
 		case "day":
 			var temp_date = new Date(_year_selected, parseInt(_month_selected), _day_selected);
@@ -1326,8 +1324,9 @@ function leftArrowClick(){
 			_month_selected = temp_date.getMonth();
 			_year_selected = temp_date.getFullYear();
 			_day_selected = temp_date.getDate();
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
 			selectDayHard(_day_selected);
-			updateMonthYearHard(_month_selected, _year_selected, _day_selected);
 			break;
 		default:
 	}
@@ -1814,6 +1813,11 @@ function splitEventStructure(curr_event){
 	if(day_event_starts.getTime() == day_event_ends.getTime()){
 		return [curr_event];
 	}
+	if(inRange(day_event_starts.getTime(), curr_event.start_date, day_event_ends.getTime())
+		&& inRange(day_event_starts.getTime(), curr_event.end_date, day_event_ends.getTime())
+		){
+		return [curr_event];
+	}
 	var retArray = [];
 	var initDate = {};
 	initDate.start_date = curr_event.start_date;
@@ -1940,7 +1944,7 @@ function containsStruct_d(curr_struct){
 	var contains = false;
 	for(var i = 0; i < populatedEvents_d.length; i++){
 		if(populatedEvents_d[i].event_object.start_date == curr_struct.event_object.start_date
-			&& populatedEvents_d[i].event_object.start_date == curr_struct.event_object.start_date &&
+			&& populatedEvents_d[i].event_object.end_date == curr_struct.event_object.end_date &&
 			populatedEvents_d[i].event_object.event_id == curr_struct.event_object.event_id){
 			contains = true;
 			break;

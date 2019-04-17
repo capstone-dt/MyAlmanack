@@ -2,6 +2,7 @@ from django.views.generic import TemplateView
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
 from database.views import *
 from user_interface.forms import *
@@ -292,14 +293,6 @@ class ProfileView(TemplateView):
 
 	def dummy(self, request, alias_requested):
 
-		search_form = SearchForm()
-		eventstructs = getDummyData("event_table")
-		eventjson = str(json.dumps(eventstructs))
-		profilestructs = getDummyData("profile_table")
-		profilejson = str(json.dumps(profilestructs))
-		contactstructs = getDummyData("contact_list_table")
-		contactjson = str(json.dumps(contactstructs))
-
 		user_firebase_id = getCurrentFirebaseId(request)
 		isValid = validFirebaseId(user_firebase_id);
 		print("isvalid_id", isValid)
@@ -310,22 +303,9 @@ class ProfileView(TemplateView):
 		profile_data = getProfileData(user_firebase_id)
 		profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
 		data_prof_alias = profile_data["alias"]
-		print("data_prof_alias", data_prof_alias)
-		# print(profile_data)
-		profile_events = []
-		try:
-			if(profile_data['user_events'] != None):
-				profile_events = getUserEvents(user_firebase_id)
-		except:
-			#don't add
-			print("doesnt exist")
-		print("profile_events", profile_events)
-		data_contact_list = getContactListData(user_firebase_id)
-		print("data_contact_list", data_contact_list)
 		data_friend_events = []
 		name_selected = data_prof_alias
 		if(alias_requested != "" and alias_requested != data_prof_alias):
-			#Other user selected
 			name_selected = alias_requested
 		print("name_selected", name_selected)
 		firebase_id_selected = -1
@@ -337,6 +317,7 @@ class ProfileView(TemplateView):
 			print("firebase_id_selected", firebase_id_selected)
 		else:
 			return redir404(request)
+		data_contact_list = getContactListData(user_firebase_id)
 		database_contact_names = data_contact_list["contact_names"]
 		if(database_contact_names == None):
 			database_contact_names = []
@@ -353,77 +334,29 @@ class ProfileView(TemplateView):
 				is_friend = "true"
 			else:
 				is_friend = "false"
-		print("validAlias:",name_selected, validAlias(name_selected), firebase_id_selected)
 
 		database_calendar_dict = getCalendarDict(user_firebase_id, firebase_id_selected, cal_mode)
 		if cal_mode == "FRIEND" and is_friend == "false":
 			database_calendar_dict["calendar_data"]["member_events"] = []
 
-
-
-
-
-		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
-		# print(currentuserstruct)
-		if bool(currentuserstruct[0]) == False:
-			currentuserstruct = getCurrUser(profilestructs, "XJWoEcF4qsToA0NHnKnaIlqBnfO2")
-		user_alias = currentuserstruct[0]["alias"]
-		user_selected = currentuserstruct
-		if(alias_requested != ""):
-			# print("alias_requested:", alias_requested)
-			user_alias = alias_requested
-			name_selected = alias_requested
-			sel_id = getFirebaseIDAliasDummy(profilestructs, alias_requested)
-			user_selected = getCurrUser(profilestructs, sel_id)
-			# print("user_selected", user_selected)
-
-
-		currentuserjson = str(json.dumps(currentuserstruct))
-		user_events = filterDummyEventsAlias(eventstructs, user_alias)
-		user_contact_list_id = currentuserstruct[0]["contact_list_id"]
-		user_contact_list = filterDummyContactsAlias(contactstructs, user_contact_list_id)
-		friend_names = user_contact_list["contact_names"].replace(" ", "").split(",")
-		# print(friend_names)
-		friend_events = []
-
-		for friend_alias in friend_names:
-			curr_events = filterDummyEventsAlias(eventstructs, friend_alias)
-			for temp_event in curr_events:
-				friend_events.append(temp_event)
-		filtered_friend_events = filterAccessFriendEvents(friend_events, currentuserstruct[0]["alias"])
-
-		user_events_json = str(json.dumps(user_events))
-		filtered_friend_events_json = str(json.dumps(filtered_friend_events))
-		user_contact_list_json = str(json.dumps(user_contact_list))
-		# print(user_contact_list)
-
-
-		print("\n")
-		def_prof_pic = getProfilePictureBase64("default_profile")
+		# HAO PUT AUTHORIZATION HERE
+		# if can view calendar:
+		calendarFrame = "sub_templates/calendarFrame.html"
+		# else:
+		# calendarFrame = "sub_templates/blankFrame.html"
 		response = render(
 			request=request,
 			template_name=self.template_name,
 			context={
 				"event_form" : EventForm(),
-				"search_form" : search_form,
 				"group_form" : GroupForm(),
-				"dummy_events" : eventjson, 
-				"dummy_profiles" : profilejson,
-				"dummy_contacts" : contactjson,
-				"user" : str(json.dumps(user_selected)),
-				"user_events" : user_events_json,
-				"member_events" : filtered_friend_events_json,
-				"user_contact_list" : user_contact_list_json,
-				"calendarFrame" : "sub_templates/calendarFrame.html",
-				"default_profile" : def_prof_pic,
+				"calendarFrame" : calendarFrame,
 				"profile_mode" : prof_mode,
 				"is_friend" : is_friend,
 				"calendar_mode" : prof_mode,
 				"name_selected" : name_selected,
 				"name_selected_data" : str(json.dumps(selected_user_data)),
 				"user_database" : str(json.dumps(profile_data)),
-				"user_events_database" : str(json.dumps(profile_events)),
-				"user_contact_list" : str(json.dumps(data_contact_list)),
 				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
 				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
 				"header_forms" : getHeaderForms(),
@@ -434,12 +367,13 @@ class ProfileView(TemplateView):
 		return response
 
 	def get(self, request, alias):
-		print("alias passed:", alias)
 		return self.dummy(request, alias)
 
 	def post(self, request, alias):
-		print("POST REQUESTED")
 		formController(request)
+		switchType = request.POST.get('formType')
+		if(switchType == "SubmitEvent"):
+			return HttpResponseRedirect("/profile/");
 		return self.dummy(request, alias)
 
 class EditProfileView(TemplateView):
@@ -534,6 +468,9 @@ class GroupView(TemplateView):
 	def post(self, request, group_name):
 		print("GROUP NAME:", group_name)
 		formController(request)
+		switchType = request.POST.get('formType')
+		if(switchType == "SubmitEvent"):
+			return HttpResponseRedirect("/profile/");
 		return self.dummy(request, group_name)
 
 class DefaultView(TemplateView):

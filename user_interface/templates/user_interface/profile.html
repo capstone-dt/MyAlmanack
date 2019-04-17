@@ -49,6 +49,8 @@
 	<hr>
 	</div>
 	
+
+
     <div id="calendarLoc">
     	{% with calendarFrame as sub_template %}
     		{% include calendarFrame %}
@@ -89,7 +91,7 @@
 		
 		</style>
 
-<script type="text/javascript">
+	<script type="text/javascript">
 		var friendButton = document.getElementById("friendButtonId");
 		var removeFriendButton = document.getElementById("removeFriendButtonId");
 		if("{{profile_mode}}" != "self"){
@@ -143,23 +145,11 @@
 
 		database_user_json = parseQuotesJson("{{user_database}}");
 		database_selected_json = parseQuotesJson("{{name_selected_data}}");
-		database_user_events = parseQuotesJson("{{user_events_database}}");
-		database_contact_list = parseQuotesJson("{{user_contact_list}}");
 		console.log("user_database", database_user_json);
-		console.log("database_user_events", database_user_events);
-		console.log("database_contact_list", database_contact_list);
 		console.log("database_selected_json", database_selected_json);
-		var database_calendar_struct = parseQuotesJson("{{database_calendar_dict}}");
-		console.log("database_calendar_struct", database_calendar_struct);
 		loadSelectedData();
-		// Need to comment out and replace.
-		// loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
-		// loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
-		// mainProf("{{calendar_mode}}", "{{name_selected}}");
 		_name_selected = "{{name_selected}}";
-		main_renderCalendar(database_calendar_struct);
-
-
-</script>
+		loadCalendarIfNonNull();
+	</script>
 
 {% endblock %}

@@ -24,3 +24,9 @@ function redirHome(){
 	}
 	window.location.replace(new_loc);
 }
+function loadCalendarIfNonNull(){
+	var calendar_frame_button = document.getElementById("loadCalendarFrameID");
+	if(calendar_frame_button != null){
+		calendar_frame_button.click();
+	}
+}
