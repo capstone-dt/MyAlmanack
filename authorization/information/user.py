@@ -48,6 +48,9 @@ class User(Wrapper):
     def __eq__(self, other):
         return isinstance(other, User) and self.uid == other.uid
     
+    def __hash__(self):
+        return hash(self.uid)
+    
     @property
     def uid(self):
         return self._object.username

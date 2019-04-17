@@ -24,7 +24,7 @@ def profile(request, uid):
     # Render the profile page.
     claims = get_session_claims(request)
     return render(request, "authorization/profile.html", context={
-        "name": claims["name"],
+        "name": user.username,
         "image": claims["picture"],
         "claims": claims
     })
