@@ -2,131 +2,157 @@
 
 {% block content %}
 	<div class="container">
-    <h1>Edit Profile</h1>
-  	<hr>
+	<h1>Edit Profile</h1>
+	<hr>
 	<div class="row">
-      <!-- left column -->
-      <div class="col-md-3">
-        <div class="text-center">
-          <img src="//placehold.it/100" class="avatar img-circle" alt="avatar">
-          <h6>Upload a different photo...</h6>
-          
-          <input type="file" class="form-control">
-        </div>
-      </div>
-      
-      <!-- edit form column -->
-      <div class="col-md-9 personal-info">
-        <div class="alert alert-info alert-dismissable">
-          <a class="panel-close close" data-dismiss="alert">×</a> 
-          <i class="fa fa-coffee"></i>
-          This is an <strong>.alert</strong>. Use this to show important messages to the user.
-        </div>
-        <h3>Personal info</h3>
-        
-        <form class="form-horizontal" role="form" 
-        action="/profile/edit/" method="post">
-        	<div class="form-row d-flex">
-            <div class="col-lg-8">
+	<!-- left column -->
+	<div class="col-md-3">
+		<div class="text-center">
+		<img src="//placehold.it/100" class="avatar img-circle" alt="avatar" id="imageDisplay">
+		<h6>Upload a different photo...</h6>
+		
+		<input type="file" class="form-control" id="inputProfilePicture" onchange="uploadProfilePicture()">
+		</div>
+	</div>
+	
+	<!-- edit form column -->
+	<div class="col-md-9 personal-info">
+		<div class="alert alert-info alert-dismissable">
+		<a class="panel-close close" data-dismiss="alert">×</a> 
+		<i class="fa fa-coffee"></i>
+		This is an <strong>.alert</strong>. Use this to show important messages to the user.
+		</div>
+		<h3>Personal info</h3>
+		
+		<form class="form-horizontal" role="form" 
+		action="/profile/edit/" method="post">
+		{% csrf_token %}
+		{{ edit_form.as_ul }}
+		<div class="form-group">
+			<label class="col-md-3 control-label"></label>
+			<div class="col-md-8">
+			<input type="hidden" name="formType" value="EditProfile">
+			<input type="submit" class="confirmButton" style="display:none; width:100%; height:50px;" 
+					value="Save Changes" id="submitChangesButton">
+			</div>
+		</form>
+			<div class="form-row d-flex">
+			<div class="col-lg-11">
 				<label class="float-right" for="blankLine" style="color:#ff3f3f; text-align: right;">&nbsp* Denotes a Required Field</label>
 				<div id="blankLine"></div>
 			</div>
 			</div>
-          <div class="form-group">
-            <label class="reqField col-lg-3 control-label">First name:</label>
-            <div class="col-lg-8">
-              <input class="form-control" type="text" id="inputFirstname" required onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="reqField col-lg-3 control-label">Last name:</label>
-            <div class="col-lg-8">
-              <input class="form-control" type="text" id="inputLastname" required onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="reqField col-lg-3 control-label">Alias:</label>
-            <div class="col-lg-8">
-              <div class="row">
-                <a class=""> &nbsp &nbsp</a>
-              <input class="form-control col-10" type="text" id="inputAlias" required onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();" pattern="[A-Za-z0-9]{1,}$">
-              <i class="col-1 material-icons right">check_circle</i>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-3 control-label">Email:</label>
-            <div class="col-lg-8">
-              <input class="form-control" type="email" id="inputEmail" onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="reqField col-lg-3 control-label">Birthday:</label>
-            <div class="col-lg-8">
-              <input class="form-control" type="date" id="inputBirthday" pattern="(?n:^(?=\d)((?<month>(0?[13578])|1[02]|(0?[469]|11)(?!.31)|0?2(?(.29)(?=.29.((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|(16|[2468][048]|[3579][26])00))|(?!.3[01])))(?<sep>[-./])(?<day>0?[1-9]|[12]\d|3[01])\k<sep>(?<year>(1[6-9]|[2-9]\d)\d{2})(?(?=\x20\d)\x20|$))?(?<time>((0?[1-9]|1[012])(:[0-5]\d){0,2}(?i:\x20[AP]M))|([01]\d|2[0-3])(:[0-5]\d){1,2})?$)$" required onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-3 control-label">Phone Number:</label>
-            <div class="col-lg-8">
-              <input type="tel" class="form-control" id="inputPhone" onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-3 control-label">Organization:</label>
-            <div class="col-lg-8">
-		    	<input type="text" class="form-control" id="inputOrganization" onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-3 control-label">Description:</label>
-            <div class="col-lg-8" >
-            <input type="text" class="form-control" width="100%;" id="inputDescription" onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
-            </div>
-          </div>
-          {% csrf_token %}
-          {{ edit_form.as_ul }}
-          <div class="form-group">
-            <label class="col-md-3 control-label"></label>
-            <div class="col-md-8">
-              <input type="hidden" name="formType" value="EditProfile">
-              <input type="submit" class="confirmButton" style="width:100%; height:50px;" value="Save Changes">
-            </div>
-          </div>
-          <script type="text/javascript">
-            function exchangeValues(div_id, form_id){
-              var temp_div = document.getElementById(div_id);
-              var temp_form = document.getElementById(form_id);
-              temp_form.value=temp_div.value;
-              console.log(temp_form);
-            }
-            function editProfileUpdate(){
-              exchangeValues("inputFirstname", "id_PIfirst");
-              exchangeValues("inputLastname", "id_PIlast");
-              exchangeValues("inputAlias", "id_PIalias");
-              exchangeValues("inputEmail", "id_PIemail");
-              var unique_alias = true;
-              if(unique_alias){
-                exchangeValues("inputAlias", "id_PIalias");
-              }
-              var temp_div = document.getElementById("inputBirthday");
-              var temp_form = document.getElementById("id_PIbirthday");
-              temp_form.value= new Date(temp_div.value).getTime() + "" ;
-              exchangeValues("inputPhone", "id_PIphone");
-              exchangeValues("inputOrganization", "id_PIorganization");
-              exchangeValues("inputDescription", "id_PIdescription");
-            }
-          </script>
-        </form>
-      </div>
-  </div>
+		<div class="form-group">
+			<label class="reqField col-lg-3 control-label">First name:</label>
+			<div class="col-lg-11">
+			<input class="form-control" type="text" id="inputFirstname" required onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="reqField col-lg-3 control-label">Last name:</label>
+			<div class="col-lg-11">
+			<input class="form-control" type="text" id="inputLastname" required onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="reqField col-lg-3 control-label">Alias:</label>
+			<div class="col-lg-12">
+			<div class="row">
+				<a class=""> &nbsp &nbsp</a>
+			<input class="form-control col-10" type="text" id="inputAlias" required onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();" pattern="[A-Za-z0-9]{1,}$">
+			<i class="col-1 material-icons right">check_circle</i>
+			</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-3 control-label">Email:</label>
+			<div class="col-lg-11">
+			<input class="form-control" type="email" id="inputEmail" onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="reqField col-lg-3 control-label">Birthday:</label>
+			<div class="col-lg-11">
+			<input class="form-control" type="date" id="inputBirthday" pattern="(?n:^(?=\d)((?<month>(0?[13578])|1[02]|(0?[469]|11)(?!.31)|0?2(?(.29)(?=.29.((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|(16|[2468][048]|[3579][26])00))|(?!.3[01])))(?<sep>[-./])(?<day>0?[1-9]|[12]\d|3[01])\k<sep>(?<year>(1[6-9]|[2-9]\d)\d{2})(?(?=\x20\d)\x20|$))?(?<time>((0?[1-9]|1[012])(:[0-5]\d){0,2}(?i:\x20[AP]M))|([01]\d|2[0-3])(:[0-5]\d){1,2})?$)$" required onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-3 control-label">Phone Number:</label>
+			<div class="col-lg-11">
+			<input type="tel" class="form-control" id="inputPhone" onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-3 control-label">Organization:</label>
+			<div class="col-lg-11">
+				<input type="text" class="form-control" id="inputOrganization" onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-lg-3 control-label">Description:</label>
+			<div class="col-lg-11" >
+			<input type="text" class="form-control" width="100%;" id="inputDescription" onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();">
+			</div>
+		</div>
+		<input type="button" class="col-lg-11 confirmButton" style="width:100%; height:50px;" onclick="submitChanges()" value="Save Changes">
+		</div>
+		<script type="text/javascript">
+			function exchangeValues(div_id, form_id){
+			var temp_div = document.getElementById(div_id);
+			var temp_form = document.getElementById(form_id);
+			temp_form.value=temp_div.value;
+			console.log(temp_form);
+			}
+			function editProfileUpdate(){
+			exchangeValues("inputFirstname", "id_PIfirst");
+			exchangeValues("inputLastname", "id_PIlast");
+			exchangeValues("inputAlias", "id_PIalias");
+			exchangeValues("inputEmail", "id_PIemail");
+			var unique_alias = true;
+			if(unique_alias){
+				exchangeValues("inputAlias", "id_PIalias");
+			}
+			var temp_div = document.getElementById("inputBirthday");
+			var temp_form = document.getElementById("id_PIbirthday");
+			temp_form.value= new Date(temp_div.value).getTime() + "" ;
+			exchangeValues("inputPhone", "id_PIphone");
+			exchangeValues("inputOrganization", "id_PIorganization");
+			exchangeValues("inputDescription", "id_PIdescription");
+			}
+			function uploadProfilePicture(){
+			var picture_div = document.getElementById("inputProfilePicture");
+			var picture_form = document.getElementById("id_PIpicture");
+			if(picture_div.files.length > 0){
+				var picture_file = picture_div.files[0];
+				const reader = new FileReader();
+				reader.onload = function(e) {
+				picture_form.value = e.target.result;
+				var prof_pic_div = document.getElementById("imageDisplay");
+				prof_pic_div.setAttribute('src', e.target.result);
+				prof_pic_div.style.width = "200px";
+				prof_pic_div.style.height = "200px";
+				};
+				reader.readAsDataURL(picture_file);
+			}else{
+				picture_form.value = "$";
+			}
+			}
+			function submitChanges(){
+				editProfileUpdate();
+				uploadProfilePicture();
+				var submit_button = document.getElementById("submitChangesButton");
+				submit_button.click();
+			}
+		</script>
+	</div>
+</div>
 </div>
 <hr>
 
 	<style type="text/css">
 		.reqField:before{
 			content:"*" ;
-     color:red;
+	 color:red;
 		}
 	</style>
 
@@ -136,13 +162,48 @@
 		var mm = today.getMonth()+1; //January is 0!
 		var yyyy = today.getFullYear() - 18;
 		if(dd<10){
-        dd='0'+dd
-    } 
-    if(mm<10){
-        mm='0'+mm
-    } 
+		dd='0'+dd
+	} 
+	if(mm<10){
+		mm='0'+mm
+	} 
 		today = yyyy+'-'+mm+'-'+dd;
-		document.getElementById("birthday").setAttribute("max", today);
+		document.getElementById("inputBirthday").setAttribute("max", today);
+	console.log("Profile Info:\n", parseQuotesJson("{{profile_info}}"));
+	var profile_struct = {};
+	function populateFields(){
+		profile_struct = parseQuotesJson("{{profile_info}}");
+		if(profile_struct.alias != undefined){
+			var first_div = document.getElementById("inputFirstname");
+			first_div.value = profile_struct.first_name;
+			var last_div = document.getElementById("inputLastname");
+			last_div.value = profile_struct.last_name;
+			var alias_div = document.getElementById("inputAlias");
+			alias_div.value = profile_struct.alias;
+			var email_div = document.getElementById("inputEmail");
+			email_div.value = profile_struct.email[0];
+			var birthday_div = document.getElementById("inputBirthday");
+			var birth_date = new Date(Number(profile_struct.birth_date));
+			var date_string = birth_date.getFullYear() + "-";
+			var month_str = (birth_date.getMonth() + 1) + "";
+			if(month_str.length == 1){
+				month_str = "0" + month_str;
+			}
+			date_string += month_str + "-" + birth_date.getDate();
+			birthday_div.value = date_string;
+			var phone_div = document.getElementById("inputPhone");
+			phone_div.value = profile_struct.phone_num[0];
+			var org_div = document.getElementById("inputOrganization");
+			org_div.value = profile_struct.organization;
+			var desc_div = document.getElementById("inputDescription");
+			desc_div.value = profile_struct.user_desc;
+		}
+		var prof_pic_div = document.getElementById("imageDisplay");
+		var img_div = base64ToImagePassed(profile_struct.profile_picture, prof_pic_div);
+		img_div.style.width = "200px";
+		img_div.style.height = "200px";
+	}
+	populateFields();
 
 </script>
 

@@ -3,13 +3,8 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
-from database.models import *
+from database.views import *
 from user_interface.forms import *
-from django.db import connection
-from django.contrib.postgres.search import TrigramSimilarity
-from django.db.models.functions import Greatest
-from fuzzywuzzy import process
-from operator import itemgetter
 import base64
 import os
 import json
@@ -42,21 +37,42 @@ def getDummyData(dummy_file):
 		structs.append(curr_struct)
 	return structs
 
-def getProfilePictureBase64(file_name):
+def getProfilePictureFirebaseId(firebase_id):
+	try:
+		file_loc = getProfilePictureLocation(firebase_id)
+		fh = open(file_loc, 'r')
+		return getProfilePictureBase64(firebase_id)
+	except FileNotFoundError:
+		return getProfilePictureBase64("default_profile")
+
+def getProfilePictureLocation(file_name):
 	picture_dir = "/user_interface/static/profile_pictures/"
 	extension = ".png"
 	cwd = os.getcwd()
 	file_loc = cwd + picture_dir + file_name + extension
+	return file_loc
+
+def getProfilePictureBase64(file_name):
+	file_loc = getProfilePictureLocation(file_name)
 	encoded_string = ""
 	with open(file_loc, "rb") as image_file:
 		encoded_string = base64.b64encode(image_file.read())
 	retval = encoded_string.decode('utf-8')
 	return retval
 
+def saveProfilePictueBase64(file_name, image_64_encode):
+	file_loc = getProfilePictureLocation(file_name)
+	if(image_64_encode == "$"):
+		return
+	split_string = image_64_encode.split(",")[1].encode('utf-8')
+	image_64_decode = base64.decodestring(split_string)
+	image_result = open(file_loc, 'wb')
+	image_result.write(image_64_decode)
+
 def getCurrUser(profile_json, firebase_id):
-	print("GET", firebase_id)
+	# print("GET", firebase_id)
 	for user in profile_json:
-		print(user["firebase_id"])
+		# print(user["firebase_id"])
 		if user["firebase_id"].replace(" ", "") == str(firebase_id).replace(" ", ""):
 			return [user]
 	return [{}]
@@ -88,7 +104,6 @@ def genHiddenEvent(passed_event):
 	hiddenstruct["event_creator_firebase_id"] = passed_event["event_creator_firebase_id"]
 	hiddenstruct["isHidden"] = "true"
 	return hiddenstruct
-
 
 def filterAccessFriendEvents(friend_events, user_alias):
 	print("FILTER FRIEND EVENTS", user_alias)
@@ -132,21 +147,78 @@ def filterAccessFriendEvents(friend_events, user_alias):
 def getCurrentFirebaseId(request):
 	return request.user.username;
 
-def nullAlias(request):
-	p = ProfileView()
-	if(request.method == "POST"):
-		return p.post(request, "")
-	return p.get(request, "")
-
-def nullGroup(request):
-	g = GroupView()
-	if(request.method == "POST"):
-		return g.post(request, "")
-	return g.get(request, "")
-
 def redirForce(request):
 	e = EditProfileView()
 	return e.get(request)
+
+def redir404(request):
+	user_firebase_id = getCurrentFirebaseId(request)
+	return render(
+		request=request,
+		template_name='user_interface/404.html',
+		context={"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+			"header_forms" : getHeaderForms(),}
+	)
+
+
+def getHeaderDict(firebase_id):
+	retHeader = {
+		"event_invites" : [],
+		"friend_requests" : [],
+		"group_requests" : {
+			"join_requests" : [],
+			"invites" : []
+		}
+	}
+	user_firebase_id = firebase_id
+	isValid = validFirebaseId(user_firebase_id);
+	if(isValid == True):
+		return retHeader
+
+	contact_list = getContactListData(firebase_id)
+	if(contact_list["received_event_invites"] == None):
+		retHeader["event_invites"] = []
+	else:
+		event_invite_ids = contact_list["received_event_invites"]
+		for e_id in event_invite_ids:
+			curr_event_data = getEventData(e_id)
+			retHeader["event_invites"].append(curr_event_data)
+	if(contact_list["received_friend_requests"] == None):
+		retHeader["friend_requests"] = []
+	else:
+		friend_invite_ids = contact_list["received_friend_requests"]
+		print("recieved:", friend_invite_ids)
+		for f_id in friend_invite_ids:
+			request_data = getFriendRequestData(f_id)
+			print("request_data", request_data)
+			sender_id = request_data["sender_id"]
+			curr_user = getProfileData(sender_id)
+			curr_user["profile_picture"] = getProfilePictureFirebaseId(sender_id)
+			curr_user["invite_id"] = f_id
+			retHeader["friend_requests"].append(curr_user)
+	if(contact_list["received_group_invites"] == None):
+		retHeader["group_requests"]["invites"] = []
+	else:
+		group_invite_names = contact_list["received_group_invites"]
+		for g_name in group_invite_names:
+			curr_group_data = getGroupData(g_name)
+			retHeader["group_requests"]["invites"].append(curr_group_data)
+	return retHeader
+
+def getHeaderForms():
+	retDict = {
+		"event_response" : EventRespondRequest(),
+		"search_form" : SearchForm(),
+		"friend_response" : FriendRespondRequest(),
+		"group_response" : GroupRespondRequest(),
+		"group_form" : GroupForm(),
+	}
+	return retDict
+
+
+def getFriendInfo(firebase_id):
+	return None
+
 
 def getFirebaseIDAliasDummy(user_structs, alias):
 	for temp_user in user_structs:
@@ -154,10 +226,71 @@ def getFirebaseIDAliasDummy(user_structs, alias):
 			return temp_user["firebase_id"]
 	return -1
 
+
+def getCalendarDict(user_firebase_id, selected_id, mode):
+	retDict = {
+		"mode" : "",
+		"calendar_data" : {
+			"user_events" : [],
+			"member_events" : [],
+			"member_info" : [],
+			"user_info" : {},
+		},
+	}
+	retDict["mode"] = mode
+	profile_data = getProfileData(user_firebase_id)
+	retDict["calendar_data"]["user_info"] = profile_data
+	user_events = []
+	if(profile_data['user_events'] != None):
+		user_events = getUserEvents(user_firebase_id)
+	retDict["calendar_data"]["user_events"] = user_events
+	if(mode == "USER"):
+		data_contact_list = getContactListData(user_firebase_id)
+		database_contact_ids = data_contact_list["contact_names"]
+		if(database_contact_ids == None):
+			database_contact_ids = []
+		member_events = []
+		member_info = []
+		for f_id in database_contact_ids:
+			curr_dict_f = {}
+			curr_dict_f["firebase_id"] = f_id
+			curr_dict_f["participating_events"] = []
+			member_profile_data = getProfileData(f_id)
+			curr_events_friend = []
+			if(member_profile_data["user_events"] != None):
+				curr_events_friend = getUserEvents(f_id)
+			for ev in curr_events_friend:
+				curr_dict_f["participating_events"].append(ev)
+			member_events.append(curr_dict_f)
+			member_info.append(member_profile_data)
+		retDict["calendar_data"]["member_events"] = member_events
+		retDict["calendar_data"]["member_info"] = member_info
+	elif(mode == "FRIEND"):
+		member_info = getProfileData(selected_id)
+		member_events = []
+		if(member_info["user_events"] != None):
+			member_events = getUserEvents(selected_id)
+		if(member_events == None):
+			member_events = []
+		retDict["calendar_data"]["member_events"] = member_events
+		retDict["calendar_data"]["member_info"] = [getProfileData(selected_id)]
+	elif(mode == "GROUP"):
+		print("group selected")
+		retDict["calendar_data"]["member_events"] = []
+		retDict["calendar_data"]["member_info"] = []
+	return retDict
+
+
+def nullAlias(request):
+	p = ProfileView()
+	if(request.method == "POST"):
+		return p.post(request, "")
+	return p.get(request, "")
+
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
-	def dummy(self, event_form, request, alias_requested):
+	def dummy(self, request, alias_requested):
 
 		search_form = SearchForm()
 		eventstructs = getDummyData("event_table")
@@ -170,26 +303,79 @@ class ProfileView(TemplateView):
 		user_firebase_id = getCurrentFirebaseId(request)
 		isValid = validFirebaseId(user_firebase_id);
 		print("isvalid_id", isValid)
-		if(isValid == False):
-			return redirForce(request)
 
+		if(isValid == True):
+			return redirForce(request)
 
 		profile_data = getProfileData(user_firebase_id)
-		
+		profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
+		data_prof_alias = profile_data["alias"]
+		print("data_prof_alias", data_prof_alias)
+		# print(profile_data)
+		profile_events = []
+		try:
+			if(profile_data['user_events'] != None):
+				profile_events = getUserEvents(user_firebase_id)
+		except:
+			#don't add
+			print("doesnt exist")
+		print("profile_events", profile_events)
+		data_contact_list = getContactListData(user_firebase_id)
+		print("data_contact_list", data_contact_list)
+		data_friend_events = []
+		name_selected = data_prof_alias
+		if(alias_requested != "" and alias_requested != data_prof_alias):
+			#Other user selected
+			name_selected = alias_requested
+		print("name_selected", name_selected)
+		firebase_id_selected = -1
+		selected_user_data = {}
+		if(validAlias(name_selected) == False):
+			firebase_id_selected = aliasToFirebaseId(name_selected)
+			selected_user_data = getProfileData(firebase_id_selected)
+			selected_user_data["profile_picture"] = getProfilePictureFirebaseId(firebase_id_selected)
+			print("firebase_id_selected", firebase_id_selected)
+		else:
+			return redir404(request)
+		database_contact_names = data_contact_list["contact_names"]
+		if(database_contact_names == None):
+			database_contact_names = []
+		prof_mode = "friend"
+		cal_mode = "USER"
+		is_friend = "false"
+		if name_selected == data_prof_alias:
+			prof_mode = "self"
+			cal_mode = "USER"
+		else:
+			prof_mode = "friend"
+			cal_mode = "FRIEND"
+			if firebase_id_selected in database_contact_names:
+				is_friend = "true"
+			else:
+				is_friend = "false"
+		print("validAlias:",name_selected, validAlias(name_selected), firebase_id_selected)
+
+		database_calendar_dict = getCalendarDict(user_firebase_id, firebase_id_selected, cal_mode)
+		if cal_mode == "FRIEND" and is_friend == "false":
+			database_calendar_dict["calendar_data"]["member_events"] = []
+
+
+
+
 
 		currentuserstruct = getCurrUser(profilestructs, user_firebase_id)
-		print(currentuserstruct)
+		# print(currentuserstruct)
 		if bool(currentuserstruct[0]) == False:
-			return redirForce(request)
+			currentuserstruct = getCurrUser(profilestructs, "XJWoEcF4qsToA0NHnKnaIlqBnfO2")
 		user_alias = currentuserstruct[0]["alias"]
 		user_selected = currentuserstruct
-
 		if(alias_requested != ""):
-			print("alias_requested:", alias_requested)
+			# print("alias_requested:", alias_requested)
 			user_alias = alias_requested
+			name_selected = alias_requested
 			sel_id = getFirebaseIDAliasDummy(profilestructs, alias_requested)
 			user_selected = getCurrUser(profilestructs, sel_id)
-			print("user_selected", user_selected)
+			# print("user_selected", user_selected)
 
 
 		currentuserjson = str(json.dumps(currentuserstruct))
@@ -197,19 +383,8 @@ class ProfileView(TemplateView):
 		user_contact_list_id = currentuserstruct[0]["contact_list_id"]
 		user_contact_list = filterDummyContactsAlias(contactstructs, user_contact_list_id)
 		friend_names = user_contact_list["contact_names"].replace(" ", "").split(",")
-		print(friend_names)
+		# print(friend_names)
 		friend_events = []
-		is_friend = "false"
-		prof_mode = "friend"
-		if(currentuserstruct[0]["alias"] == user_alias or alias_requested == ""):
-			prof_mode = "self"
-		else:
-			prof_mode = "friend"
-			if alias_requested in friend_names:
-				is_friend = "true"
-			else:
-				is_friend = "false"
-
 
 		for friend_alias in friend_names:
 			curr_events = filterDummyEventsAlias(eventstructs, friend_alias)
@@ -220,17 +395,18 @@ class ProfileView(TemplateView):
 		user_events_json = str(json.dumps(user_events))
 		filtered_friend_events_json = str(json.dumps(filtered_friend_events))
 		user_contact_list_json = str(json.dumps(user_contact_list))
-		print(user_contact_list)
+		# print(user_contact_list)
 
+
+		print("\n")
 		def_prof_pic = getProfilePictureBase64("default_profile")
-		group_form = GroupForm()
 		response = render(
 			request=request,
 			template_name=self.template_name,
 			context={
-				"event_form" : event_form,
+				"event_form" : EventForm(),
 				"search_form" : search_form,
-				"group_form" : group_form,
+				"group_form" : GroupForm(),
 				"dummy_events" : eventjson, 
 				"dummy_profiles" : profilejson,
 				"dummy_contacts" : contactjson,
@@ -243,24 +419,28 @@ class ProfileView(TemplateView):
 				"profile_mode" : prof_mode,
 				"is_friend" : is_friend,
 				"calendar_mode" : prof_mode,
+				"name_selected" : name_selected,
+				"name_selected_data" : str(json.dumps(selected_user_data)),
+				"user_database" : str(json.dumps(profile_data)),
+				"user_events_database" : str(json.dumps(profile_events)),
+				"user_contact_list" : str(json.dumps(data_contact_list)),
+				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
+				"header_forms" : getHeaderForms(),
+				"friend_req" :  FriendRequestForm(),
+				"friend_rem" : FriendRemoveForm(),
 			}
 		)
 		return response
 
 	def get(self, request, alias):
 		print("alias passed:", alias)
-		firebase_id = getCurrentFirebaseId(request)
-		print(firebase_id)
-		event_form = EventForm()
-		return self.dummy(event_form, request, alias)
+		return self.dummy(request, alias)
 
 	def post(self, request, alias):
 		print("POST REQUESTED")
-		switchType = request.POST.get('formType')
-		print(request.POST.get('formType'))
-		event_form = EventForm()
 		formController(request)
-		return self.dummy(event_form, request, alias)
+		return self.dummy(request, alias)
 
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
@@ -271,7 +451,18 @@ class EditProfileView(TemplateView):
 		edit_form = EditProfileForm()
 		def_prof_pic = getProfilePictureBase64("default_profile")
 		user_firebase_id = getCurrentFirebaseId(request)
-			
+		isValid = validFirebaseId(user_firebase_id);
+		print("isvalid_id", isValid)
+		profile_json = ""
+		if(isValid == False):
+			profile_data = getProfileData(user_firebase_id)
+			profile_data["profile_picture"] = getProfilePictureFirebaseId(user_firebase_id)
+			profile_json = str(json.dumps(profile_data))
+		else:
+			profile_data = {}
+			profile_data["profile_picture"] = getProfilePictureFirebaseId("-1")
+			profile_json = str(json.dumps(profile_data))
+
 
 		response = render(
 			request=request,
@@ -279,6 +470,9 @@ class EditProfileView(TemplateView):
 			context={"edit_form" : edit_form, 
 			"search_form" : search_form,
 			"default_profile" : def_prof_pic,
+			"profile_info" : profile_json,
+			"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+			"header_forms" : getHeaderForms(),
 			"group_form" : group_form
 			}
 		)
@@ -289,9 +483,16 @@ class EditProfileView(TemplateView):
 
 	def post(self, request):
 		formController(request)
-		# createProfileData('404', 'heyjustin', ['callme'], 'wink', 'wonk',
-		# ['email'], '121312123', 'organization', 'user_desc')
-		return self.dummy(request)
+		print("\n REDIR HOME \n")
+		return redirect('/')
+
+
+def nullGroup(request):
+	g = GroupView()
+	if(request.method == "POST"):
+		return g.post(request, "")
+	return g.get(request, "")
+
 
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
@@ -300,18 +501,29 @@ class GroupView(TemplateView):
 		user_firebase_id = getCurrentFirebaseId(request)
 		isValid = validFirebaseId(user_firebase_id);
 		print("isvalid_id", isValid)
-		if(isValid == False):
+		if(isValid == True):
 			return redirForce(request)
-
+		name_requested = group_name
+		if(validGroupName(group_name) == True):
+			return redir404(request)
 		search_form = SearchForm()
 		group_form = GroupForm()
+		group_data = getGroupData(group_name)
+		cal_mode = "GROUP"
+		database_calendar_dict = getCalendarDict(user_firebase_id, group_name, cal_mode)
 		return render(
 			request=request,
 			template_name=self.template_name,
 			context={"search_form" : search_form, 
 				"calendarFrame" : "sub_templates/calendarFrame.html",
 				"group_form" : group_form,
-				"calendar_mode" : "group",}
+				"calendar_mode" : "group",
+				"name_requested" : name_requested,
+				"group_data" : str(json.dumps(group_data)),
+				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
+				"header_forms" : getHeaderForms(),
+				}
 		)
 
 
@@ -339,47 +551,118 @@ class SearchView(TemplateView):
 
 	def get(self, request):
 		search_form = SearchForm()
-		return render(
-			request=request,
-			template_name=self.template_name,
-			context={"search_form" : search_form}
-		)
-
-	def post(self, request):
-		search_form = SearchForm(request.POST)
-		formController(request)
-		events = searchEvents(search_term)
-		friends = searchFriends(search_term)
-		users = searchUsers(search_term)
-		groups = searchGroups(search_term)
+		user_firebase_id = getCurrentFirebaseId(request)
 		return render(
 			request=request,
 			template_name=self.template_name,
 			context={"search_form" : search_form,
-				"events" : events,
-				"friends" : friends,
-				"users" : users,
-				"groups" : groups
+				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+			}
+		)
+
+	def post(self, request):
+		search_form = SearchForm(request.POST)
+		user_firebase_id = getCurrentFirebaseId(request)
+		formController(request)
+		return render(
+			request=request,
+			template_name=self.template_name,
+			context={"search_form" : search_form,
+				"events" : "[{}]",
+				"friends" : "[{}]",
+				"users" : "[{}]",
+				"groups" : "[{}]",
+				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+				"header_forms" : getHeaderForms(),
 			}
 		)
 
   
 def formController(request):
 	switchType = request.POST.get('formType')
-	if(switchType == "SubmitEvent"):
-		event_form_filled = EventForm(request.POST)
-		print(event_form_filled)
+	user_firebase_id = getCurrentFirebaseId(request)
+	print(switchType)
+	#SearchTerm
+	if(switchType == "FriendResponse"):
+		respondFriend(request)
+	elif(switchType == "SubmitEvent"):
+		submitEvent(request)
 	elif(switchType == "FriendRequest"):
 		friend_form = FriendRequestForm(request.POST)
 		print(friend_form)
+		add_alias = friend_form["FIreqalias"].value()
+		print(add_alias)
+		sendFriendRequestUI(user_firebase_id, add_alias)
+	elif(switchType == "FriendRemove"):
+		removeFriend(request)
 	elif(switchType == "GroupRequest"):
 		invite_form = GroupInviteForm(request.POST)
 		print(invite_form)
 	elif(switchType == "EditProfile"):
 		editProfile(request)
 	elif(switchType == "CreateGroup"):
-		group_form = GroupForm(request.POST)
-		print(group_form)
+		createGroupLocal(request)
+	elif(switchType == "SearchTerm"):
+		return getSearchResults(request)
+
+def respondFriend(request):
+	friend_response_form = FriendRespondRequest(request.POST)
+	print(friend_response_form)
+	invite_id = friend_response_form["FIinvite_id"].value()
+	action_s = friend_response_form["FIaction"].value()
+	action = False
+	if(action_s == "accept"):
+		action = True
+	else:
+		action = False
+	actionFriendRequest(invite_id, action)
+
+def submitEvent(request):
+	user_firebase_id = getCurrentFirebaseId(request)
+	event_form = EventForm(request.POST)
+	event_name = event_form['EIname'].value()
+	event_desc = event_form['EIdescription'].value()
+	event_start = event_form['EIstart'].value()
+	event_end = event_form['EIend'].value()
+	invite = event_form['EIinvite'].value().split(",")
+	invite_ids = []
+	for alias in invite:
+		valid_alias = validAlias(alias)
+		if(valid_alias == False):
+			# In database
+			f_id = aliasToFirebaseId(alias)
+			invite_ids.append(str(f_id))
+
+	whitelist = event_form['EIwhitelist'].value().split(",")
+	whitelist_ids = []
+	for alias in whitelist:
+		valid_alias = validAlias(alias)
+		if(valid_alias == False):
+			# In database
+			f_id = aliasToFirebaseId(alias)
+			whitelist_ids.append(str(f_id))
+
+	blacklist = event_form['EIblacklist'].value().split(",")
+	blacklist_ids = []
+	for alias in blacklist:
+		valid_alias = validAlias(alias)
+		if(valid_alias == False):
+			# In database
+			f_id = aliasToFirebaseId(alias)
+			blacklist_ids.append(str(f_id))
+
+	repeat = event_form['EIrepeat'].value()
+	repeat_pattern = event_form['EIrepeat_pattern'].value()
+	if(repeat != "true" or repeat_pattern == "0000000"):
+		createEvent(event_name, event_desc, [user_firebase_id], [user_firebase_id], whitelist_ids, blacklist_ids, 
+			int(event_start), int(event_end), str(user_firebase_id))
+	else:
+		createRepeatEvent(event_name, event_desc, [user_firebase_id], [user_firebase_id], whitelist_ids, blacklist_ids,
+			int(event_start), int(event_end), str(user_firebase_id), "weekly", int(event_start), int(event_end), repeat_pattern)
+
+def sendFriendRequestUI(sender_firebase_id, reciever_alias):
+	reciever_firebase_id = aliasToFirebaseId(reciever_alias)
+	sendFriendRequest(sender_firebase_id, reciever_firebase_id)
 
 def editProfile(request):
 	firebase_id = getCurrentFirebaseId(request)
@@ -392,453 +675,38 @@ def editProfile(request):
 	email = [profile_form['PIemail'].value()]
 	birth_date = profile_form['PIbirthday'].value()
 	organization = profile_form['PIorganization'].value()
-	print("\n\n\n")
-	print(type(organization), organization)
 	user_desc = profile_form['PIdescription'].value()
-	print("BELOW:")
-	print(firebase_id, alias, phone_num, last_name, first_name,
-		email, birth_date, organization, user_desc)
-	print("\n\n\n")
-	if(isValid):
+	new_prof = profile_form['PIpicture'].value()
+	saveProfilePictueBase64(firebase_id, new_prof)
+	if(isValid == False):
 		# Modify current user
 		editProfileData(firebase_id, alias, phone_num, last_name, first_name,
 		email, birth_date, organization, user_desc)
 	else:
-		# Create new user
-		"""def createProfileData(firebase_id, alias, phone_num, last_name, first_name,
-	email, birth_date, organization, user_desc):"""
-		# createProfileData(firebase_id, 'heyjustin', ['callme'], 'wink', 'wonk',
-		# ['email'], '121312123', 'organization', 'user_desc')
 		createProfileData(firebase_id, alias, phone_num, last_name, first_name,
 		email, birth_date, organization, user_desc)
 
-
-# Query database using an alias to get the firebase_id.
-def aliasToFirebaseId(alias):
-	firebase_id = Profile.objects.get(alias = alias).firebase_id
-	return firebase_id
-
-# Query database using a firebase_id to get the alias.
-def firebaseIdToAlias(firebase_id):
-	alias = Profile.objects.get(firebase_id = firebase_id).alias
-	return alias
-
-# FRIEND REQUESTS
-# Insert incoming / outgoing requests.
-def sendFriendRequest(sender_firebase_id, receiver_firebase_id):
-	with connection.cursor() as cursor:
-		current_time = time.time()
-		i_id = Invite.objects.count()
-		# Get contact_list_ids for receiver and sender from Django models.
-		receiver_cl_id = Profile.objects.get(firebase_id = receiver_firebase_id).contact_list_id
-		sender_cl_id = Profile.objects.get(firebase_id = sender_firebase_id).contact_list_id
-		# Create new user request using raw SQL query.
-		cursor.execute('INSERT INTO "User_Request" (invite_id, time_sent, sender_id, receiver_id)'
-			+ ' VALUES (%s, %s, %s, %s)',
-			[i_id, current_time, sender_firebase_id, receiver_firebase_id])
-		# Update receiver's incoming user requests using raw SQL query.
-		cursor.execute('UPDATE "Contact_List" SET received_friend_requests = array_append(received_friend_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, receiver_cl_id])
-		# Update sender's outgoing user requests using raw SQL query.
-		cursor.execute('UPDATE "Contact_List" SET sent_friend_requests = array_append(sent_friend_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, sender_cl_id])
-
-# Remove incoming / outgoing requests.
-def actionFriendRequest(sender_firebase_id, receiver_firebase_id, accept):
-	with connection.cursor() as cursor:
-		# Get invite_id using sender and receiver firebase_ids using raw SQL query.
-		cursor.execute('SELECT invite_id FROM "Invite" NATURAL JOIN "User_Request"'
-			+ ' WHERE sender_id = %s and receiver_id = %s', [sender_firebase_id, receiver_firebase_id])
-		i_id = cursor.fetchone()[0]
-		# Get contact_list_ids for receiver and sender from Django models.
-		receiver_cl_id = Profile.objects.get(firebase_id = receiver_firebase_id).contact_list_id
-		sender_cl_id = Profile.objects.get(firebase_id = sender_firebase_id).contact_list_id
-
-		if accept == True:
-			# If user request acceptance is true, then update the sender's and receiver's (of the user request) contact_names.
-			# Else, do nothing.
-			cursor.execute('UPDATE "Contact_List" SET contact_names = array_append(contact_names, %s)'
-				+ ' WHERE contact_list_id = %s', [sender_firebase_id, receiver_cl_id])
-			cursor.execute('UPDATE "Contact_List" SET contact_names = array_append(contact_names, %s)'
-				+ ' WHERE contact_list_id = %s', [receiver_firebase_id, sender_cl_id])
-
-		# Remove receiver's incoming user requests using raw SQL query.
-		cursor.execute('UPDATE "Contact_List" SET received_friend_requests = array_remove(received_friend_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, receiver_cl_id])
-		# Remove sender's incoming user requests using raw SQL query.
-		cursor.execute('UPDATE "Contact_List" SET sent_friend_requests = array_remove(sent_friend_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, sender_cl_id])
-
-# EVENT INVITES
-# Insert incoming / outgoing invites.
-def sendEventInvites(sender_firebase_id, receiver_firebase_ids, event_id):
-	with connection.cursor() as cursor:
-		current_time = time.time()
-		i_id = Invite.objects.count()
-		# Get contact_list_ids for receiver and sender from Django models.
-		receiver_cl_ids = [Profile.objects.get(firebase_id = fid).contact_list_id for fid in receiver_firebase_ids]
-		sender_cl_id = Profile.objects.get(firebase_id = sender_firebase_id).contact_list_id
-		# Create new event-invite using raw SQL query.
-		cursor.execute('INSERT INTO "Event_Invite" (invite_id, time_sent, event_id)'
-			+ ' VALUES (%s, %s, %s)',
-			[i_id, current_time, event_id])
-
-		# For every receiver firebase-id, update the invited_users list from the recently-created event-invite
-		# using a raw SQL query.
-		for f_id, r_cl_id in zip(receiver_firebase_ids, receiver_cl_ids):
-			cursor.execute('UPDATE "Event_Invite" SET invited_users = array_append(invited_users, %s)'
-				+ ' WHERE invite_id = %s', [f_id, i_id])
-			cursor.execute('UPDATE "Contact_List" SET received_event_invites = array_append(received_event_invites, (SELECT CAST (%s AS SMALLINT)))'
-				+ ' WHERE contact_list_id = %s', [i_id, r_cl_id])
-
-		# Update sender's outgoing event-invites using raw SQL query.
-		cursor.execute('UPDATE "Contact_List" SET sent_event_invites = array_append(sent_event_invites, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, sender_cl_id])
-
-# Remove incoming / outgoing invites.
-def actionEventInvite(event_id, receiver_firebase_id, accept):
-	with connection.cursor() as cursor:
-		# Get invite_id using event_id using raw SQL query.
-		cursor.execute('SELECT invite_id FROM "Invite" NATURAL JOIN "Event_Invite"'
-			+ ' WHERE event_id = %s', [event_id])
-		i_id = cursor.fetchone()[0]
-		# Get contact_list_id for receiver from Django models.
-		receiver_cl_id = Profile.objects.get(firebase_id = receiver_firebase_id).contact_list_id
-
-		if accept == True:
-			# If event-invite acceptance is true, then update the receiver's user_events and the event's participating_users.
-			# Else, do nothing.
-			cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, %s)'
-				+ ' WHERE firebase_id = %s', [event_id, receiver_firebase_id])
-			cursor.execute('UPDATE "Event" SET participating_users = array_append(participating_users, %s)'
-				+ ' WHERE event_id = %s', [receiver_firebase_id, event_id])
-
-		# Remove receiver's incoming event-invites using raw SQL query.
-		cursor.execute('UPDATE "Contact_List" SET received_event_invites = array_remove(received_event_invites, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, receiver_cl_id])
-
-# GROUP INVITES
-# Insert incoming / outgoing invites.
-def sendGroupInvites(group_id, receiver_firebase_ids):
-	with connection.cursor() as cursor:
-		current_time = time.time()
-		i_id = Invite.objects.count()
-		# Get contact_list_id for receiver from Django models.
-		receiver_cl_ids = [Profile.objects.get(firebase_id = fid).contact_list_id for fid in receiver_firebase_ids]
-		# Create new event-invite using raw SQL query.
-		cursor.execute('INSERT INTO "Group_Invite" (invite_id, time_sent, group_name)'
-			+ ' VALUES (%s, %s, %s)',
-			[i_id, current_time, group_id])
-
-		# For every receiver firebase-id, update the invited_users list from the recently-created event-invite
-		# using a raw SQL query.
-		for f_id, r_cl_id in zip(receiver_firebase_ids, receiver_cl_ids):
-			cursor.execute('UPDATE "Group_Invite" SET invitee_list = array_append(invitee_list, %s)'
-				+ ' WHERE invite_id = %s', [f_id, i_id])
-			cursor.execute('UPDATE "Contact_List" SET received_group_invites = array_append(received_group_invites, (SELECT CAST (%s AS SMALLINT)))'
-				+ ' WHERE contact_list_id = %s', [i_id, r_cl_id])
-
-		# Update sender's outgoing event-invites using raw SQL query.
-		cursor.execute('UPDATE "Group" SET sent_group_invites = array_append(sent_group_invites, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE group_name = %s', [i_id, group_id])
-			
-# Remove incoming / outgoing invites.
-def actionGroupInvite(group_id, receiver_firebase_id, accept):
-	with connection.cursor() as cursor:
-		# Get invite_id using group_id using raw SQL query.
-		cursor.execute('SELECT invite_id FROM "Invite" NATURAL JOIN "Group_Invite"'
-			+ ' WHERE group_name = %s', [group_id])
-		i_id = cursor.fetchone()[0]
-		# Get contact_list_id for receiver from Django models.
-		receiver_cl_id = Profile.objects.get(firebase_id = receiver_firebase_id).contact_list_id
-
-		if accept == True:
-			# If group-invite acceptance is true, then update the receiver's memberships and the group's group_members.
-			# Else, do nothing.
-			cursor.execute('UPDATE "Contact_List" SET memberships = array_append(memberships, %s)'
-				+ ' WHERE contact_list_id = %s', [group_id, receiver_cl_id])
-			cursor.execute('UPDATE "Group" SET group_members = array_append(group_members, %s)'
-				+ ' WHERE group_name = %s', [receiver_firebase_id, group_id])
-
-		# Remove receiver's incoming group-invites using raw SQL query.
-		cursor.execute('UPDATE "Contact_List" SET received_group_invites = array_remove(received_group_invites, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, receiver_cl_id])
-
-# GROUP REQUESTS
-# Insert incoming / outgoing requests.
-def sendGroupRequest(group_id, sender_firebase_id):
-	with connection.cursor() as cursor:
-		current_time = time.time()
-		i_id = Invite.objects.count()
-		# Get contact_list_id for sender from Django models.
-		sender_cl_id = Profile.objects.get(firebase_id = sender_firebase_id).contact_list_id
-		# Create new group-request using raw SQL query.
-		cursor.execute('INSERT INTO "Group_Request" (invite_id, time_sent, sender_id, group_name)'
-			+ ' VALUES (%s, %s, %s, %s)',
-			[i_id, current_time, sender_firebase_id, group_id])
-		# Update group's incoming group-requests using raw SQL query.
-		cursor.execute('UPDATE "Group" SET received_group_requests = array_append(received_group_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE group_name = %s', [i_id, group_id])
-		# Update sender's outgoing group-requests using raw SQL query.
-		cursor.execute('UPDATE "Contact_List" SET sent_group_requests = array_append(sent_group_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE contact_list_id = %s', [i_id, sender_cl_id])
-
-# Remove incoming / outgoing requests.
-def actionGroupRequest(group_id, sender_firebase_id, accept):
-	with connection.cursor() as cursor:
-		# Get invite_id using group_id using raw SQL query.
-		cursor.execute('SELECT invite_id FROM "Invite" NATURAL JOIN "Group_Request"'
-			+ ' WHERE group_name = %s', [group_id])
-		i_id = cursor.fetchone()[0]
-		# Get contact_list_id for sender from Django models.
-		sender_cl_id = Profile.objects.get(firebase_id = sender_firebase_id).contact_list_id
-
-		if accept == True:
-			# If group-request acceptance is true, then update the sender's memberships and the group's group_members.
-			# Else, do nothing.
-			cursor.execute('UPDATE "Contact_List" SET memberships = array_append(memberships, %s)'
-				+ ' WHERE contact_list_id = %s', [group_id, sender_cl_id])
-			cursor.execute('UPDATE "Group" SET group_members = array_append(group_members, %s)'
-				+ ' WHERE group_name = %s', [sender_firebase_id, group_id])
-
-		# Remove sender's incoming group-requests using raw SQL query.
-		cursor.execute('UPDATE "Group" SET received_group_requests = array_remove(received_group_requests, (SELECT CAST (%s AS SMALLINT)))'
-			+ ' WHERE group_name = %s', [i_id, group_id])
-
-# USER DATA
-# Get user data based on firebase_id.
-def getProfileData(firebase_id):
-	user_data = Profile.objects.filter(pk=firebase_id).values()[0]
-	# Return dictionary containing profile information.
-	return user_data
-
-# Check for valid firebase_id.
-def validFirebaseId(firebase_id):
-	f_id = Profile.objects.filter(pk=firebase_id).count()
-	valid_id = True
-
-	if f_id == 0:
-		valid_id = False
-
-	return valid_id
-
-# Edit user data.
-def editProfileData(firebase_id, alias, phone_num, last_name, first_name,
-	email, birth_date, organization, user_desc):
-	# Update user data via the Django Profile model.
-	Profile.objects.filter(pk=firebase_id).update(alias=alias, phone_num=phone_num,
-		last_name=last_name,first_name=first_name, email=email, birth_date=birth_date,
-		organization=organization, user_desc=user_desc)
-
-# Create a profile and it's respective contact_list.
-def createProfileData(firebase_id, alias, phone_num, last_name, first_name,
-	email, birth_date, organization, user_desc):
-	with connection.cursor() as cursor:
-		cl_id = ContactList.objects.count()
-		cursor.execute('INSERT INTO "Contact_List" (contact_list_id) VALUES (%s)', [cl_id])
-		cursor.execute('INSERT INTO "Profile" (alias, phone_num, last_name, first_name, email, birth_date,'
-			+ ' firebase_id, organization, contact_list_id, user_desc)'
-			+ ' VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-			[alias, phone_num, last_name, first_name, email, birth_date, firebase_id, organization, cl_id, user_desc])
-
-# CONTACT LIST
-# Get user's contact-list data based on firebase_id.
-def getContactListData(firebase_id):
-	cl_id = Profile.objects.filter(pk=firebase_id).values('contact_list_id')[0]['contact_list_id']
-	contact_list_data = ContactList.objects.filter(pk=cl_id).values()[0]
-	# Return dictionary containing contact-list information.
-	return contact_list_data
-
-# Remove contact from the user's contact-list using both the user and the contact's
-# firebase_ids.
-def removeContact(user_id, contact_id):
-	with connection.cursor() as cursor:
-		# Get the contact_list_ids for both the user and the contact.
-		user_cl_id = Profile.objects.filter(pk=user_id).values('contact_list_id')[0]['contact_list_id']
-		contact_cl_id = Profile.objects.filter(pk=contact_id).values('contact_list_id')[0]['contact_list_id']
-		# Remove user from the contact's contact_names and vice versa.
-		cursor.execute('UPDATE "Contact_List" SET contact_names = array_remove(contact_names, %s)'
-			+ 'WHERE contact_list_id=(SELECT CAST (%s AS SMALLINT))', [contact_id, user_cl_id])
-		cursor.execute('UPDATE "Contact_List" SET contact_names = array_remove(contact_names, %s)'
-			+ 'WHERE contact_list_id=(SELECT CAST (%s AS SMALLINT))', [user_id, contact_cl_id])
-
-# GROUP
-# Create an event and update the event creator's user_events.
-def createGroup(firebase_id, group_name, group_admin, group_members, group_desc):
-	with connection.cursor() as cursor:
-		cl_id = Profile.objects.filter(pk=firebase_id).values('contact_list_id')[0]['contact_list_id']
-		group_admin.insert(0, firebase_id)
-		group_members.insert(0,firebase_id)
-		cursor.execute('INSERT INTO "Group" (group_name, group_admin, group_members, group_desc) '
-			+ ' VALUES (%s, %s, %s, %s)', [group_name, group_admin, group_members, group_desc])
-		cursor.execute('UPDATE "Contact_List" SET memberships = array_append(memberships, %s)'
-			+ ' WHERE contact_list_id = %s', [group_name, cl_id])
-
-# Check for valid group_name.
-def validGroupName(group_name):
-	gn = Group.objects.filter(pk=group_name).count()
-	valid_id = True
-
-	if gn == 0:
-		valid_id = False
-
-	return valid_id
-
-def leaveGroup(firebase_id, group_name):
-	with connection.cursor() as cursor:
-		# Get the contact_list_ids for both the user and the contact.
-		user_cl_id = Profile.objects.filter(pk=firebase_id).values('contact_list_id')[0]['contact_list_id']
-		# Remove user from the contact's contact_names and vice versa.
-		cursor.execute('UPDATE "Contact_List" SET memberships = array_remove(memberships, %s)'
-			+ 'WHERE contact_list_id=(SELECT CAST (%s AS SMALLINT))', [group_name, user_cl_id])
-		cursor.execute('UPDATE "Group" SET group_members = array_remove(group_members, %s)'
-			+ 'WHERE group_name=(SELECT CAST (%s AS SMALLINT))', [firebase_id, group_name])
-
-# EVENTS
-# Get all participating events of user and each event's corresponding details using firebase_id.
-def getUserEvents(firebase_id):
-	user_events_data = Profile.objects.filter(pk=firebase_id).values('user_events')[0]['user_events']
-	# Get event details of each event.
-	all_event_data = [Event.objects.filter(pk=e_id).values()[0] for e_id in user_events_data]
-	# Return list of dictionaries containing event information.
-	return all_event_data
-
-# Create an event and update the event creator's user_events.
-def createEvent(event_id, description, participating_users, event_admins, whitelist, blacklist, start_date,
-	end_date, event_creator_firebase_id):
-	with connection.cursor() as cursor:
-		# Create an event using a raw SQL query.
-		cursor.execute('INSERT INTO "Event" (event_id, description, participating_users, event_admins,'
-			+ 'whitelist, blacklist, start_date, end_date, event_creator_firebase_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-			[event_id, description, participating_users, event_admins, whitelist, blacklist, start_date,
-			end_date, event_creator_firebase_id])
-		# Update event creator's users_events using a raw SQL query.
-		cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, %s) WHERE firebase_id = %s',
-			[event_id, event_creator_firebase_id])
-
-# Create a repeat-event and update the repeat-event creator's user_events.
-def createRepeatEvent(event_id, description, participating_users, event_admins, whitelist, blacklist,
-	start_date, end_date, event_creator_firebase_id, rep_type, start_time, end_time, week_arr):
-	with connection.cursor() as cursor:
-		re_id = RepeatEvent.objects.count()
-		# Create a repeat-event using a raw SQL query.
-		cursor.execute('INSERT INTO "Repeat_Event" (event_id, description, participating_users, event_admins,'
-			+ ' whitelist, blacklist, start_date, end_date, event_creator_firebase_id, rep_event_id,'
-			+ ' rep_type, start_time, end_time, week_arr) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-			[event_id, description, participating_users, event_admins, whitelist, blacklist, start_date,
-			end_date, event_creator_firebase_id, re_id, rep_type, start_time, end_time, week_arr])
-		# Update repeat-event creator's users_events using a raw SQL query.
-		cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, %s) WHERE firebase_id = %s',
-			[event_id, event_creator_firebase_id])
-
-# Edit event data.
-def editEventData(event_id, description, participating_users, event_admins, whitelist, blacklist, start_date,
-	end_date):
-	# Update event data via the Django Profile model.
-	Event.objects.filter(pk=event_id).update(description=description,
-		participating_users=participating_users, event_admins=event_admins, whitelist=whitelist,
-		blacklist=blacklist, start_date=start_date, end_date=end_date)
-
-# Edit repeat-event data.
-def editRepeatEventData(event_id, rep_event_id, description, participating_users, event_admins, whitelist,
-	blacklist, start_date, end_date, rep_type, week_arr, start_time, end_time):
-	# Update repeat-event data via a raw SQL query.
-	with connection.cursor() as cursor:
-		cursor.execute('UPDATE "Repeat_Event" SET description=%s, participating_users=%s, event_admins=%s,'
-			+ ' whitelist=%s, blacklist=%s, start_date=%s, end_date=%s, rep_type=%s, start_time=%s, end_time=%s,'
-			+ 'week_arr=%s WHERE event_id=%s',
-			[description, participating_users, event_admins, whitelist, blacklist, start_date, end_date,
-			rep_type, start_time, end_time, week_arr, event_id])
-
-# Filter contact's events based on the values of whitelists or blacklists.
-def getContactEvents(user_f_id, contact_f_id):
-	# Get list of event_ids from a contact.
-	contact_events_ids = Profile.objects.get(pk=contact_f_id).user_events
-	# Get dictionary about each of the events' whitelists and blacklists
-	# along with its corresponding event_id.
-	contact_events_data = [Event.objects.filter(pk=c_e_id).values('event_id','whitelist',
-		'blacklist')[0] for c_e_id in contact_events_ids]
-
-	contact_events_view_list = []
-	viewable_events = []
-
-	# Change any "None" values for whitelists or blacklists to an empty list.
-	# Then, append each event_id and its respective whitelist and blacklist
-	# to contact_events_view_list.
-	for ced in contact_events_data:
-		if ced['whitelist'] == None:
-			ced['whitelist'] = []
-		if ced['blacklist'] == None:
-			ced['blacklist'] = []
-		contact_events_view_list.append((ced['event_id'], ced['whitelist'], ced['blacklist']))
-
-	# If a whitelist is not empty and a user is in the whitelist, then event is viewable.
-	# Else if a blacklist is not empty and a user is not in the blacklist, then event
-	# is viewable. Otherwise, the event is viewable to the user.
-	for e_id, e_wl, e_bl in contact_events_view_list:
-		if e_wl != []:
-			if user_f_id in e_wl:
-				viewable_events.append(e_id)
-		elif e_bl != []:
-			if user_f_id not in e_bl:
-				viewable_events.append(e_id)
-		else:
-			viewable_events.append(e_id)
-
-	return viewable_events
+def removeFriend(request):
+	rem_form = FriendRemoveForm(request.POST)
+	print(rem_form)
+	rem_alias = rem_form["FIremalias"].value()
+	print(rem_alias)
+	user_firebase_id = getCurrentFirebaseId(request)
+	friend_firebase_id = aliasToFirebaseId(rem_alias)
+	removeContact(user_firebase_id, friend_firebase_id)
 
 
-# SIMILARITY (search page) 
-# Perform search queries on data based on Trigram Similarity.
+def createGroupLocal(request):
+	firebase_id = getCurrentFirebaseId(request)
+	group_form = GroupForm(request.POST)
+	print(group_form)
+	group_name = group_form["GIname"].value()
+	group_desc = group_form["GIdescription"].value()
+	group_invite = group_form["GIinvite"].value().split(",")
+	# def createGroup(firebase_id, group_name, group_admin, group_members, group_desc)
+	createGroup(firebase_id, group_name, [], [], group_desc)
 
-# Search for events based on event_ids.
-def searchEvents(search_term):
-	# Run Trigram Similarity search on Event based on the search term.
-	search = Event.objects.annotate(similarity=TrigramSimilarity('event_id', search_term)).filter(
-		similarity__gt=0.3).order_by('-similarity').values('event_id')
-	# Return a list of event_ids similar to the search term.
-	return [item['event_id'] for item in search]
-
-# Search for contacts based on user attributes.
-def searchContacts(search_term, user_f_id):
-	# Get all contact-names for a user via their firebase_id.
-	user_contacts = ContactList.objects.get(pk=Profile.objects.get(pk=user_f_id).contact_list_id).contact_names
-	# Get dictionaries of each contact's firebase_id, alias, first_name, and last_name.
-	contact_info = [Profile.objects.filter(pk=c_f_id).values('firebase_id','alias','first_name',
-		'last_name')[0] for c_f_id in user_contacts]
-	sim_scores = []
-	
-	# Using firebase_id, alias, first_name, and last_name, extract the most accurate search results.
-	for c in contact_info:
-		c_arr = [c['firebase_id'], c['alias'], c['first_name'], c['last_name']]
-		score = process.extractOne(search_term, c_arr)
-
-		if score[1] > 0:
-			sim_scores.append((score[1], c))
-
-	# Sort results by highest accuracy.
-	sim_scores = sorted(sim_scores, key=itemgetter(0), reverse=True)
-	# Return a list of dictionaries containing an alias and a firebase_id along with the associated first_name
-	# and last _name ther where the results where similar to the search term.
-	return [item[1] for item in sim_scores]
-
-# Search for users based on user attributes.
-def searchUsers(search_term):
-	# Run Trigram Similarity search on Profile's alias, firebase_id, first_name, and last name
-	# to find a result with the greatest similarity, all based on the search term.
-	search = Profile.objects.annotate(similarity=Greatest(
-		TrigramSimilarity('alias', search_term),
-		TrigramSimilarity('firebase_id', search_term),
-		TrigramSimilarity('first_name', search_term),
-		TrigramSimilarity('last_name', search_term))).filter(
-	similarity__gt=0.3).order_by('-similarity').values('alias','firebase_id','first_name','last_name')
-	# Return a list of dictionaries containing an alias and a firebase_id along with the associated first_name
-	# and last _name ther where the results where similar to the search term.
-	return [item for item in search]
-
-def searchGroups(search_term):
-	# Run Trigram Similarity search on Group based on the search term.
-	search = Group.objects.annotate(similarity=TrigramSimilarity('group_name', search_term)).filter(
-		similarity__gt=0.3).order_by('-similarity').values('group_name')
-	# Return a list of group-names similar to the search term.
-	return [item['group_name'] for item in search]
+def getSearchResults(request):
+	search_form = SearchForm(request.POST)
+	user_firebase_id = getCurrentFirebaseId(request)
+	print(search_form)
