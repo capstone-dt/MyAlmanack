@@ -13,18 +13,19 @@ class DecisionAuthority:
         print("Policies:", request.action.policies)
         
         # Evaluate all the policies of this action.
-        inapplicable_count = 0
+        all_inapplicable = True
         for policy in request.action.policies:
             print("Evaluating policy:", policy)
             try:
                 if policy.evaluate(request):
                     return AuthorizationResult.PERMIT
+                else:
+                    all_inapplicable = False
             except Exception as error:
                 print("Inapplicable policy:", error)
-                inapplicable_count += 1
         
         # If we get to this point, then none of the policies evaluated to true.
-        if len(request.action.policies) == inapplicable_count:
+        if all_inapplicable:
             # If every policy threw an error, then the authorization request is
             #     inapplicable.
             return AuthorizationResult.NOT_APPLICABLE
