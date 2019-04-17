@@ -32,9 +32,4 @@ class EvaluableMetaclass(type):
 
 
 class Evaluable(metaclass=EvaluableMetaclass):
-    @classmethod
-    def evaluate(cls, *args, **kwargs):
-        raise NotImplementedError(
-            "The evaluate() method of %s has not been implemented!" %
-            cls.__name__
-        )
+    pass

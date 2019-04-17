@@ -56,7 +56,6 @@ class SendGroupInvite(BinaryUserAction):
         
         # A user cannot send an invite to someone who's already in the group.
         & ~policies.user.group.UserResourceIsInGroupContext
-        
     ]
 
 
