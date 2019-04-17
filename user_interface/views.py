@@ -13,30 +13,9 @@ from authentication.firebase import get_session_claims
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
-def getDummyData(dummy_file):
-	dummy_dir = "/user_interface/static/dummy_data/"
-	extension = ".txt"
-	cwd = os.getcwd()
-	path = cwd + dummy_dir + dummy_file + extension
-	data = open(path, "r").readlines()
-	grid = []
-	for line in data:
-		curr = line.split("\t")
-		for i in range(0,len(curr)):
-			curr[i] = curr[i].replace("\n", "")
-			curr[i] = curr[i].replace("\"", "")
-		if len(curr[0]) == 0:
-			continue
-		grid.append(curr)
-	headers = grid[0]
-	structs = []
-	for i in range(1, len(grid)):
-		curr_struct = {}
-		for j in range(0, len(grid[i])):
-			curr_struct[headers[j]] = grid[i][j]
-		structs.append(curr_struct)
-	return structs
+# PROFILE PICTURE I/O
 
 def getProfilePictureFirebaseId(firebase_id):
 	try:
@@ -70,162 +49,9 @@ def saveProfilePictueBase64(file_name, image_64_encode):
 	image_result = open(file_loc, 'wb')
 	image_result.write(image_64_decode)
 
-def getCurrUser(profile_json, firebase_id):
-	# print("GET", firebase_id)
-	for user in profile_json:
-		# print(user["firebase_id"])
-		if user["firebase_id"].replace(" ", "") == str(firebase_id).replace(" ", ""):
-			return [user]
-	return [{}]
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
-def filterDummyEventsAlias(eventstructs, alias):
-	ret_events = []
-	for temp_event in eventstructs:
-		if temp_event["event_creator_alias"] == alias:
-			ret_events.append(temp_event)
-	return ret_events
-
-def filterDummyContactsAlias(contactstructs, contact_list_id):
-	for temp_contact in contactstructs:
-		if temp_contact["contact_list_id"] == contact_list_id:
-			return temp_contact
-	return None
-
-def genHiddenEvent(passed_event):
-	hiddenstruct = {}
-	hiddenstruct["event_id"] = "-1"
-	hiddenstruct["description"] = "Hidden"
-	hiddenstruct["participating_users"] = ""
-	hiddenstruct["event_admins"] = ""
-	hiddenstruct["whitelist"] = ""
-	hiddenstruct["blacklist"] = ""
-	hiddenstruct["start_date"] = passed_event["start_date"]
-	hiddenstruct["end_date"] = passed_event["end_date"]
-	hiddenstruct["event_creator_alias"] = passed_event["event_creator_alias"]
-	hiddenstruct["event_creator_firebase_id"] = passed_event["event_creator_firebase_id"]
-	hiddenstruct["isHidden"] = "true"
-	return hiddenstruct
-
-def filterAccessFriendEvents(friend_events, user_alias):
-	print("FILTER FRIEND EVENTS", user_alias)
-	ret_filtered = []
-	for temp_event in friend_events:
-		whitelist_str = temp_event["whitelist"].replace(" ", "")
-		blacklist_str = temp_event["blacklist"].replace(" ", "")
-		whitelist = whitelist_str.split(",");
-		blacklist = blacklist_str.split(",");
-		whitelist_empty = False
-		blacklist_empty = False
-		if len(whitelist_str) == 0:
-			whitelist_empty = True
-		if len(blacklist_str) == 0:
-			blacklist_empty = True
-		if whitelist_empty and blacklist_empty == False:
-			isblacklisted = False
-			for blacklisted in blacklist:
-				if blacklisted == user_alias:
-					isblacklisted = True
-					break
-			if isblacklisted:
-				hiddenstruct = genHiddenEvent(temp_event)
-				ret_filtered.append(hiddenstruct)
-				continue
-		if whitelist_empty == False and blacklist_empty:
-			iswhitelisted = False
-			for whitelisted in whitelist:
-				if whitelisted == user_alias:
-					iswhitelisted = True
-					break
-			if iswhitelisted == False:
-				hiddenstruct = genHiddenEvent(temp_event)
-				ret_filtered.append(hiddenstruct)
-				continue
-		if whitelist_empty == False and blacklist_empty == False:
-			continue
-		ret_filtered.append(temp_event)
-	return ret_filtered
-
-def getCurrentFirebaseId(request):
-	return request.user.username;
-
-def redirForce(request):
-	e = EditProfileView()
-	return e.get(request)
-
-def redir404(request):
-	user_firebase_id = getCurrentFirebaseId(request)
-	return render(
-		request=request,
-		template_name='user_interface/404.html',
-		context={"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
-			"header_forms" : getHeaderForms(),}
-	)
-
-
-def getHeaderDict(firebase_id):
-	retHeader = {
-		"event_invites" : [],
-		"friend_requests" : [],
-		"group_requests" : {
-			"join_requests" : [],
-			"invites" : []
-		}
-	}
-	user_firebase_id = firebase_id
-	isValid = validFirebaseId(user_firebase_id);
-	if(isValid == True):
-		return retHeader
-
-	contact_list = getContactListData(firebase_id)
-	if(contact_list["received_event_invites"] == None):
-		retHeader["event_invites"] = []
-	else:
-		event_invite_ids = contact_list["received_event_invites"]
-		for e_id in event_invite_ids:
-			curr_event_data = getEventData(e_id)
-			retHeader["event_invites"].append(curr_event_data)
-	if(contact_list["received_friend_requests"] == None):
-		retHeader["friend_requests"] = []
-	else:
-		friend_invite_ids = contact_list["received_friend_requests"]
-		print("recieved:", friend_invite_ids)
-		for f_id in friend_invite_ids:
-			request_data = getFriendRequestData(f_id)
-			print("request_data", request_data)
-			sender_id = request_data["sender_id"]
-			curr_user = getProfileData(sender_id)
-			curr_user["profile_picture"] = getProfilePictureFirebaseId(sender_id)
-			curr_user["invite_id"] = f_id
-			retHeader["friend_requests"].append(curr_user)
-	if(contact_list["received_group_invites"] == None):
-		retHeader["group_requests"]["invites"] = []
-	else:
-		group_invite_names = contact_list["received_group_invites"]
-		for g_name in group_invite_names:
-			curr_group_data = getGroupData(g_name)
-			retHeader["group_requests"]["invites"].append(curr_group_data)
-	return retHeader
-
-def getHeaderForms():
-	retDict = {
-		"event_response" : EventRespondRequest(),
-		"search_form" : SearchForm(),
-		"friend_response" : FriendRespondRequest(),
-		"group_response" : GroupRespondRequest(),
-		"group_form" : GroupForm(),
-	}
-	return retDict
-
-
-def getFriendInfo(firebase_id):
-	return None
-
-
-def getFirebaseIDAliasDummy(user_structs, alias):
-	for temp_user in user_structs:
-		if(temp_user["alias"] == alias):
-			return temp_user["firebase_id"]
-	return -1
+# CALENDAR DATA
 
 
 def getCalendarDict(user_firebase_id, selected_id, mode):
@@ -281,6 +107,133 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 		retDict["calendar_data"]["member_info"] = []
 	return retDict
 
+def genHiddenEvent(passed_event):
+	hiddenstruct = {}
+	hiddenstruct["event_id"] = "-1"
+	hiddenstruct["description"] = "Hidden"
+	hiddenstruct["participating_users"] = ""
+	hiddenstruct["event_admins"] = ""
+	hiddenstruct["whitelist"] = ""
+	hiddenstruct["blacklist"] = ""
+	hiddenstruct["start_date"] = passed_event["start_date"]
+	hiddenstruct["end_date"] = passed_event["end_date"]
+	hiddenstruct["event_creator_firebase_id"] = passed_event["event_creator_firebase_id"]
+	hiddenstruct["isHidden"] = "true"
+	return hiddenstruct
+
+def filterAccessFriendEvents(friend_events, user_alias):
+	print("FILTER FRIEND EVENTS", user_alias)
+	ret_filtered = []
+	for temp_event in friend_events:
+		whitelist_str = temp_event["whitelist"].replace(" ", "")
+		blacklist_str = temp_event["blacklist"].replace(" ", "")
+		whitelist = whitelist_str.split(",");
+		blacklist = blacklist_str.split(",");
+		whitelist_empty = False
+		blacklist_empty = False
+		if len(whitelist_str) == 0:
+			whitelist_empty = True
+		if len(blacklist_str) == 0:
+			blacklist_empty = True
+		if whitelist_empty and blacklist_empty == False:
+			isblacklisted = False
+			for blacklisted in blacklist:
+				if blacklisted == user_alias:
+					isblacklisted = True
+					break
+			if isblacklisted:
+				hiddenstruct = genHiddenEvent(temp_event)
+				ret_filtered.append(hiddenstruct)
+				continue
+		if whitelist_empty == False and blacklist_empty:
+			iswhitelisted = False
+			for whitelisted in whitelist:
+				if whitelisted == user_alias:
+					iswhitelisted = True
+					break
+			if iswhitelisted == False:
+				hiddenstruct = genHiddenEvent(temp_event)
+				ret_filtered.append(hiddenstruct)
+				continue
+		if whitelist_empty == False and blacklist_empty == False:
+			continue
+		ret_filtered.append(temp_event)
+	return ret_filtered
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+# HEADER
+
+def getHeaderDict(firebase_id):
+	retHeader = {
+		"event_invites" : [],
+		"friend_requests" : [],
+		"group_requests" : {
+			"join_requests" : [],
+			"invites" : []
+		}
+	}
+	user_firebase_id = firebase_id
+	isValid = validFirebaseId(user_firebase_id);
+	if(isValid == True):
+		return retHeader
+
+	contact_list = getContactListData(firebase_id)
+	if(contact_list["received_event_invites"] == None):
+		retHeader["event_invites"] = []
+	else:
+		event_invite_ids = contact_list["received_event_invites"]
+		for e_id in event_invite_ids:
+			curr_event_data = getEventData(e_id)
+			retHeader["event_invites"].append(curr_event_data)
+	if(contact_list["received_friend_requests"] == None):
+		retHeader["friend_requests"] = []
+	else:
+		friend_invite_ids = contact_list["received_friend_requests"]
+		print("recieved:", friend_invite_ids)
+		for f_id in friend_invite_ids:
+			request_data = getFriendRequestData(f_id)
+			print("request_data", request_data)
+			sender_id = request_data["sender_id"]
+			curr_user = getProfileData(sender_id)
+			curr_user["profile_picture"] = getProfilePictureFirebaseId(sender_id)
+			curr_user["invite_id"] = f_id
+			retHeader["friend_requests"].append(curr_user)
+	if(contact_list["received_group_invites"] == None):
+		retHeader["group_requests"]["invites"] = []
+	else:
+		group_invite_names = contact_list["received_group_invites"]
+		for g_name in group_invite_names:
+			curr_group_data = getGroupData(g_name)
+			retHeader["group_requests"]["invites"].append(curr_group_data)
+	return retHeader
+
+def getHeaderForms():
+	retDict = {
+		"event_response" : EventRespondRequest(),
+		"search_form" : SearchForm(),
+		"friend_response" : FriendRespondRequest(),
+		"group_response" : GroupRespondRequest(),
+		"group_form" : GroupForm(),
+	}
+	return retDict
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+# 404 View
+
+def redir404(request):
+	user_firebase_id = getCurrentFirebaseId(request)
+	return render(
+		request=request,
+		template_name='user_interface/404.html',
+		context={"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+			"header_forms" : getHeaderForms(),}
+	)
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+# PROFILE
 
 def nullAlias(request):
 	p = ProfileView()
@@ -376,6 +329,14 @@ class ProfileView(TemplateView):
 			return HttpResponseRedirect("/profile/");
 		return self.dummy(request, alias)
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+# EDIT PROFILE
+
+def redirForce(request):
+	e = EditProfileView()
+	return e.get(request)
+
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
 
@@ -420,13 +381,15 @@ class EditProfileView(TemplateView):
 		print("\n REDIR HOME \n")
 		return redirect('/')
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+# GROUP
 
 def nullGroup(request):
 	g = GroupView()
 	if(request.method == "POST"):
 		return g.post(request, "")
 	return g.get(request, "")
-
 
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
@@ -483,6 +446,10 @@ class DefaultView(TemplateView):
 			context={}
 		)
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+# SEARCH
+
 class SearchView(TemplateView):
 	template_name = 'user_interface/search.html'
 
@@ -514,7 +481,10 @@ class SearchView(TemplateView):
 			}
 		)
 
-  
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+# FORM CONTROL
+
 def formController(request):
 	switchType = request.POST.get('formType')
 	user_firebase_id = getCurrentFirebaseId(request)
@@ -632,7 +602,6 @@ def removeFriend(request):
 	friend_firebase_id = aliasToFirebaseId(rem_alias)
 	removeContact(user_firebase_id, friend_firebase_id)
 
-
 def createGroupLocal(request):
 	firebase_id = getCurrentFirebaseId(request)
 	group_form = GroupForm(request.POST)
@@ -647,3 +616,11 @@ def getSearchResults(request):
 	search_form = SearchForm(request.POST)
 	user_firebase_id = getCurrentFirebaseId(request)
 	print(search_form)
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
+# AUTHORIZATION DATA
+
+def getCurrentFirebaseId(request):
+	return request.user.username;
