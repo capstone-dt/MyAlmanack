@@ -98,12 +98,15 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 		retDict["calendar_data"]["member_info"] = member_info
 	elif(mode == "FRIEND"):
 		member_info = getProfileData(selected_id)
-		member_events = []
+		friend_events = []
 		if(member_info["user_events"] != None):
-			member_events = getUserEvents(selected_id)
-		if(member_events == None):
-			member_events = []
-		retDict["calendar_data"]["member_events"] = member_events
+			friend_events = getUserEvents(selected_id)
+		if(friend_events == None):
+			friend_events = []
+		curr_dict_f = {}
+		curr_dict_f["firebase_id"] = selected_id
+		curr_dict_f["participating_events"] = friend_events
+		retDict["calendar_data"]["member_events"] = [curr_dict_f]
 		retDict["calendar_data"]["member_info"] = [getProfileData(selected_id)]
 	elif(mode == "GROUP"):
 		print("group selected")
@@ -469,7 +472,8 @@ def getBlankSearchDict():
 		"events" : [],
 		"friends" : [],
 		"users" : [],
-		"groups" :[]
+		"groups" :[],
+		"search_term" : "",
 	}
 	return retDict
 
@@ -478,17 +482,46 @@ def getSearchDict(search_term, user_firebase_id):
 	isValid = validFirebaseId(user_firebase_id)
 	if(isValid == True):
 		return retDict
-	temp_events = searchEvents(search_term)
+	temp_event_ids = searchEvents(search_term)
+	temp_events = []
+	for temp_id in temp_event_ids:
+		temp_events.append(getEventData(temp_id))
 	user_contact_list = getContactListData(user_firebase_id)
 	temp_contacts = []
 	if(user_contact_list["contact_names"] != None):
 		temp_contacts = searchContacts(search_term, user_firebase_id)
-	temp_users = searchUsers(search_term)
-	temp_groups = searchGroups(search_term)
+	temp_users_pre_filter = searchUsers(search_term)
+	temp_users = []
+	for temp_user in temp_users_pre_filter:
+		if(temp_user["firebase_id"] == user_firebase_id):
+			temp_user["is_self"] = "true"
+			temp_contacts = [temp_user] + temp_contacts
+			break
+	for temp_user in temp_users_pre_filter:
+		contains = False
+		for temp_contact in temp_contacts:
+			if(temp_user["firebase_id"] == temp_contact["firebase_id"]):
+				contains = True
+				break
+		if(contains == False and temp_user["firebase_id"] != user_firebase_id):
+			temp_users.append(temp_user)
+	for temp_user in temp_users:
+		temp_user["profile_picture"] = getProfilePictureFirebaseId(temp_user["firebase_id"])
+	for temp_contact in temp_contacts:
+		temp_contact["profile_picture"] = getProfilePictureFirebaseId(str(temp_contact["firebase_id"]))
+	temp_group_names = searchGroups(search_term)
+	temp_groups = []
+	for group_name in temp_group_names:
+		temp_groups.append(getGroupData(group_name))
 	print("temp_events", temp_events)
 	print("temp_contacts", temp_contacts)
 	print("temp_users", temp_users)
 	print("temp_groups", temp_groups)
+	retDict["events"] = temp_events
+	retDict["friends"] = temp_contacts
+	retDict["users"] = temp_users
+	retDict["groups"] = temp_groups
+	retDict["search_term"] = search_term
 	return retDict
 
 class SearchView(TemplateView):
