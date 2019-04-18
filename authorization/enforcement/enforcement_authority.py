@@ -29,7 +29,7 @@ class EnforcementAuthority:
             # If the authorization request is permitted, return True.
             return True
         else:
-            # If the authorization request is denied, return False or raise 403.
+            # If the authorization request is denied, raise 403 or return False.
             if redirect_403:
                 raise PermissionDenied
             else:
