@@ -33,7 +33,7 @@ class Event(Wrapper):
         return isinstance(other, Event) and self.uid == other.uid
     
     def __hash__(self):
-        return hash(self.uid)
+        return hash((str(self), self.uid))
     
     @property
     def uid(self):

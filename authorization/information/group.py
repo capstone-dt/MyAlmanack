@@ -33,7 +33,7 @@ class Group(Wrapper):
         return isinstance(other, Group) and self.uid == other.uid
     
     def __hash__(self):
-        return hash(self.uid)
+        return hash((str(self), self.uid))
     
     @property
     def uid(self):
