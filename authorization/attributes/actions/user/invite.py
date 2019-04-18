@@ -1,5 +1,6 @@
 from ..bounded_actions import (
-    BinaryUserAction, BinaryUserInviteAction, UserGroupAction, UserEventAction
+    UserToUserAction, UserToGroupAction, UserToEventAction,
+    UserToUserInviteAction
 )
 from authorization.attributes.contexts import GroupContext, EventContext
 from authorization import policies
@@ -10,7 +11,7 @@ User invites
 """
 
 
-class SendUserInvite(BinaryUserAction):
+class SendUserInvite(UserToUserAction):
     policies = [
         # A user cannot send an invite to himself or herself.
         ~policies.miscellaneous.SubjectIsResource
@@ -20,21 +21,21 @@ class SendUserInvite(BinaryUserAction):
     ]
 
 
-class RevokeUserInvite(BinaryUserInviteAction):
+class RevokeUserInvite(UserToUserInviteAction):
     policies = [
         # A user can revoke an invite he or she had previously sent.
         policies.user.invite.UserSentInvite
     ]
 
 
-class AcceptUserInvite(BinaryUserInviteAction):
+class AcceptUserInvite(UserToUserInviteAction):
     policies = [
         # A user can accept an invite sent to him or her.
         policies.user.invite.UserReceivedInvite
     ]
 
 
-class RejectUserInvite(BinaryUserInviteAction):
+class RejectUserInvite(UserToUserInviteAction):
     policies = [
         # A user can reject an invite sent to him or her.
         policies.user.invite.UserReceivedInvite
@@ -46,7 +47,7 @@ Group invites
 """
 
 
-class SendGroupInvite(BinaryUserAction):
+class SendGroupInvite(UserToUserAction):
     # Special case: subject = user1, resource = user2, context = group
     _context_class = GroupContext
     
@@ -59,21 +60,21 @@ class SendGroupInvite(BinaryUserAction):
     ]
 
 
-class RevokeGroupInvite(UserGroupAction):
+class RevokeGroupInvite(UserToGroupAction):
     policies = [
         # A user can revoke an invite he or she had previously sent.
         policies.user.invite.UserSentInvite
     ]
 
 
-class AcceptGroupInvite(UserGroupAction):
+class AcceptGroupInvite(UserToGroupAction):
     policies = [
         # A user can accept an invite sent to him or her.
         policies.user.invite.UserReceivedInvite
     ]
 
 
-class RejectGroupInvite(UserGroupAction):
+class RejectGroupInvite(UserToGroupAction):
     policies = [
         # A user can reject an invite sent to him or her.
         policies.user.invite.UserReceivedInvite
@@ -85,7 +86,7 @@ Event invites
 """
 
 
-class SendEventInvite(BinaryUserAction):
+class SendEventInvite(UserToUserAction):
     # Special case: subject = user1, resource = user2, context = event
     _context_class = EventContext
     
@@ -98,21 +99,21 @@ class SendEventInvite(BinaryUserAction):
     ]
 
 
-class RevokeEventInvite(UserEventAction):
+class RevokeEventInvite(UserToEventAction):
     policies = [
         # A user can revoke an invite he or she had previously sent.
         policies.user.invite.UserSentInvite
     ]
 
 
-class AcceptEventInvite(UserEventAction):
+class AcceptEventInvite(UserToEventAction):
     policies = [
         # A user can accept an invite sent to him or her.
         policies.user.invite.UserReceivedInvite
     ]
 
 
-class RejectEventInvite(UserEventAction):
+class RejectEventInvite(UserToEventAction):
     policies = [
         # A user can reject an invite sent to him or her.
         policies.user.invite.UserReceivedInvite

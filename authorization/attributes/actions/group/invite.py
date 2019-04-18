@@ -1,29 +1,29 @@
-from ..bounded_actions import UserGroupAction
+from ..bounded_actions import UserToGroupAction
 from authorization import policies
 
 
-class SendGroupInvite(UserGroupAction):
+class SendGroupInvite(UserToGroupAction):
     policies = [
         # A user can accept his or her own invite.
         policies.miscellaneous.SubjectIsResource
     ]
 
 
-class RevokeGroupInvite(UserGroupAction):
+class RevokeGroupInvite(UserToGroupAction):
     policies = [
         # A user can accept his or her own invite.
         policies.miscellaneous.SubjectIsResource
     ]
 
 
-class AcceptGroupInvite(UserGroupAction):
+class AcceptGroupInvite(UserToGroupAction):
     policies = [
         # A user can accept his or her own invite.
         policies.miscellaneous.SubjectIsResource
     ]
 
 
-class RejectGroupInvite(UserGroupAction):
+class RejectGroupInvite(UserToGroupAction):
     policies = [
         # A user can reject his or her own invite.
         policies.miscellaneous.SubjectIsResource

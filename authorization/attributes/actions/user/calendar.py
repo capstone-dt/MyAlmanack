@@ -1,8 +1,8 @@
-from ..bounded_actions import BinaryUserAction
+from ..bounded_actions import UserToUserAction
 from authorization import policies
 
 
-class ViewUserCalendar(BinaryUserAction):
+class ViewUserCalendar(UserToUserAction):
     policies = [
         # A user can view his or her own calendar.
         policies.miscellaneous.SubjectIsResource,
@@ -12,7 +12,7 @@ class ViewUserCalendar(BinaryUserAction):
     ]
 
 
-class EditUserCalendar(BinaryUserAction):
+class EditUserCalendar(UserToUserAction):
     policies = [
         # A user can edit his or her own calendar.
         policies.miscellaneous.SubjectIsResource

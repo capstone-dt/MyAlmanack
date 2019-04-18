@@ -1,8 +1,8 @@
-from ..bounded_actions import BinaryUserAction
+from ..bounded_actions import UserToUserAction
 from authorization import policies
 
 
-class ViewUserProfile(BinaryUserAction):
+class ViewUserProfile(UserToUserAction):
     policies = [
         # A user can view his or her own profile.
         policies.miscellaneous.SubjectIsResource,
@@ -16,7 +16,7 @@ class ViewUserProfile(BinaryUserAction):
     ]
 
 
-class EditUserProfile(BinaryUserAction):
+class EditUserProfile(UserToUserAction):
     policies = [
         # A user can edit his or her own profile.
         policies.miscellaneous.SubjectIsResource
