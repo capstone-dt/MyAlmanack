@@ -32,7 +32,3 @@ class DecisionAuthority:
         else:
             # Otherwise, at least one policy evaluated to false.
             return AuthorizationResult.DENY
-    
-    @classmethod
-    def is_permitted(cls, request):
-        return cls.authorize(request) == AuthorizationResult.PERMIT

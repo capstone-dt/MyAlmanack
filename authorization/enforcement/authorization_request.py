@@ -1,4 +1,5 @@
 from .enforcement_authority import EnforcementAuthority
+from .authorization_result import AuthorizationResult
 from ..attributes import Subject, Action, Resource, Context, wrap_attribute
 from ..utilities.reflection import get_class_name, assert_subclass
 
@@ -25,8 +26,8 @@ class AuthorizationRequest:
         return EnforcementAuthority.authorize(self)
     
     @property
-    def is_permitted(self):
-        return EnforcementAuthority.is_permitted(self)
+    def permitted(self):
+        return self.authorize() == AuthorizationResult.PERMIT
     
     def __str__(self):
         return "%s[subject=%s, action=Action[%s], resource=%s, context=%s]" % (

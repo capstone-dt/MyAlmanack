@@ -12,10 +12,6 @@ class EnforcementAuthority:
         return DecisionAuthority.authorize(request)
     
     @classmethod
-    def is_permitted(cls, request):
-        return DecisionAuthority.is_permitted(request)
-    
-    @classmethod
     def authorize_http(cls, http_request, action, resource, redirect_403=True):
         # Make sure http_request is a subclass of Django's HttpRequest class.
         assert_subclass(http_request, HttpRequest)
@@ -29,9 +25,11 @@ class EnforcementAuthority:
             context=http_request
         )
         
-        if cls.is_permitted(request):
+        if request.permitted:
+            # If the authorization request is permitted, return True.
             return True
         else:
+            # If the authorization request is denied, return False or raise 403.
             if redirect_403:
                 raise PermissionDenied
             else:
