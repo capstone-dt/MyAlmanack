@@ -1622,6 +1622,7 @@ function checkFriendSelect(sel_id){
 	switchCalendarView(_cont_id, _switchType);
 }
 
+
 function getMembersSelected(){
 	var valid = [];
 	for(var i = 0; i < member_check_ids.length; i++){
@@ -2272,6 +2273,16 @@ function main_renderCalendar(calendar_struct){
 	windowResized();
 	console.log("member_events_all", member_events_all);
 	console.log("calendar_data.member_events",  _calendar_struct.calendar_data.member_events);
+	if(_calendar_mode == "FRIEND"){
+		var friend_alias = _calendar_struct.calendar_data.member_info[0].alias;
+		var temp_id = friend_alias + "_check";
+		var invis_div = document.createElement('div');
+		invis_div.id = temp_id;
+		invis_div.style = "display:none;";
+		document.body.appendChild(invis_div);
+		member_check_ids.push({"check_id" : temp_id, "alias" : friend_alias});
+		checkFriendSelect(temp_id);
+	}
 }
 
 

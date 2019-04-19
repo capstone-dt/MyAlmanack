@@ -248,13 +248,18 @@ def getProfileForms():
 	retDict["friend_rem"] = FriendRemoveForm();
 	return retDict
 
-
-
 def nullAlias(request):
 	p = ProfileView()
 	if(request.method == "POST"):
 		return p.post(request, "")
 	return p.get(request, "")
+
+def redirFirebase(request, firebase_id_requested):
+	isValidFb = validFirebaseId(firebase_id_requested)
+	if isValidFb == True:
+		return redir404(request)
+	alias_requested = firebaseIdToAlias(firebase_id_requested)
+	return HttpResponseRedirect("/profile/" + alias_requested)
 
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
@@ -262,7 +267,7 @@ class ProfileView(TemplateView):
 	def dummy(self, request, alias_requested):
 
 		user_firebase_id = getCurrentFirebaseId(request)
-		isValid = validFirebaseId(user_firebase_id);
+		isValid = validFirebaseId(user_firebase_id)
 		print("isvalid_id", isValid)
 
 		if(isValid == True):
@@ -340,10 +345,9 @@ class ProfileView(TemplateView):
 		return self.dummy(request, alias)
 
 	def post(self, request, alias):
-		formController(request)
-		switchType = request.POST.get('formType')
-		if(switchType == "SubmitEvent"):
-			return HttpResponseRedirect("/profile/");
+		response = formController(request)
+		if response != None:
+			return response
 		return self.dummy(request, alias)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
@@ -393,9 +397,10 @@ class EditProfileView(TemplateView):
 		return self.dummy(request)
 
 	def post(self, request):
-		formController(request)
-		print("\n REDIR HOME \n")
-		return redirect('/')
+		response = formController(request)
+		if response != None:
+			return response
+		return self.dummy(request)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
@@ -406,6 +411,10 @@ def nullGroup(request):
 	if(request.method == "POST"):
 		return g.post(request, "")
 	return g.get(request, "")
+
+def redirGroupname(request, group_name_requested):
+	temp_view = GroupView();
+	return temp_view.get(request, group_name_requested)
 
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
@@ -442,15 +451,12 @@ class GroupView(TemplateView):
 
 
 	def get(self, request, group_name):
-		print("GROUP NAME:", group_name)
 		return self.dummy(request, group_name)
 
 	def post(self, request, group_name):
-		print("GROUP NAME:", group_name)
-		formController(request)
-		switchType = request.POST.get('formType')
-		if(switchType == "SubmitEvent"):
-			return HttpResponseRedirect("/profile/");
+		response = formController(request)
+		if response != None:
+			return response
 		return self.dummy(request, group_name)
 
 class DefaultView(TemplateView):
@@ -490,11 +496,13 @@ def getSearchDict(search_term, user_firebase_id):
 	temp_contacts = []
 	if(user_contact_list["contact_names"] != None):
 		temp_contacts = searchContacts(search_term, user_firebase_id)
+	for temp_contact in temp_contacts:
+		temp_contact["isSelf"] = False
 	temp_users_pre_filter = searchUsers(search_term)
 	temp_users = []
 	for temp_user in temp_users_pre_filter:
 		if(temp_user["firebase_id"] == user_firebase_id):
-			temp_user["is_self"] = "true"
+			temp_user["isSelf"] = True
 			temp_contacts = [temp_user] + temp_contacts
 			break
 	for temp_user in temp_users_pre_filter:
@@ -504,6 +512,7 @@ def getSearchDict(search_term, user_firebase_id):
 				contains = True
 				break
 		if(contains == False and temp_user["firebase_id"] != user_firebase_id):
+			temp_user["isSelf"] = False
 			temp_users.append(temp_user)
 	for temp_user in temp_users:
 		temp_user["profile_picture"] = getProfilePictureFirebaseId(temp_user["firebase_id"])
@@ -513,10 +522,10 @@ def getSearchDict(search_term, user_firebase_id):
 	temp_groups = []
 	for group_name in temp_group_names:
 		temp_groups.append(getGroupData(group_name))
-	print("temp_events", temp_events)
-	print("temp_contacts", temp_contacts)
-	print("temp_users", temp_users)
-	print("temp_groups", temp_groups)
+	# print("temp_events", temp_events)
+	# print("temp_contacts", temp_contacts)
+	# print("temp_users", temp_users)
+	# print("temp_groups", temp_groups)
 	retDict["events"] = temp_events
 	retDict["friends"] = temp_contacts
 	retDict["users"] = temp_users
@@ -545,17 +554,17 @@ class SearchView(TemplateView):
 	def get(self, request):
 		# NEEDS SUPPORT
 		search_dict = getBlankSearchDict()
+		search_term = request.GET.get('q', '')
+		# print("GET search_term:", search_term)
+		if search_term != '':
+			user_firebase_id = getCurrentFirebaseId(request)
+			search_dict = getSearchDict(search_term, user_firebase_id)
 		return self.dummy(request, search_dict)
 
 	def post(self, request):
-		formController(request)
-		formType = request.POST.get('formType')
-		search_dict = getBlankSearchDict()
-		if(formType == "SearchTerm"):
-			search_form = SearchForm(request.POST)
-			user_firebase_id = getCurrentFirebaseId(request)
-			search_term = search_form["SIstring"].value()
-			search_dict = getSearchDict(search_term, user_firebase_id)
+		response = formController(request)
+		if response != None:
+			return response
 		return self.dummy(request, search_dict)
 		
 
@@ -578,15 +587,30 @@ def formController(request):
 		add_alias = friend_form["FIreqalias"].value()
 		print(add_alias)
 		sendFriendRequestUI(user_firebase_id, add_alias)
+		return HttpResponseRedirect("/profile/" + add_alias)
 	elif(switchType == "FriendRemove"):
 		removeFriend(request)
+		rem_form = FriendRemoveForm(request.POST)
+		rem_alias = rem_form["FIremalias"].value()
+		return HttpResponseRedirect("/profile/" + rem_alias)
 	elif(switchType == "GroupRequest"):
 		invite_form = GroupInviteForm(request.POST)
 		print(invite_form)
 	elif(switchType == "EditProfile"):
 		editProfile(request)
+		return HttpResponseRedirect("/profile/")
 	elif(switchType == "CreateGroup"):
 		createGroupLocal(request)
+		group_form = GroupForm(request.POST)
+		group_name = group_form["GIname"].value()
+		group_desc = group_form["GIdescription"].value()
+		group_invite = group_form["GIinvite"].value().split(",")
+		return HttpResponseRedirect("/group/" + group_name)
+	elif(switchType == "SearchTerm"):
+		search_form = SearchForm(request.POST)
+		user_firebase_id = getCurrentFirebaseId(request)
+		search_term = search_form["SIstring"].value()
+		return HttpResponseRedirect("/search/?q=" + search_term)
 
 def respondFriend(request):
 	friend_response_form = FriendRespondRequest(request.POST)
@@ -671,9 +695,7 @@ def editProfile(request):
 
 def removeFriend(request):
 	rem_form = FriendRemoveForm(request.POST)
-	print(rem_form)
 	rem_alias = rem_form["FIremalias"].value()
-	print(rem_alias)
 	user_firebase_id = getCurrentFirebaseId(request)
 	friend_firebase_id = aliasToFirebaseId(rem_alias)
 	removeContact(user_firebase_id, friend_firebase_id)
@@ -687,13 +709,6 @@ def createGroupLocal(request):
 	group_invite = group_form["GIinvite"].value().split(",")
 	# def createGroup(firebase_id, group_name, group_admin, group_members, group_desc)
 	createGroup(firebase_id, group_name, [], [], group_desc)
-
-def getSearchResults(request):
-	search_form = SearchForm(request.POST)
-	user_firebase_id = getCurrentFirebaseId(request)
-	print(search_form)
-
-
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 

@@ -17,15 +17,15 @@
 				</div>
 			</div>
 		</section>
-				<div class="row boxed" id="scroll_div_cont_row">
-					<div class="col" style="height:100%; border-style: solid; border-width: 0.5px;">
-						<div id="scroll_div_cont" style="height:100%; width: 100%; padding-top: 10px; overflow-y: scroll;">
-							<div class=" col">
-							  <ul class="nav nav-pills nav-stacked" id="height_list" style="width: 100%;">
-							</div>
+			<div class="row boxed" id="scroll_div_cont_row">
+				<div class="col" style="height:100%; border-style: solid; border-width: 0.5px;">
+					<div id="scroll_div_cont" style="height:100%; width: 100%; padding-top: 10px; overflow-y: scroll;">
+						<div class=" col">
+						  <ul class="nav nav-pills nav-stacked" id="height_list" style="width: 100%;">
 						</div>
 					</div>
 				</div>
+			</div>
 		<style type="text/css">
 			.w-fill{
 				width: 100%;
@@ -160,7 +160,7 @@
 				var user_text_div = document.createElement('div');
 				user_text_div.innerHTML = struct.first_name + " " + struct.last_name + "<br>";
 				var alias_div = document.createElement('a');
-				alias_div.href = "#";
+				alias_div.href = "javascript:redir('redirfb/" + struct.firebase_id + "');";
 				alias_div.innerText = "@" + struct.alias;
 				user_text_div.appendChild(alias_div);
 				user_text_div.style ="display:inline; font-size:20px;";
@@ -168,27 +168,28 @@
 
 				row_elem.appendChild(image_div);
 				row_elem.appendChild(user_text_div);
-
-				if(struct.isFriend == false){
-					// Add friend Button
-					var button_cont = document.createElement('div');
-					button_cont.className = "ml-auto";
-					var temp_addButton = document.createElement('div');
-					temp_addButton.className="friendButton";
-					temp_addButton.innerText="Add Friend";
-					temp_addButton.style="width:200px;"
-					button_cont.appendChild(temp_addButton);
-					row_elem.appendChild(button_cont);
-				}else if(struct.isFriend == true){
-					// Remove Friend Button
-					var button_cont = document.createElement('div');
-					button_cont.className = "ml-auto";
-					var temp_remButton = document.createElement('div');
-					temp_remButton.className="removeFriendButton ml-auto";
-					temp_remButton.innerText="Remove Friend";
-					temp_remButton.style="width:200px;"
-					button_cont.appendChild(temp_remButton);
-					row_elem.appendChild(button_cont);
+				if(struct.isSelf == false){
+					if(struct.isFriend == false){
+						// Add friend Button
+						var button_cont = document.createElement('div');
+						button_cont.className = "ml-auto";
+						var temp_addButton = document.createElement('div');
+						temp_addButton.className="friendButton";
+						temp_addButton.innerText="Add Friend";
+						temp_addButton.style="width:200px;"
+						button_cont.appendChild(temp_addButton);
+						row_elem.appendChild(button_cont);
+					}else if(struct.isFriend == true){
+						// Remove Friend Button
+						var button_cont = document.createElement('div');
+						button_cont.className = "ml-auto";
+						var temp_remButton = document.createElement('div');
+						temp_remButton.className="removeFriendButton ml-auto";
+						temp_remButton.innerText="Remove Friend";
+						temp_remButton.style="width:200px;"
+						button_cont.appendChild(temp_remButton);
+						row_elem.appendChild(button_cont);
+					}
 				}
 
 				a_elem.appendChild(row_elem);
@@ -204,13 +205,26 @@
 				var list_elem = document.createElement('li');
 				list_elem.className = "nav-item";
 				list_elem.style = "width:100%;"
+
+				var row_elem = document.createElement('div');
+				row_elem.className = "row";
+
 				var a_elem = document.createElement('a');
 				a_elem.className = "navbar-text";
 				a_elem.innerHTML = struct.group_name;
-				a_elem.style = "width:100%";
-				a_elem.style.borderBottom = "1px solid grey";
+				a_elem.href = "javascript:redir('redirgn/" + struct.group_name + "');";
+				a_elem.style = "width:100%; font-size:20px;";
+				var desc_elem = document.createElement('a');
+				desc_elem.className = "navbar-text";
+				desc_elem.style = "width:100%; font-size:20px;";
 				var list_div = document.getElementById("height_list");
-				list_elem.appendChild(a_elem);
+				row_elem.appendChild(a_elem);
+				if(struct.group_desc != ""){
+					desc_elem.innerText = struct.group_desc;
+					row_elem.appendChild(desc_elem);
+				}
+				row_elem.style.borderBottom = "1px solid grey";
+				list_elem.appendChild(row_elem);
 				list_div.appendChild(list_elem);
 				return list_div;
 			}
