@@ -34,6 +34,4 @@ class EventInvite(Invite):
     # This returns the receivers of this event invite.
     @property
     def receivers(self):
-        return frozenset(
-            User.from_uid(uid) for uid in self._object.invited_users
-        )
+        return User.from_uids(self._object.invited_users)

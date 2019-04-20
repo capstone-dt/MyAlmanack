@@ -51,27 +51,19 @@ class Event(ModelWrapper):
     # This returns a list of users who are administrators of this event.
     @property
     def administrators(self):
-        return frozenset(
-            User.from_uid(uid) for uid in self._object.event_admins
-        )
+        return User.from_uids(self._object.event_admins)
     
     # This returns a list of users who are participants of this event.
     @property
     def participants(self):
-        return frozenset(
-            User.from_uid(uid) for uid in self._object.participating_users
-        )
+        return User.from_uids(self._object.participating_users)
     
     # This returns a list of users who are whitelisted for this event.
     @property
-    def whitelisted_users(self):
-        return frozenset(
-            User.from_uid(uid) for uid in self._object.whitelist
-        )
+    def whitelist(self):
+        return User.from_uids(self._object.whitelist)
     
     # This returns a list of users who are blacklisted for this event.
     @property
-    def blacklisted_users(self):
-        return frozenset(
-            User.from_uid(uid) for uid in self._object.blacklist
-        )
+    def blacklist(self):
+        return User.from_uids(self._object.blacklist)

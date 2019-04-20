@@ -34,3 +34,17 @@ class UserIsEventParticipant(Policy):
     @classmethod
     def evaluate(cls, request):
         return request.subject in request.resource.participants
+
+
+# This checks whether a user subject is a whitelisted user of an event resource.
+class UserIsInEventWhitelist(Policy):
+    @classmethod
+    def evaluate(cls, request):
+        return request.subject in request.resource.whitelist
+
+
+# This checks whether a user subject is a blacklisted user of an event resource.
+class UserIsInEventBlacklist(Policy):
+    @classmethod
+    def evaluate(cls, request):
+        return request.subject in request.resource.blacklist

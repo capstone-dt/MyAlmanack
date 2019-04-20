@@ -19,7 +19,7 @@ class User(ModelWrapper):
             # Django's User model - keep it as is
             return object
         elif isinstance(object, _Profile):
-            # Justin's Profile model - convert to Django's User model
+            # Justin's Profile model - convert it to Django's User model
             return _User.objects.get(username=object.firebase_id)
     
     @classmethod
@@ -35,6 +35,11 @@ class User(ModelWrapper):
     @classmethod
     def from_uid(cls, uid):
         return cls(_User.objects.get(username=uid))
+    
+    # This returns a set of users in the database given their IDs.
+    @classmethod
+    def from_uids(cls, uids):
+        return frozenset(cls.from_uid(uid) for uid in uids)
     
     """
     Class properties and methods

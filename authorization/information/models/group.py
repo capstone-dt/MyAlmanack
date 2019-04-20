@@ -39,19 +39,15 @@ class Group(ModelWrapper):
     # This returns a list of users who are members of this group.
     @property
     def members(self):
-        return frozenset(
-            User.from_uid(uid) for uid in self._object.group_members
-        )
+        return User.from_uids(self._object.group_members)
     
     # This returns a list of users who are administrators of this group.
     @property
     def administrators(self):
-        return frozenset(
-            User.from_uid(uid) for uid in self._object.group_admin
-        )
+        return User.from_uids(self._object.group_admin)
     
-    # This returns a list of users who are members but are not administrators of
-    #     this group.
+    # This returns a list of users who are members of but are not administrators
+    #     of this group.
     @property
     def participants(self):
         return self.members - self.administrators

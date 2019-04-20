@@ -20,3 +20,11 @@ class UserIsGroupAdministrator(Policy):
     @classmethod
     def evaluate(cls, request):
         return request.subject in request.resource.administrators
+
+
+# This checks whether a user subject is a member of but not an administrator of
+#     a group resource.
+class UserIsGroupParticipant(Policy):
+    @classmethod
+    def evaluate(cls, request):
+        return request.subject in request.resource.participants

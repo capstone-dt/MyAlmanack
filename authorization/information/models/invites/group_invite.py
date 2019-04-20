@@ -26,6 +26,4 @@ class GroupInvite(Invite):
     # This returns the receivers of this group invite.
     @property
     def receivers(self):
-        return frozenset(
-            User.from_uid(uid) for uid in self._object.invitee_list
-        )
+        return User.from_uids(self._object.invitee_list)
