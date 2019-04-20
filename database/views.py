@@ -421,6 +421,12 @@ def getEventData(event_id):
 	# Return dictionary containing event data information.
 	return event_data
 
+# Get repeat-event data based on event_id.
+def getRepeatEventData(event_id):
+	repeat_event_data = RepeatEvent.objects.filter(pk=event_id).values()[0]
+	# Return dictionary containing repeat-event data information.
+	return repeat_event_data
+
 # Create an event and update the event creator's user_events.
 def createEvent(event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
 	end_date, event_creator_firebase_id):
