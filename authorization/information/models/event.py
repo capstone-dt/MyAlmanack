@@ -1,12 +1,12 @@
-from .model import Model
+from .base import ModelWrapper
 from .user import User
-from ..utilities.decorators import classproperty
+from authorization.utilities.decorators import classproperty
 
 # MyAlmanack database (Justin's subsystem)
 from database.models import Event as _Event
 
 
-class Event(Model):
+class Event(ModelWrapper):
     """
     Wrapper-related
     """
@@ -52,8 +52,7 @@ class Event(Model):
     @property
     def administrators(self):
         return frozenset(
-            user for user in self.members
-            if user.uid in self._object.event_admins
+            User.from_uid(uid) for uid in self._object.event_admins
         )
     
     # This returns a list of users who are participants of this event.

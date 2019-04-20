@@ -1,12 +1,12 @@
-from .model import Model
+from .base import ModelWrapper
 from .user import User
-from ..utilities.decorators import classproperty
+from authorization.utilities.decorators import classproperty
 
 # MyAlmanack database (Justin's subsystem)
 from database.models import Group as _Group
 
 
-class Group(Model):
+class Group(ModelWrapper):
     """
     Wrapper-related
     """
@@ -47,6 +47,11 @@ class Group(Model):
     @property
     def administrators(self):
         return frozenset(
-            user for user in self.participants
-            if user.uid in self._object.group_admin
+            User.from_uid(uid) for uid in self._object.group_admin
         )
+    
+    # This returns a list of users who are members but are not administrators of
+    #     this group.
+    @property
+    def participants(self):
+        return self.members - self.administrators

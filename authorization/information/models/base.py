@@ -1,7 +1,7 @@
-from ..utilities.wrapper import Wrapper
+from authorization.utilities.wrapper import Wrapper
 
 
-class Model(Wrapper):
+class ModelWrapper(Wrapper):
     """
     Model Wrapper
     ============
@@ -10,7 +10,7 @@ class Model(Wrapper):
     """
     
     def __eq__(self, other):
-        return isinstance(other, Model) and self.uid == other.uid
+        return isinstance(other, ModelWrapper) and self.uid == other.uid
     
     def __hash__(self):
         return hash(self.uid)

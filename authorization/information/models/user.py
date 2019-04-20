@@ -1,26 +1,30 @@
-from .model import Model
-from ..utilities.decorators import classproperty
+from .base import ModelWrapper
+from authorization.utilities.decorators import classproperty
 
 # MyAlmanack database (Justin's subsystem)
 from database.models import Profile as _Profile
 
+# Django
+from django.contrib.auth import get_user_model
+_User = get_user_model()
 
-class User(Model):
+
+class User(ModelWrapper):
     """
     Wrapper-related
     """
     
     def wrap(self, object):
-        if isinstance(object, self.user_model):
+        if isinstance(object, _User):
             # Django's User model - keep it as is
             return object
         elif isinstance(object, _Profile):
             # Justin's Profile model - convert to Django's User model
-            return self.user_model.objects.get(username=object.firebase_id)
+            return _User.objects.get(username=object.firebase_id)
     
     @classmethod
     def is_wrappable(cls, object):
-        return isinstance(object, (cls.user_model, _Profile))
+        return isinstance(object, (_User, _Profile))
     
     # This returns the ID of this user.
     @property
@@ -30,7 +34,7 @@ class User(Model):
     # This returns a user in the database given their ID.
     @classmethod
     def from_uid(cls, uid):
-        return cls(cls.user_model.objects.get(username=uid))
+        return cls(_User.objects.get(username=uid))
     
     """
     Class properties and methods
@@ -40,15 +44,6 @@ class User(Model):
     @classproperty
     def all_users(cls):
         return frozenset(cls(profile) for profile in _Profile.objects.all())
-    
-    # This returns the underlying user model used by Django's authentication.
-    # It serves to solve the circular import problem.
-    @classproperty
-    def user_model(cls):
-        if not hasattr(cls, "_user_model"):
-            from django.contrib.auth import get_user_model
-            cls._user_model = get_user_model()
-        return cls._user_model
     
     """
     Instance properties and methods
@@ -122,7 +117,7 @@ class User(Model):
     # This returns a set of user invites that this user has sent.
     @property
     def sent_user_invites(self):
-        from .invite import UserInvite
+        from .invites.user_invite import UserInvite
         return frozenset(
             invite for invite in UserInvite.all_invites
             if invite.sender == self
@@ -131,7 +126,7 @@ class User(Model):
     # This returns a set of user invites that this user has received.
     @property
     def received_user_invites(self):
-        from .invite import UserInvite
+        from .invites.user_invite import UserInvite
         return frozenset(
             invite for invite in UserInvite.all_invites
             if self in invite.receivers
@@ -140,7 +135,7 @@ class User(Model):
     # This returns a set of group invites that this user has sent.
     @property
     def sent_group_invites(self):
-        from .invite import GroupInvite
+        from .invites.group_invite import GroupInvite
         return frozenset(
             invite for invite in GroupInvite.all_invites
             if self in invite.sender.administrators
@@ -149,7 +144,7 @@ class User(Model):
     # This returns a set of group invites that this user has received.
     @property
     def received_group_invites(self):
-        from .invite import GroupInvite
+        from .invites.group_invite import GroupInvite
         return frozenset(
             invite for invite in GroupInvite.all_invites
             if self in invite.receivers
@@ -158,7 +153,7 @@ class User(Model):
     # This returns a set of event invites that this user has sent.
     @property
     def sent_event_invites(self):
-        from .invite import EventInvite
+        from .invites.event_invite import EventInvite
         return frozenset(
             invite for invite in EventInvite.all_invites
             if invite.sender == self
@@ -167,7 +162,7 @@ class User(Model):
     # This returns a set of event invites that this user has received.
     @property
     def received_event_invites(self):
-        from .invite import EventInvite
+        from .invites.event_invite import EventInvite
         return frozenset(
             invite for invite in EventInvite.all_invites
             if self in invite.receivers
