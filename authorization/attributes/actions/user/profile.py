@@ -21,3 +21,10 @@ class EditUserProfile(UserToUserAction):
         # A user can edit his or her own profile.
         policies.miscellaneous.SubjectIsResource
     ]
+
+
+class DeleteUserProfile(UserToUserAction):
+    policies = [
+        # A user can delete his or her own profile.
+        policies.miscellaneous.SubjectIsResource
+    ]

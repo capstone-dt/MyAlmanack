@@ -1,39 +1,48 @@
-from ..utilities.wrapper import Wrapper
+from .model import Model
 from ..utilities.decorators import classproperty
-from ..utilities.reflection import is_subclass
 
 # MyAlmanack database (Justin's subsystem)
 from database.models import Profile as _Profile
 
 
-class User(Wrapper):
+class User(Model):
     """
     Wrapper-related
     """
     
     def wrap(self, object):
-        _User = self.user_model
-        if isinstance(object, _User):
+        if isinstance(object, self.user_model):
+            # Django's User model - keep it as is
             return object
         elif isinstance(object, _Profile):
-            return _User.objects.get(username=object.firebase_id)
+            # Justin's Profile model - convert to Django's User model
+            return self.user_model.objects.get(username=object.firebase_id)
     
     @classmethod
     def is_wrappable(cls, object):
         return isinstance(object, (cls.user_model, _Profile))
     
-    """
-    Miscellaneous
-    """
+    # This returns the ID of this user.
+    @property
+    def uid(self):
+        return self._object.username
     
+    # This returns a user in the database given their ID.
     @classmethod
     def from_uid(cls, uid):
         return cls(cls.user_model.objects.get(username=uid))
     
+    """
+    Class properties and methods
+    """
+    
+    # This returns all the users in the database.
     @classproperty
     def all_users(cls):
         return frozenset(cls(profile) for profile in _Profile.objects.all())
     
+    # This returns the underlying user model used by Django's authentication.
+    # It serves to solve the circular import problem.
     @classproperty
     def user_model(cls):
         if not hasattr(cls, "_user_model"):
@@ -42,59 +51,75 @@ class User(Wrapper):
         return cls._user_model
     
     """
-    Instance methods
+    Instance properties and methods
     """
     
-    def __eq__(self, other):
-        return isinstance(other, User) and self.uid == other.uid
-    
-    def __hash__(self):
-        return hash((str(self), self.uid))
-    
-    @property
-    def uid(self):
-        return self._object.username
-    
+    # This returns the Profile model of this user.
     @property
     def profile(self):
         return _Profile.objects.get(firebase_id=self._object.username)
     
-    # This returns a list of users which are contacts to this user.
+    # This returns a set of users which are contacts to this user.
     @property
     def contacts(self):
         contact_ids = self.profile.contact_list.contact_names
         return frozenset(User.from_uid(uid) for uid in contact_ids)
     
+    # This returns a set of groups that this user is a member of.
     @property
     def groups(self):
         from .group import Group
         return frozenset(
-            group for group in Group.all_groups if group.contains_user(self)
+            group for group in Group.all_groups if self in group.members
         )
     
+    # This returns a set of events that this user is a member of.
     @property
     def events(self):
         from .event import Event
         return frozenset(
-            event for event in Event.all_events if event.contains_user(self)
+            event for event in Event.all_events if self in event.members
         )
     
+    # This returns a set of invites that this user has sent or received.
+    @property
+    def invites(self):
+        return self.user_invites | self.group_invites | self.event_invites
+    
+    # This returns a set of user invites that this user has sent or received.
+    @property
+    def user_invites(self):
+        return self.sent_user_invites | self.received_user_invites
+    
+    # This returns a set of group invites that this user has sent or received.
+    @property
+    def group_invites(self):
+        return self.sent_group_invites | self.received_group_invites
+    
+    # This returns a set of event invites that this user has sent or received.
+    @property
+    def event_invites(self):
+        return self.sent_event_invites | self.received_event_invites
+    
+    # This returns a set of invites that this user has sent.
     @property
     def sent_invites(self):
         return (
             self.sent_user_invites
-            & self.sent_group_invites
-            & self.sent_event_invites
+            | self.sent_group_invites
+            | self.sent_event_invites
         )
     
+    # This returns a set of invites that this user has received.
     @property
     def received_invites(self):
         return (
             self.received_user_invites
-            & self.received_group_invites
-            & self.received_event_invites
+            | self.received_group_invites
+            | self.received_event_invites
         )
     
+    # This returns a set of user invites that this user has sent.
     @property
     def sent_user_invites(self):
         from .invite import UserInvite
@@ -103,6 +128,7 @@ class User(Wrapper):
             if invite.sender == self
         )
     
+    # This returns a set of user invites that this user has received.
     @property
     def received_user_invites(self):
         from .invite import UserInvite
@@ -111,6 +137,7 @@ class User(Wrapper):
             if self in invite.receivers
         )
     
+    # This returns a set of group invites that this user has sent.
     @property
     def sent_group_invites(self):
         from .invite import GroupInvite
@@ -119,6 +146,7 @@ class User(Wrapper):
             if self in invite.sender.administrators
         )
     
+    # This returns a set of group invites that this user has received.
     @property
     def received_group_invites(self):
         from .invite import GroupInvite
@@ -127,6 +155,7 @@ class User(Wrapper):
             if self in invite.receivers
         )
     
+    # This returns a set of event invites that this user has sent.
     @property
     def sent_event_invites(self):
         from .invite import EventInvite
@@ -135,6 +164,7 @@ class User(Wrapper):
             if invite.sender == self
         )
     
+    # This returns a set of event invites that this user has received.
     @property
     def received_event_invites(self):
         from .invite import EventInvite

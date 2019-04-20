@@ -1,6 +1,7 @@
 from authorization.decision import Policy
 
 
+# This checks whether two users are contacts.
 class UsersAreContacts(Policy):
     @classmethod
     def evaluate(cls, request):
@@ -11,6 +12,7 @@ class UsersAreContacts(Policy):
         )
 
 
+# This checks whether two users share a common group together.
 class UsersShareCommonGroup(Policy):
     @classmethod
     def evaluate(cls, request):

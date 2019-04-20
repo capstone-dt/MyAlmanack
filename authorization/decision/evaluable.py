@@ -1,6 +1,6 @@
 class EvaluableMetaclass(type):
-    def __new__(cls, name, bases, kwargs):
-        _class = super().__new__(cls, name, bases, kwargs)
+    def __new__(cls, name, bases, keywords):
+        _class = super().__new__(cls, name, bases, keywords)
         
         # Make all subclass instances inherit the magic methods as well.
         _class.__invert__ = cls.__invert__

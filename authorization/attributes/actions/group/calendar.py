@@ -4,13 +4,13 @@ from authorization import policies
 
 class ViewGroupCalendar(UserToGroupAction):
     policies = [
-        # A user who is in a group can view the group's profile.
-        policies.user.group.UserIsInGroup
+        # A user who is a group member can view the group's calendar.
+        policies.user.group.UserIsGroupMember
     ]
 
 
 class EditGroupCalendar(UserToGroupAction):
     policies = [
-        # A user can edit his or her own calendar.
-        policies.miscellaneous.SubjectIsResource
+        # A user who is a group administrator can edit the group's calendar.
+        policies.user.group.UserIsGroupAdministrator
     ]

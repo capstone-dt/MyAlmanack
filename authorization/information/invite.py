@@ -1,7 +1,7 @@
+from .model import Model
 from .user import User
 from .group import Group
 from .event import Event
-from ..utilities.wrapper import Wrapper
 from ..utilities.decorators import classproperty
 
 # MyAlmanack database (Justin's subsystem)
@@ -15,38 +15,31 @@ from database.models import (
 )
 
 
-class Invite(Wrapper):
+class Invite(Model):
     """
     Wrapper-related
     """
     
     _root = _Invite
     
-    """
-    Miscellaneous
-    """
+    # This returns the ID of this invite.
+    @property
+    def uid(self):
+        return self._object.invite_id
     
+    # This returns an invite in the database given its ID.
     @classmethod
     def from_uid(cls, uid):
         return cls(cls._root.objects.get(invite_id=uid))
     
+    """
+    Class properties and methods
+    """
+    
+    # This returns all the invites in the database.
     @classproperty
     def all_invites(cls):
         return frozenset(cls(invite) for invite in cls._root.objects.all())
-    
-    """
-    Instance methods
-    """
-    
-    def __eq__(self, other):
-        return isinstance(other, Invite) and self.uid == other.uid
-    
-    def __hash__(self):
-        return hash((str(self), self.uid))
-    
-    @property
-    def uid(self):
-        return self._object.invite_id
 
 
 # One-to-one
@@ -58,7 +51,7 @@ class UserInvite(Invite):
     _root = _UserInvite
     
     """
-    Instance methods
+    Instance properties and methods
     """
     
     # This returns the sender of this user invite.
@@ -81,7 +74,7 @@ class GroupInvite(Invite):
     _root = _GroupInvite
     
     """
-    Instance methods
+    Instance properties and methods
     """
     
     # This returns the sender of this group invite.
@@ -106,7 +99,7 @@ class EventInvite(Invite):
     _root = _EventInvite
     
     """
-    Instance methods
+    Instance properties and methods
     """
     
     # This returns the sender of this event invite.
