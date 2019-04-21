@@ -4,13 +4,16 @@ from authorization import policies
 
 class ViewEventCalendar(UserToEventAction):
     policies = [
-        # A user who is in a group can view the group's profile.
-        policies.user.group.UserIsGroupMember
+        # A user who is an event's member can view the event's calendar.
+        policies.user.event.UserIsEventMember
     ]
 
 
 class EditEventCalendar(UserToEventAction):
     policies = [
-        # A user can edit his or her own calendar.
-        policies.miscellaneous.SubjectIsResource
+        # A user who is an event's creator can edit the event's calendar.
+        policies.user.event.UserIsEventCreator,
+        
+        # A user who is an event's administrator can edit the event's calendar.
+        policies.user.group.UserIsGroupAdministrator
     ]

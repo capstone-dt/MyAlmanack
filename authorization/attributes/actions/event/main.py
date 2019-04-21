@@ -11,16 +11,16 @@ class ViewEvent(UserToEventAction):
 
 class EditEvent(UserToEventAction):
     policies = [
-        # An event creator can edit an event.
+        # A user who is an event's creator can edit the event.
         policies.user.event.UserIsEventCreator,
         
-        # An event administrator can edit an event.
+        # A user who is an event's administrator can edit an event.
         policies.user.event.UserIsEventAdministrator
     ]
 
 
 class DeleteEvent(UserToEventAction):
     policies = [
-        # An event creator can delete an event.
+        # A user who is an event's creator can delete the event.
         policies.user.event.UserIsEventCreator
     ]
