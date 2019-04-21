@@ -15,5 +15,5 @@ class EditEventCalendar(UserToEventAction):
         policies.user.event.UserIsEventCreator,
         
         # A user who is an event's administrator can edit the event's calendar.
-        policies.user.group.UserIsGroupAdministrator
+        policies.user.event.UserIsEventAdministrator
     ]
