@@ -1,16 +1,16 @@
-from ..bounded_actions import UserGroupAction
+from ..bounded_actions import UserToGroupAction
 from authorization import policies
 
 
-class ViewGroupCalendar(UserGroupAction):
+class ViewGroupCalendar(UserToGroupAction):
     policies = [
-        # A user who is in a group can view the group's profile.
-        policies.user.group.UserIsInGroup
+        # A user who is a group member can view a group's calendar.
+        policies.user.group.UserIsGroupMember
     ]
 
 
-class EditGroupCalendar(UserGroupAction):
+class EditGroupCalendar(UserToGroupAction):
     policies = [
-        # A user can edit his or her own calendar.
-        policies.miscellaneous.SubjectIsResource
+        # A user who is a group administrator can edit a group's calendar.
+        policies.user.group.UserIsGroupAdministrator
     ]
