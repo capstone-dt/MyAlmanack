@@ -17,11 +17,11 @@
 	
 	<!-- edit form column -->
 	<div class="col-md-9 personal-info">
-		<div class="alert alert-info alert-dismissable">
+<!-- 		<div class="alert alert-info alert-dismissable">
 		<a class="panel-close close" data-dismiss="alert">×</a> 
 		<i class="fa fa-coffee"></i>
 		This is an <strong>.alert</strong>. Use this to show important messages to the user.
-		</div>
+		</div> -->
 		<h3>Personal info</h3>
 		
 		<form class="form-horizontal" role="form" 
@@ -99,12 +99,6 @@
 		</div>
 		<script type="text/javascript">
 			$(document).ready(function() {
-			  $(window).keydown(function(event){
-			    if(event.keyCode == 13) {
-			      event.preventDefault();
-			      return false;
-			    }
-			  });
 			  setInterval(
 				  () => {
 				  	if(valid_alias != previous_valid){
@@ -129,9 +123,8 @@
 				var aliasValidation = document.getElementById("aliasValidationId");
 				aliasValidation.innerText = "check_circle_outline";
 			}
-			function editProfileUpdate(){
-				var entered_alais = document.getElementById("inputAlias");
-				if(entered_alais.value != "" && entered_alais.value != profile_struct.alias){
+			function performEditProfileAjax(callback, after){
+					var entered_alais = document.getElementById("inputAlias");
 					$.ajax({
 						url: '/ajax/validate_alias/',
 						data: {
@@ -147,11 +140,17 @@
 						  	previous_valid = valid_alias;
 						  	valid_alias = true;
 						  	setcheckalias();
-						  	exchangeValues("inputAlias", "id_PIalias");
+						  	callback();
 						  }
-						  remainderEdit();
+						  after();
 						}
 					});
+			}
+			function editProfileUpdate(){
+				var entered_alais = document.getElementById("inputAlias");
+				if(entered_alais.value != "" && entered_alais.value != profile_struct.alias){
+					var temp_func = function(){exchangeValues("inputAlias", "id_PIalias");};
+					performEditProfileAjax(temp_func, remainderEdit);
 				}
 			}
 			function remainderEdit(){
@@ -187,8 +186,11 @@
 				editProfileUpdate();
 				uploadProfilePicture();
 				if(valid_alias){
-					var submit_button = document.getElementById("submitChangesButton");
-					submit_button.click();
+					performEditProfileAjax(
+						function (){
+							var submit_button = document.getElementById("submitChangesButton");
+							submit_button.click();
+						}, function(){});
 				}
 			}
 		</script>

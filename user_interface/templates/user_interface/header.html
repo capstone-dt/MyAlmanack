@@ -42,6 +42,24 @@
           <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onclick="searchBarUpdate();" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
           <script type="text/javascript">
           	$(document).ready(function(){
+				$("form").each(function(){
+					var curr = $(this);
+					var allowed = false;
+					for(var i = 0; i < curr.length; i++){
+						if(curr[i].className == "canEnter"){
+							allowed = true;
+							break;
+						}
+					}
+					if(allowed == false){
+						curr.keydown(function(event){
+						    if(event.keyCode == 13) {
+						      event.preventDefault();
+						      return false;
+						    }
+						  });
+					}
+				});
 			    $('#firstSearch').keypress(function(e){
 			      if(e.keyCode==13){
 			      	console.log("enter pressed");
@@ -107,7 +125,7 @@
 		<input type="submit"  style="display: none;" id="friendRespondRequest">
 	</form>
 
-	<form action="/search/" method="post">
+	<form action="/search/" method="post" class="canEnter">
 		{% csrf_token %}
 		{{ header_forms.search_form.as_ul }}
 		<input type="hidden" name="formType" value="SearchTerm">
@@ -398,23 +416,84 @@
 	      </div>
 	      <div class="modal-body">
 				<div class="form-group">
-				    <label class="reqField" for="inputGroupName">Group Name</label>
-				    <input type="text"  onchange="updateGroupForm()" class="form-control" id="inputGroupName" pattern="[A-Za-z0-9]{1,}$" required>
+					<label class="reqField" for="inputGroupName">Group Name</label>
+		      		<div class="row" style="padding-left: 15px; padding-right: 20px;">
+						<input type="text" class="form-control col-11" onchange="updateGroupForm()" 
+						onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();"
+						class="form-control" id="inputGroupName" pattern="[A-Za-z0-9]{1,}$" required>
+						<i class="col-1 material-icons" id="groupnameValidationId">check_circle_outline</i>
+					</div>
 				</div>
 				<div class="form-group">
 				    <label for="inputGroupDescription">Description</label>
-				    <input type="text"  onchange="updateGroupForm()" class="form-control" id="inputGroupDescription" >
+				    <input type="text"  onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" id="inputGroupDescription" >
 				</div>
 				<div class="form-group">
 				    <label for="inputGroupInvites">Invites</label>
-				    <input type="text" onchange="updateGroupForm()"  class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites">
+				    <input type="text" onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites">
 				</div>
 				<script type="text/javascript">
+					var valid_group = false;
+					var previous_valid_group = true;
+					$(document).ready(function() {
+						setInterval(
+						  () => {
+						  	if(valid_group != previous_valid_group){
+						    	updateGroupForm();
+						  	}
+						  },
+						  1000
+						);
+					});
+
+					function setxgroup(){
+						var groupnameValidation = document.getElementById("groupnameValidationId");
+						groupnameValidation.innerText = "highlight_off";
+					}
+
+					function setcheckgroup(){
+						var groupnameValidation = document.getElementById("groupnameValidationId");
+						groupnameValidation.innerText = "check_circle_outline";
+					}
+					function performEditGroupAjax(callback, after){
+						var div_group_name = document.getElementById("inputGroupName");
+						$.ajax({
+							url: '/ajax/validate_group_name/',
+							data: {
+							  'group_name': div_group_name.value
+							},
+							dataType: 'json',
+							success: function (data) {
+							  if (data.is_taken) {
+							  	previous_valid_group = valid_group;
+							  	valid_group = false;
+								setxgroup();
+							  }else{
+							  	previous_valid_group = valid_group;
+							  	valid_group = true;
+							  	setcheckgroup();
+							  	callback();
+							  }
+							  after();
+							}
+						});
+					}
 					function updateGroupForm(){
 						var form_group_name = document.getElementById("id_GIname");
 						var div_group_name = document.getElementById("inputGroupName");
-						form_group_name.value = div_group_name.value;
 
+						if(div_group_name.value != ""){
+							var temp_callback = function(){
+								var form_group_name = document.getElementById("id_GIname");
+								var div_group_name = document.getElementById("inputGroupName");
+								form_group_name.value = div_group_name.value;
+							};
+							performEditGroupAjax(temp_callback,remainderEditGroup);
+						}
+						
+
+					}
+					function remainderEditGroup(){
 						var form_group_desc = document.getElementById("id_GIdescription");
 						var div_group_desc = document.getElementById("inputGroupDescription");
 						form_group_desc.value = div_group_desc.value;
@@ -423,10 +502,19 @@
 						var div_group_inv = document.getElementById("inputGroupInvites");
 						form_group_inv.value = div_group_inv.value;
 					}
+
+
 					function updateAndClickGroup(){
 						updateGroupForm();
-						var submitButton = document.getElementById("submitCreateGroup");
-						submitButton.click();
+						if(valid_group == true){
+							performEditGroupAjax(
+								function(){
+									var submitButton = document.getElementById("submitCreateGroup");
+									submitButton.click();
+								},
+								function(){}
+								);
+						}
 					}
 				</script>
 				<input type="button" class="confirmButton" style="width:100%; height:50px;" value="Create Group" onclick="updateAndClickGroup()">

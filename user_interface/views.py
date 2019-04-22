@@ -549,6 +549,15 @@ def isMemberOfGroup(firebase_id, group_name):
 			return True
 	return False
 
+def validate_group_name(request):
+	group_name = request.GET.get("group_name", None)
+	is_taken = (validGroupName(group_name) == False)
+	data = {
+		"is_taken" : is_taken
+	}
+	return JsonResponse(data)
+
+
 class DefaultView(TemplateView):
 	template_name = 'user_interface/default.html'
 
