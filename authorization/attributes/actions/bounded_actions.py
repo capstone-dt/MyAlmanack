@@ -13,41 +13,71 @@ from authorization.attributes.resources import (
 )
 
 
-class BinaryUserAction(Action):
+"""
+User-to-X actions
+"""
+
+
+class UserToUserAction(Action):
     _subject_class = UserSubject
     _resource_class = UserResource
 
 
-class BinaryGroupAction(Action):
-    _subject_class = GroupSubject
-    _resource_class = GroupResource
-
-
-class UserGroupAction(Action):
+class UserToGroupAction(Action):
     _subject_class = UserSubject
     _resource_class = GroupResource
 
 
-class GroupUserAction(Action):
-    _subject_class = GroupSubject
-    _resource_class = UserResource
-
-
-class UserEventAction(Action):
+class UserToEventAction(Action):
     _subject_class = UserSubject
     _resource_class = EventResource
 
 
-class BinaryUserInviteAction(Action):
+class UserToUserInviteAction(Action):
     _subject_class = UserSubject
     _resource_class = UserInviteResource
 
 
-class UserGroupInviteAction(Action):
+class UserToGroupInviteAction(Action):
     _subject_class = UserSubject
     _resource_class = GroupInviteResource
 
 
-class UserEventInviteAction(Action):
+class UserToEventInviteAction(Action):
     _subject_class = UserSubject
+    _resource_class = EventInviteResource
+
+
+"""
+Group-to-X actions
+"""
+
+
+class GroupToUserAction(Action):
+    _subject_class = GroupSubject
+    _resource_class = UserResource
+
+
+class GroupToGroupAction(Action):
+    _subject_class = GroupSubject
+    _resource_class = GroupResource
+
+
+class GroupToEventAction(Action):
+    _subject_class = GroupSubject
+    _resource_class = EventResource
+
+
+class GroupToUserInviteAction(Action):
+    _subject_class = GroupSubject
+    _resource_class = UserInviteResource
+
+
+class GroupToGroupInviteAction(Action):
+    _subject_class = GroupSubject
+    _resource_class = GroupInviteResource
+
+
+class GroupToEventInviteAction(Action):
+    _subject_class = GroupSubject
     _resource_class = EventInviteResource

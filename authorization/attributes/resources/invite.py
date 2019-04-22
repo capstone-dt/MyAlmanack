@@ -1,5 +1,5 @@
 from ..resource import Resource
-from authorization.information import (
+from authorization.information.models.invites import (
     UserInvite as WrappedUserInvite,
     GroupInvite as WrappedGroupInvite,
     EventInvite as WrappedEventInvite

@@ -1,5 +1,5 @@
 from ..resource import Resource
-from authorization.information import Event as WrappedEvent
+from authorization.information.models import Event as WrappedEvent
 
 
 class Event(Resource, WrappedEvent):

@@ -13,7 +13,7 @@ class Attribute(Wrapper):
 
 def wrap_attribute(attribute_class, object, wrappers_directory):
     # Define a function for picking classes out of wrapper modules.
-    checker = lambda member: (
+    picker = lambda member: (
         isclass(member) and is_subclass(member, attribute_class)
     )
     
@@ -27,10 +27,14 @@ def wrap_attribute(attribute_class, object, wrappers_directory):
         )
         
         # Find the corresponding wrapper class in the wrapper module.
-        for (_, _class) in getmembers(wrapper_module, checker):
-            if is_subclass(object, _class):
+        for (_, _class) in getmembers(wrapper_module, picker):
+            if isinstance(object, _class):
+                # If the given object is already an instance of the current
+                #     attribute class, then just return it.
                 return object
             elif _class.is_wrappable(object):
+                # If the given object is wrappable using the current attribute
+                #     class, then wrap it.
                 return _class(object)
     
     # If we get to this point, then there was no wrapper class available for the

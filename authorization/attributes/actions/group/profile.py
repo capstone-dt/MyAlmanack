@@ -1,15 +1,15 @@
-from ..bounded_actions import UserGroupAction
+from ..bounded_actions import UserToGroupAction
 from authorization import policies
 
 
-class ViewGroupProfile(UserGroupAction):
+class ViewGroupProfile(UserToGroupAction):
     policies = [
         # Anyone can view a group's profile.
         policies.miscellaneous.Tautology
     ]
 
 
-class EditGroupProfile(UserGroupAction):
+class EditGroupProfile(UserToGroupAction):
     policies = [
         # A group administrator can edit a group's profile.
         policies.user.group.UserIsGroupAdministrator
