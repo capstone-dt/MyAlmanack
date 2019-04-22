@@ -28,3 +28,18 @@
 .removeFriendButton:hover{
 	background-color: #E57575;
 }
+.requestedButton{
+	background-color: #CECECE;
+	border: none;
+	color: white;
+	padding: 15px 32px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	margin: 4px 2px;
+	cursor: pointer;
+}
+.requestedButton:hover{
+	background-color: #B7B7B7;
+}

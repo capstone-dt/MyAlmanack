@@ -49,6 +49,12 @@ class FriendRespondRequest(forms.Form):
 	FIinvite_id = forms.CharField(widget=forms.HiddenInput())
 	FIaction = forms.CharField(widget=forms.HiddenInput())
 
+class GroupJoinForm(forms.Form):
+	GIreqname = forms.CharField(widget=forms.HiddenInput())
+
+class GroupLeaveForm(forms.Form):
+	GIremname = forms.CharField(widget=forms.HiddenInput())
+
 class GroupInviteForm(forms.Form):
 	GIalias = forms.CharField(widget=forms.HiddenInput())
 

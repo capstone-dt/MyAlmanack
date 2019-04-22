@@ -4,6 +4,18 @@
 	<div class="container">
 	    <h1>Search Results for: &ldquo;<div id="searchTermDisplay" style="display: inline; color:#4F4F4F;"></div>&rdquo;</h1>
 	    <hr>
+	    <form action="/profile/" method="post">
+				{% csrf_token %}
+				{{ search_forms.friend_req.as_ul }}
+				<input type="hidden" name="formType" value="FriendRequest">
+				<input type="submit" style="display: none;" id="submitAddFriend">
+    	</form>
+    	<form action="/profile/" method="post">
+			{% csrf_token %}
+			{{ search_forms.friend_rem.as_ul }}
+			<input type="hidden" name="formType" value="FriendRemove">
+			<input type="submit" style="display: none;" id="submitRemFriend">
+    	</form>
 		<section>
 			<div class="tabs tabs-style-tzoid">
 				<div class="row">
@@ -170,15 +182,27 @@
 				row_elem.appendChild(user_text_div);
 				if(struct.isSelf == false){
 					if(struct.isFriend == false){
-						// Add friend Button
-						var button_cont = document.createElement('div');
-						button_cont.className = "ml-auto";
-						var temp_addButton = document.createElement('div');
-						temp_addButton.className="friendButton";
-						temp_addButton.innerText="Add Friend";
-						temp_addButton.style="width:200px;"
-						button_cont.appendChild(temp_addButton);
-						row_elem.appendChild(button_cont);
+						if(struct.isRequested == true){
+							var button_cont = document.createElement('div');
+							button_cont.className = "ml-auto";
+							var temp_addButton = document.createElement('div');
+							temp_addButton.className="requestedButton";
+							temp_addButton.innerText="Friend Requested";
+							temp_addButton.style="width:200px;"
+							button_cont.appendChild(temp_addButton);
+							row_elem.appendChild(button_cont);
+						}else{
+							// Add friend Button
+							var button_cont = document.createElement('div');
+							button_cont.className = "ml-auto";
+							var temp_addButton = document.createElement('div');
+							temp_addButton.className="friendButton";
+							temp_addButton.innerText="Add Friend";
+							temp_addButton.setAttribute("onclick", "addFriendClicked('" + struct.alias + "');");
+							temp_addButton.style="width:200px;"
+							button_cont.appendChild(temp_addButton);
+							row_elem.appendChild(button_cont);
+						}
 					}else if(struct.isFriend == true){
 						// Remove Friend Button
 						var button_cont = document.createElement('div');
@@ -186,6 +210,7 @@
 						var temp_remButton = document.createElement('div');
 						temp_remButton.className="removeFriendButton ml-auto";
 						temp_remButton.innerText="Remove Friend";
+						temp_remButton.setAttribute("onclick", "remFriendClicked('" + struct.alias + "');");
 						temp_remButton.style="width:200px;"
 						button_cont.appendChild(temp_remButton);
 						row_elem.appendChild(button_cont);
@@ -198,6 +223,24 @@
 				list_elem.appendChild(a_elem);
 				list_div.appendChild(list_elem);
 				return list_div;
+			}
+			function addFriendClicked(_name_selected){
+				console.log("addFriendClicked");
+				console.log(_name_selected);
+				var addFormElem = document.getElementById("id_FIreqalias");
+				addFormElem.value = _name_selected;
+				console.log(addFormElem);
+				var submitAddFriend = document.getElementById("submitAddFriend");
+				submitAddFriend.click();
+			}
+			function remFriendClicked(_name_selected){
+				console.log("remFriendClicked");
+				console.log(_name_selected);
+				var remFormElem = document.getElementById("id_FIremalias");
+				remFormElem.value = _name_selected;
+				console.log(remFormElem);
+				var submitRemFriend = document.getElementById("submitRemFriend");
+				submitRemFriend.click();
 			}
 
 			function drawGroupElement(struct){

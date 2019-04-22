@@ -110,8 +110,26 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 		retDict["calendar_data"]["member_info"] = [getProfileData(selected_id)]
 	elif(mode == "GROUP"):
 		print("group selected")
+		group_name = selected_id
 		retDict["calendar_data"]["member_events"] = []
 		retDict["calendar_data"]["member_info"] = []
+		if isMemberOfGroup(user_firebase_id, group_name) != True:
+			return retDict
+		group_data = getGroupData(group_name)
+		for member in group_data["group_members"]:
+			if member == user_firebase_id:
+				continue
+			member_info = getProfileData(member)
+			retDict["calendar_data"]["member_info"].append(member_info)
+			temp_events = []
+			if(member_info["user_events"] != None):
+				temp_events = getUserEvents(member)
+			curr_dict_m = {}
+			curr_dict_m["firebase_id"] = member
+			curr_dict_m["participating_events"] = []
+			for ev in temp_events:
+				curr_dict_m["participating_events"].append(ev)
+			retDict["calendar_data"]["member_events"].append(curr_dict_m)
 	return retDict
 
 def genHiddenEvent(passed_event):
@@ -298,6 +316,7 @@ class ProfileView(TemplateView):
 		prof_mode = "friend"
 		cal_mode = "USER"
 		is_friend = "false"
+		is_requested = "false"
 		if name_selected == data_prof_alias:
 			prof_mode = "self"
 			cal_mode = "USER"
@@ -308,6 +327,15 @@ class ProfileView(TemplateView):
 				is_friend = "true"
 			else:
 				is_friend = "false"
+			sent_friend_requests = data_contact_list["sent_friend_requests"]
+			if sent_friend_requests == None:
+				sent_friend_requests = []
+			for fq in sent_friend_requests:
+				curr_fq_data = getFriendRequestData(fq)
+				if curr_fq_data["receiver_id"] == firebase_id_selected:
+					is_requested = "true"
+					break
+
 
 		database_calendar_dict = getCalendarDict(user_firebase_id, firebase_id_selected, cal_mode)
 		if cal_mode == "FRIEND" and is_friend == "false":
@@ -327,6 +355,7 @@ class ProfileView(TemplateView):
 				"profile_forms" : getProfileForms(),
 				"profile_mode" : prof_mode,
 				"is_friend" : is_friend,
+				"is_requested" : is_requested,
 				"name_selected" : name_selected,
 				"name_selected_data" : str(json.dumps(selected_user_data)),
 				"user_database" : str(json.dumps(profile_data)),
@@ -413,8 +442,41 @@ def nullGroup(request):
 	return g.get(request, "")
 
 def redirGroupname(request, group_name_requested):
-	temp_view = GroupView();
-	return temp_view.get(request, group_name_requested)
+	if(validGroupName(group_name_requested) == True):
+		return redir404(request)
+	return HttpResponseRedirect("/group/" + group_name_requested)
+
+def getGroupDict(user_firebase_id, group_name):
+	retDict = {}
+	if validGroupName(group_name) == True:
+		return retDict
+	group_data = getGroupData(group_name)
+	retDict["group_name"] = group_data["group_name"]
+	retDict["group_desc"] = group_data["group_desc"]
+	retDict["members"] = []
+	for member in group_data["group_members"]:
+		curr_data = getProfileData(member)
+		curr_data["profile_picture"] = getProfilePictureFirebaseId(member)
+		retDict["members"].append(curr_data)
+	retDict["admins"] = []
+	for admin in group_data["group_admin"]:
+		curr_data = getProfileData(admin)
+		curr_data["profile_picture"] = getProfilePictureFirebaseId(admin)
+		retDict["admins"].append(curr_data)
+	retDict["status"] = "USER"
+	if isAdminOfGroup(user_firebase_id, group_name):
+		retDict["status"] = "ADMIN"
+	elif isMemberOfGroup(user_firebase_id, group_name):
+		retDict["status"] = "MEMBER"
+	else:
+		retDict["status"] = "USER"
+	return retDict
+
+def getGroupForms():
+	retDict = {}
+	retDict["join_group"] = GroupJoinForm()
+	retDict["leave_group"] = GroupLeaveForm()
+	return retDict
 
 class GroupView(TemplateView):
 	template_name = 'user_interface/group.html'
@@ -428,20 +490,21 @@ class GroupView(TemplateView):
 		name_requested = group_name
 		if(validGroupName(group_name) == True):
 			return redir404(request)
-		search_form = SearchForm()
-		group_form = GroupForm()
-		group_data = getGroupData(group_name)
 		cal_mode = "GROUP"
 		database_calendar_dict = getCalendarDict(user_firebase_id, group_name, cal_mode)
+
+		group_status = "USER"
+		group_dict = getGroupDict(user_firebase_id, group_name)
+
 		return render(
 			request=request,
 			template_name=self.template_name,
-			context={"search_form" : search_form, 
+			context={
 				"calendarFrame" : "sub_templates/calendarFrame.html",
-				"group_form" : group_form,
 				"calendar_mode" : "group",
 				"name_requested" : name_requested,
-				"group_data" : str(json.dumps(group_data)),
+				"group_dict" : str(json.dumps(group_dict)),
+				"group_forms" : getGroupForms(),
 				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
 				"calendar_forms" : getCalendarForms(),
 				"database_calendar_dict" : str(json.dumps(database_calendar_dict)),
@@ -459,6 +522,24 @@ class GroupView(TemplateView):
 			return response
 		return self.dummy(request, group_name)
 
+def isAdminOfGroup(firebase_id, group_name):
+	if(validGroupName(group_name) == True):
+		return False
+	group_data = getGroupData(group_name)
+	for admin in group_data["group_admin"]:
+		if admin == firebase_id:
+			return True
+	return False
+
+def isMemberOfGroup(firebase_id, group_name):
+	if(validGroupName(group_name) == True):
+		return False
+	group_data = getGroupData(group_name)
+	for member in group_data["group_members"]:
+		if member == firebase_id:
+			return True
+	return False
+
 class DefaultView(TemplateView):
 	template_name = 'user_interface/default.html'
 
@@ -472,6 +553,12 @@ class DefaultView(TemplateView):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
 # SEARCH
+
+def getSearchForms():
+	retDict = {}
+	retDict["friend_req"] = FriendRequestForm();
+	retDict["friend_rem"] = FriendRemoveForm();
+	return retDict
 
 def getBlankSearchDict():
 	retDict = {
@@ -514,8 +601,18 @@ def getSearchDict(search_term, user_firebase_id):
 		if(contains == False and temp_user["firebase_id"] != user_firebase_id):
 			temp_user["isSelf"] = False
 			temp_users.append(temp_user)
+	sent_friend_requests = user_contact_list["sent_friend_requests"]
+	if sent_friend_requests == None:
+		sent_friend_requests = []
 	for temp_user in temp_users:
 		temp_user["profile_picture"] = getProfilePictureFirebaseId(temp_user["firebase_id"])
+		is_requested = False
+		for fq in sent_friend_requests:
+				curr_fq_data = getFriendRequestData(fq)
+				if curr_fq_data["receiver_id"] == temp_user["firebase_id"]:
+					is_requested = True
+					break
+		temp_user["isRequested"] = is_requested
 	for temp_contact in temp_contacts:
 		temp_contact["profile_picture"] = getProfilePictureFirebaseId(str(temp_contact["firebase_id"]))
 	temp_group_names = searchGroups(search_term)
@@ -545,6 +642,7 @@ class SearchView(TemplateView):
 			request=request,
 			template_name=self.template_name,
 			context={
+				"search_forms" : getSearchForms(),
 				"search_data" : str(json.dumps(search_dict)),
 				"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
 				"header_forms" : getHeaderForms(),
@@ -608,9 +706,22 @@ def formController(request):
 		return HttpResponseRedirect("/group/" + group_name)
 	elif(switchType == "SearchTerm"):
 		search_form = SearchForm(request.POST)
-		user_firebase_id = getCurrentFirebaseId(request)
 		search_term = search_form["SIstring"].value()
 		return HttpResponseRedirect("/search/?q=" + search_term)
+	elif(switchType == "JoinGroup"):
+		group_form = GroupJoinForm(request.POST)
+		group_name = group_form["GIreqname"].value()
+		new_invite_id = generateInviteId()
+		sendGroupInvites(group_name, [user_firebase_id])
+		actionGroupInvite(new_invite_id, user_firebase_id, True)
+		return HttpResponseRedirect("/group/" + group_name);
+	elif(switchType == "LeaveGroup"):
+		group_form = GroupJoinForm(request.POST)
+		group_name = group_form["GIreqname"].value()
+		if isAdminOfGroup(user_firebase_id, group_name) == False:
+			leaveGroup(user_firebase_id, group_name)
+		return HttpResponseRedirect("/group/" + group_name);
+
 
 def respondFriend(request):
 	friend_response_form = FriendRespondRequest(request.POST)

@@ -11,20 +11,21 @@
 	    		</div> 
 	    	</div>
 	    	<div class="col-4">
-	    	<button class="friendButton" id="friendButtonId" onclick="addFriendClicked()" style="display:none;">Add Friend</button>
+	    	<button class="friendButton" id="friendButtonId" onclick="addFriendClicked()" style="display:none; width:200px;">Add Friend</button>
 	    	<form action="/profile/" method="post">
 				{% csrf_token %}
 				{{ profile_forms.friend_req.as_ul }}
 				<input type="hidden" name="formType" value="FriendRequest">
-				<input type="submit" style="display: none;" id="subitAddFriend">
+				<input type="submit" style="display: none;" id="submitAddFriend">
 	    	</form>
-	    	<button class="removeFriendButton" id="removeFriendButtonId" onclick="remFriendClicked()" style="display:none;">Remove Friend</button>
+	    	<button class="removeFriendButton" id="removeFriendButtonId" onclick="remFriendClicked()" style="display:none; width:200px;">Remove Friend</button>
 	    	<form action="/profile/" method="post">
 				{% csrf_token %}
 				{{ profile_forms.friend_rem.as_ul }}
 				<input type="hidden" name="formType" value="FriendRemove">
-				<input type="submit" style="display: none;" id="subitRemFriend">
+				<input type="submit" style="display: none;" id="submitRemFriend">
 	    	</form>
+	    	<div class="requestedButton" id="requestedFriendId" style="display:none; width:200px;">Friend Requested</div>
 	    	</div>
 	    	</div>
 	    </h1>
@@ -61,13 +62,19 @@
 	<script type="text/javascript">
 		var friendButton = document.getElementById("friendButtonId");
 		var removeFriendButton = document.getElementById("removeFriendButtonId");
+		var requestedDiv = document.getElementById("requestedFriendId");
 		if("{{profile_mode}}" != "self"){
 			if("{{is_friend}}" == "true"){
 				friendButton.style.display = "none";
 				removeFriendButton.style.display = "block";
 			}else{
-				friendButton.style.display = "block";
-				removeFriendButton.style.display = "none";
+				if("{{is_requested}}" == "true"){
+					requestedDiv.style.display = "block";
+				}else{
+					friendButton.style.display = "block";
+					removeFriendButton.style.display = "none";
+				}
+				console.log("is_requested", "{{is_requested}}");
 			}
 		}else{
 			friendButton.style.display = "none";
@@ -79,7 +86,7 @@
 			var addFormElem = document.getElementById("id_FIreqalias");
 			addFormElem.value = _name_selected;
 			console.log(addFormElem);
-			var submitAddFriend = document.getElementById("subitAddFriend");
+			var submitAddFriend = document.getElementById("submitAddFriend");
 			submitAddFriend.click();
 		}
 		function remFriendClicked(){
@@ -88,7 +95,7 @@
 			var remFormElem = document.getElementById("id_FIremalias");
 			remFormElem.value = _name_selected;
 			console.log(remFormElem);
-			var submitRemFriend = document.getElementById("subitRemFriend");
+			var submitRemFriend = document.getElementById("submitRemFriend");
 			submitRemFriend.click();
 		}
 		var database_user_json = {};
