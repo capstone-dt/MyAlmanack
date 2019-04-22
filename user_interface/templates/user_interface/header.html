@@ -1,12 +1,12 @@
 <head>
 	{% load static %}
 	 <!-- Comes from open-source https://materializecss.com/getting-started.html-->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
 	<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
+	  rel="stylesheet">
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 	{% load static %}
 	<script src="{% static 'user_interface/js/utilities.js' %}"> </script>
@@ -20,28 +20,28 @@
 <body>
 
 	<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
-      <a class="navbar-brand" href="/profile/">MyAlmanack</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsableNav" aria-controls="collapsableNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+	  <a class="navbar-brand" href="/profile/">MyAlmanack</a>
+	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsableNav" aria-controls="collapsableNav" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	  </button>
 
-      <div class="collapse navbar-collapse" id="collapsableNav">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item dropdown">
-            <a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">notification_important</i></a>
-            <div class="dropdown-menu  dropdown-menu-left overAll" aria-labelledby="dropdown03">
-            	<form>
-            	<div class="dropHeader" id="e_drop_label" style="">Event Invites</div>
-            	<div class="dropdown-divider"></div>
-            	<div class="navbarDropdownClass" id="e_drop"></div>
-            	</form>
-            </div>
-          </li>
-        </ul>
-        <div class="form-inline justify-content-center" style="width:75%;" action="#">
-          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onclick="searchBarUpdate();" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
-          <script type="text/javascript">
-          	$(document).ready(function(){
+	  <div class="collapse navbar-collapse" id="collapsableNav">
+		<ul class="navbar-nav mr-auto">
+		  <li class="nav-item dropdown">
+			<a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">notification_important</i></a>
+			<div class="dropdown-menu  dropdown-menu-left overAll" aria-labelledby="dropdown03">
+				<form>
+				<div class="dropHeader" id="e_drop_label" style="">Event Invites</div>
+				<div class="dropdown-divider"></div>
+				<div class="navbarDropdownClass" id="e_drop"></div>
+				</form>
+			</div>
+		  </li>
+		</ul>
+		<div class="form-inline justify-content-center" style="width:75%;" action="#">
+		  <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onclick="searchBarUpdate();" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
+		  <script type="text/javascript">
+			$(document).ready(function(){
 				$("form").each(function(){
 					var curr = $(this);
 					var allowed = false;
@@ -53,68 +53,68 @@
 					}
 					if(allowed == false){
 						curr.keydown(function(event){
-						    if(event.keyCode == 13) {
-						      event.preventDefault();
-						      return false;
-						    }
+							if(event.keyCode == 13) {
+							  event.preventDefault();
+							  return false;
+							}
 						  });
 					}
 				});
-			    $('#firstSearch').keypress(function(e){
-			      if(e.keyCode==13){
-			      	console.log("enter pressed");
-			      	searchBarUpdate();
-			      	submitSearch();
-			      }
-			    });
+				$('#firstSearch').keypress(function(e){
+				  if(e.keyCode==13){
+					console.log("enter pressed");
+					searchBarUpdate();
+					submitSearch();
+				  }
+				});
 			});
-          	function searchBarUpdate(){
-          		var search_form_param = document.getElementById("id_SIstring");
-          		var firstSearch = document.getElementById("firstSearch");
-          		search_form_param.value = firstSearch.value;
-          		if(firstSearch.value == ""){
-          			search_form_param.value = " ";
-          		}
-          	}
-          	function submitSearch(){
-          		var search_submit_button = document.getElementById("searchSubmitButton");
-          		search_submit_button.click();
-          	}
-          </script>
-        </div>
-        <ul class= "navbar-nav ml-auto">
-          <li class="nav-item dropdown overAll">
-            <a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">person</i></a>
-            <div class="dropdown-menu dropdown-menu-right overAll" aria-labelledby="dropdown04">
-            	<form>
-            	<div class="dropHeader" id="f_drop_label" style="">Friend Requests</div>
-            	<div class="dropdown-divider"></div>
-            	<div class="navbarDropdownClass" id="f_drop">
-            	</div>
-            	</form>
-            </div>
-          </li>
-          <li class="nav-item dropdown overAll">
-            <a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">group</i></a>
-            <div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown05">
-            	<form>
-            	<div class="dropHeader" id="g_drop_label" style="">Group Invites</div>
-            	<div class="dropdown-divider"></div>
-            	<div class="navbarDropdownClass" id="g_drop"></div>
-            	</form>
-            </div>
-          </li>
-          <li class="nav-item dropdown overAll">
-            <a class="nav-link" href="http://example.com" id="dropdown06" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">settings</i></a>
-            <div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown06" id="s_drop">
-              <a class="dropdown-item" data-toggle="modal" data-target="#createGroupModal" href="#">Create Group</a>
-              <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
-              <a class="dropdown-item" href="/logout">Log Out</a>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </nav>
+			function searchBarUpdate(){
+				var search_form_param = document.getElementById("id_SIstring");
+				var firstSearch = document.getElementById("firstSearch");
+				search_form_param.value = firstSearch.value;
+				if(firstSearch.value == ""){
+					search_form_param.value = " ";
+				}
+			}
+			function submitSearch(){
+				var search_submit_button = document.getElementById("searchSubmitButton");
+				search_submit_button.click();
+			}
+		  </script>
+		</div>
+		<ul class= "navbar-nav ml-auto">
+		  <li class="nav-item dropdown overAll">
+			<a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">person</i></a>
+			<div class="dropdown-menu dropdown-menu-right overAll" aria-labelledby="dropdown04">
+				<form>
+				<div class="dropHeader" id="f_drop_label" style="">Friend Requests</div>
+				<div class="dropdown-divider"></div>
+				<div class="navbarDropdownClass" id="f_drop">
+				</div>
+				</form>
+			</div>
+		  </li>
+		  <li class="nav-item dropdown overAll">
+			<a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">group</i></a>
+			<div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown05">
+				<form>
+				<div class="dropHeader" id="g_drop_label" style="">Group Invites</div>
+				<div class="dropdown-divider"></div>
+				<div class="navbarDropdownClass" id="g_drop"></div>
+				</form>
+			</div>
+		  </li>
+		  <li class="nav-item dropdown overAll">
+			<a class="nav-link" href="http://example.com" id="dropdown06" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">settings</i></a>
+			<div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown06" id="s_drop">
+			  <a class="dropdown-item" data-toggle="modal" data-target="#createGroupModal" href="#">Create Group</a>
+			  <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
+			  <a class="dropdown-item" href="/logout">Log Out</a>
+			</div>
+		  </li>
+		</ul>
+	  </div>
+	</nav>
 	{% block content %}
 	{% endblock %}
 
@@ -142,7 +142,7 @@
 	<style type="text/css">
 		.reqField:before{
 			content:"*" ;
-     		color:red;
+			color:red;
 		}
 		.navbarDropdownClass{
 			height:200px;
@@ -402,22 +402,59 @@
 
 		populateDropdowns();
 
+		function clearDropdowns(){
+			var event_div = document.getElementById("e_drop");
+			while(event_div.hasChildNodes()){
+				event_div.removeChild(event_div.firstChild);
+			}
+			var friend_div = document.getElementById("f_drop");
+			while(friend_div.hasChildNodes()){
+				friend_div.removeChild(friend_div.firstChild);
+			}
+			var group_div = document.getElementById("g_drop");
+			while(group_div.hasChildNodes()){
+				group_div.removeChild(group_div.firstChild);
+			}
+		}
+
+		function updateDropdownData(){
+			// console.log("update");
+			$.ajax({
+					url: '/ajax/get_invite_data/',
+					data: {},
+					dataType: 'json',
+					success: function (data) {
+						database_header_info = data;
+						clearDropdowns();
+						populateDropdowns();
+					}
+			});
+		}
+		$(document).ready(function() {
+			  setInterval(
+				  () => {
+				    updateDropdownData();
+				  },
+				  5 * 1000
+				);
+			});
+
 	</script>
 
 
 	<div class="modal fade" id="createGroupModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 	  <div class="modal-dialog modal-dialog-centered" role="document">
-	    <div class="modal-content">
-	      <div class="modal-header">
-	        <h5 class="modal-title" id="createGroupModalLongTitle">Create Group</h5>
-	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          <span aria-hidden="true">&times;</span>
-	        </button>
-	      </div>
-	      <div class="modal-body">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="createGroupModalLongTitle">Create Group</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
 				<div class="form-group">
 					<label class="reqField" for="inputGroupName">Group Name</label>
-		      		<div class="row" style="padding-left: 15px; padding-right: 20px;">
+					<div class="row" style="padding-left: 15px; padding-right: 20px;">
 						<input type="text" class="form-control col-11" onchange="updateGroupForm()" 
 						onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();"
 						class="form-control" id="inputGroupName" pattern="[A-Za-z0-9]{1,}$" required>
@@ -425,12 +462,12 @@
 					</div>
 				</div>
 				<div class="form-group">
-				    <label for="inputGroupDescription">Description</label>
-				    <input type="text"  onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" id="inputGroupDescription" >
+					<label for="inputGroupDescription">Description</label>
+					<input type="text"  onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" id="inputGroupDescription" >
 				</div>
 				<div class="form-group">
-				    <label for="inputGroupInvites">Invites</label>
-				    <input type="text" onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites">
+					<label for="inputGroupInvites">Invites</label>
+					<input type="text" onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites">
 				</div>
 				<script type="text/javascript">
 					var valid_group = false;
@@ -438,9 +475,9 @@
 					$(document).ready(function() {
 						setInterval(
 						  () => {
-						  	if(valid_group != previous_valid_group){
-						    	updateGroupForm();
-						  	}
+							if(valid_group != previous_valid_group){
+								updateGroupForm();
+							}
 						  },
 						  1000
 						);
@@ -465,14 +502,14 @@
 							dataType: 'json',
 							success: function (data) {
 							  if (data.is_taken) {
-							  	previous_valid_group = valid_group;
-							  	valid_group = false;
+								previous_valid_group = valid_group;
+								valid_group = false;
 								setxgroup();
 							  }else{
-							  	previous_valid_group = valid_group;
-							  	valid_group = true;
-							  	setcheckgroup();
-							  	callback();
+								previous_valid_group = valid_group;
+								valid_group = true;
+								setcheckgroup();
+								callback();
 							  }
 							  after();
 							}
@@ -516,11 +553,13 @@
 								);
 						}
 					}
+
+
 				</script>
 				<input type="button" class="confirmButton" style="width:100%; height:50px;" value="Create Group" onclick="updateAndClickGroup()">
 
-	      </div>
-	    </div>
+		  </div>
+		</div>
 	  </div>
 	</div>
 

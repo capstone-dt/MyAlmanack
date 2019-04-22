@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
+from django.urls import resolve
 from database.views import *
 from user_interface.forms import *
 import base64
@@ -243,6 +244,11 @@ def getHeaderForms():
 		"group_form" : GroupForm(),
 	}
 	return retDict
+
+def get_invite_data(request):
+	user_firebase_id = getCurrentFirebaseId(request)
+	data = getHeaderDict(user_firebase_id)
+	return JsonResponse(data)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
@@ -695,6 +701,8 @@ def formController(request):
 	#SearchTerm
 	if(switchType == "FriendResponse"):
 		respondFriend(request)
+		current_url = resolve(request.path_info).url_name
+		return HttpResponseRedirect("/profile/")
 	elif(switchType == "SubmitEvent"):
 		submitEvent(request)
 	elif(switchType == "FriendRequest"):
