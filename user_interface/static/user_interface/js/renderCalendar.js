@@ -562,7 +562,9 @@ function unionDaysAffected(event_arr_passed){
 		var curr_struct = combinedDaysAffected[i];
 		var unioned_day = unionEvents(curr_struct.events);
 		for(var j = 0; j < unioned_day.length; j++){
-			console.log("start", new Date(unioned_day[j].start_date), "end", new Date(unioned_day[j].end_date));
+			// console.log("start", new Date(unioned_day[j].start_date), "end", new Date(unioned_day[j].end_date));
+			unioned_day[j].reg_date = new Date(unioned_day[j].start_date);
+			unioned_day[j].delta = Math.abs(unioned_day[j].end_date - unioned_day[j].start_date)/(1000*60*60);
 			retArray.push(unioned_day[j]);
 		}
 	}
@@ -634,8 +636,10 @@ function drawColorGrid(isRainbow) {
 		}
 	}
 	console.log("temp_convert_split", temp_convert_split);
+	var combined_affected = combineEventsDayAffected(temp_convert_split);
+	console.log("combined_affected", combined_affected);
 	var unioned_split = unionDaysAffected(temp_convert_split);
-	// console.log("unioned_split", unioned_split);
+	console.log("unioned_split", unioned_split);
 	// for(var i = 0; i < unioned_split.length; i++){
 	// 	console.log("start", new Date(unioned_split[i].start_date), "end", new Date(unioned_split[i].end_date));
 	// }
@@ -666,7 +670,7 @@ function drawColorGrid(isRainbow) {
 	// console.log("combinedFree", combined_free);
 	// console.log("month_start", month_start, "month_end", month_end);
 	var hours_temp = combinedFreeToHours(combined_free, month_start, month_end);
-	// console.log(hours_temp);
+	console.log("hours_temp", hours_temp);
 	var count = 0;
 	for(var i = 0; i < calArray.length; i++){
 		for(var j = 0; j < calArray[i].length; j++){
@@ -685,6 +689,17 @@ function drawColorGrid(isRainbow) {
 				if(Number(temp_date) == hours_temp[k].date.getTime()){
 					// console.log("FOUND");
 					hoursFree = hours_temp[k].hours;
+					if(hoursFree > 23){
+						for(var L = 0; L < unioned_split.length; L++){
+							var curr_un = unioned_split[L];
+							if(Number(temp_date) == new Date(curr_un.reg_date.getTime()).setHours(0,0,0)){
+								if(curr_un.delta > 23){
+									hoursFree = 24 - curr_un.delta;
+									break;
+								}
+							}
+						}
+					}
 					break;
 				}
 			}
