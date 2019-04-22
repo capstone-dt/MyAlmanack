@@ -23,6 +23,7 @@ urlpatterns = [
 		name="group"),
 	re_path(r'^redirgn/(?P<group_name_requested>[A-Za-z0-9]+)/$', 
 		views.redirGroupname, name="redirGroupname"),
+	path("ajax/validate_alias/", views.validate_alias, name="validate_alias"),
 	path("default", views.DefaultView.as_view(), name="default"),
 	path("default/", views.DefaultView.as_view(), name="default"),
 	path("search", views.SearchView.as_view(), name="search"),

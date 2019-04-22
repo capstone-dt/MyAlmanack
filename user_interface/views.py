@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
+from django.http import JsonResponse
 from django.contrib.auth.models import User
 from database.views import *
 from user_interface.forms import *
@@ -378,6 +379,14 @@ class ProfileView(TemplateView):
 		if response != None:
 			return response
 		return self.dummy(request, alias)
+
+def validate_alias(request):
+	alias = request.GET.get("alias", None)
+	is_taken = (validAlias(alias) == False)
+	data = {
+		"is_taken" : is_taken
+	}
+	return JsonResponse(data)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 

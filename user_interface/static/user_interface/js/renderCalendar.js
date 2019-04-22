@@ -118,7 +118,8 @@ function clickAnywhere(event){
 		var curr_id = clicked_ids[i];
 		clicked_structs.push(getEventStruct(curr_id));
 	}
-	if(clicked_structs.length > 0){
+
+	if(clicked_structs.length > 0 && allModalsClosed()){
 		clearShowEvents();
 		populateShowEvents(clicked_structs);
 		showEventsModal();
@@ -154,6 +155,17 @@ function showEventsModal(){
 	var open_events = document.getElementById("viewEventsOpenButton");
 	open_events.click();
 }
+function allModalsClosed(){
+	var allModals = document.getElementsByClassName("modal");
+	for(var i = 0; i < allModals.length; i++){
+		var curr_modal = allModals[i];
+		if(curr_modal.className.includes(" show")){
+			return false;
+		}
+	}
+	return true;
+}
+
 
 function ensureBoxSize(){
 	// console.log(calArray);
