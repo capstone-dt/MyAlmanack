@@ -185,12 +185,14 @@
 			function submitChanges(){
 				editProfileUpdate();
 				uploadProfilePicture();
-				if(valid_alias){
+				var entered_alais = document.getElementById("inputAlias");
+				if(valid_alias || entered_alais.value == profile_struct.alias){
 					performEditProfileAjax(
 						function (){
 							var submit_button = document.getElementById("submitChangesButton");
 							submit_button.click();
 						}, function(){});
+					remainderEdit();
 				}
 			}
 		</script>

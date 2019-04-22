@@ -170,8 +170,87 @@
 				</div>
 				<div class="form-group">
 				    <label for="inputInviteList">Invite</label>
-				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputInviteList" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$">
+				    <!-- <input onchange="updateEventForm()" type="text" class="form-control" id="inputInviteList" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$"> -->
+				    <div class="dropdown" >
+					  <button class="btn btn-secondary dropdown-toggle" type="button" id="invites_select_dropdown_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: black;">
+					    <div id="inviteNameId" style="color:black;">
+					    	Select members to invite...
+					    </div>
+					  </button>
+					  <div class="dropdown-menu friendsSelectDropdown overAll" aria-labelledby="invites_select_dropdown_button"
+					  	style="position:absolute; z-index: 20;" id="invites_select_dropdown">
+					  </div>
+					</div>
 				</div>
+				<script type="text/javascript">
+							$(document).ready(function() {
+							  populateInviteSelectDropdown();
+							});
+							var invite_ids = [];
+							function populateInviteSelectDropdown(){
+								var friends_to_pop = _calendar_struct.calendar_data.member_info;
+								var invitesSelectDropdown = document.getElementById("invites_select_dropdown");
+								for(var i = 0; i < friends_to_pop.length; i++){
+									var curr_friend = friends_to_pop[i];
+									var curr_a = document.createElement("a");
+									curr_a.className = "dropdown-item";
+									var temp_id = curr_friend.alias + "_check_i";
+									curr_a.href = "#";
+									curr_a.setAttribute("onclick", "checkInviteSelect('" + temp_id + "')");
+									var curr_label = document.createElement("label");
+									curr_label.className = "check_container";
+									curr_label.innerText = curr_friend.first_name + " " + curr_friend.last_name;
+									var curr_input = document.createElement("input");
+									curr_input.type = "checkbox";
+									curr_input.id = temp_id;
+									curr_input.setAttribute("alias", curr_friend.alias);
+									var curr_span = document.createElement("span");
+									curr_span.className = "checkmark";
+									curr_label.appendChild(curr_input);
+									curr_label.appendChild(curr_span);
+									curr_a.appendChild(curr_label);
+									var temp_form = document.createElement('form');
+									temp_form.appendChild(curr_a);
+									invitesSelectDropdown.appendChild(temp_form);
+									invite_ids.push({"check_id" : temp_id, "alias" : curr_friend.alias});
+								}
+							}
+							function checkInviteSelect(sel_id){
+								var check_input = document.getElementById(sel_id);
+								console.log("invite:", sel_id);
+								if(check_input.checked){
+									check_input.checked = false;
+									check_input.setAttribute("flag", "false");
+								}else{
+									check_input.checked = true;
+									check_input.setAttribute("flag", "true");
+								}
+								var inviteTitle = document.getElementById("inviteNameId");
+								var str_place = "";
+								var invitesSelected = getInvitesSelected();
+								for(var i = 0; i < invitesSelected.length; i++){
+									str_place += "@" + invitesSelected[i];
+									if(i != invitesSelected.length - 1){
+										str_place += ", ";
+									}
+								}
+								inviteTitle.innerText = str_place;
+								if(str_place == ""){
+									inviteTitle.innerText = 'Select members to invite...'
+								}
+							}
+							function getInvitesSelected(){
+								var valid = [];
+								for(var i = 0; i < invite_ids.length; i++){
+									var curr_div = document.getElementById(invite_ids[i].check_id);
+									if(curr_div.getAttribute("flag") == "true"){
+										valid.push(invite_ids[i].alias);
+									}
+								}
+								return valid;
+							}
+
+						</script>
 				<div class="form-row">
 				  <div class="form-group col-md-6">
 				    <label for="inputWhitelist">Whitelist</label>
@@ -308,7 +387,7 @@
 	    </div>
 	  </div>
 	</div>
-	<div class="modal fade" id="editEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	<!-- <div class="modal fade" id="editEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 	  <div class="modal-dialog modal-dialog-centered" role="document">
 	    <div class="modal-content">
 	      <div class="modal-header">
@@ -328,7 +407,7 @@
 	      </div>
 	    </div>
 	  </div>
-	</div>
+	</div> -->
 	<div class="" href="#" id="viewEventsOpenButton" data-toggle="modal" data-target="#viewEventsModal" style="display:none;"></div>
 	<div class="modal fade" id="viewEventsModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 	  <div class="modal-dialog modal-dialog-centered" role="document">
