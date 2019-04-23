@@ -126,7 +126,7 @@ def actionEventInvite(invite_id, receiver_firebase_id, accept):
 		if accept == True:
 			# If event-invite acceptance is true, then update the receiver's user_events and the event's participating_users.
 			# Else, do nothing.
-			cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, %s)'
+			cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, (SELECT CAST (%s AS SMALLINT)))'
 				+ ' WHERE firebase_id = %s', [event_id, receiver_firebase_id])
 			cursor.execute('UPDATE "Event" SET participating_users = array_append(participating_users, %s)'
 				+ ' WHERE event_id = %s', [receiver_firebase_id, event_id])
@@ -420,6 +420,12 @@ def getEventData(event_id):
 	event_data = Event.objects.filter(pk=event_id).values()[0]
 	# Return dictionary containing event data information.
 	return event_data
+
+# Get repeat-event data based on event_id.
+def getRepeatEventData(event_id):
+	repeat_event_data = RepeatEvent.objects.filter(pk=event_id).values()[0]
+	# Return dictionary containing repeat-event data information.
+	return repeat_event_data
 
 # Create an event and update the event creator's user_events.
 def createEvent(event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
