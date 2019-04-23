@@ -45,6 +45,13 @@ class User(ModelWrapper):
     Class properties and methods
     """
     
+    # This returns the UIDs of all the users in the database.
+    @classproperty
+    def all_user_uids(cls):
+        return frozenset(
+            profile.firebase_id for profile in _Profile.objects.all()
+        )
+    
     # This returns all the users in the database.
     @classproperty
     def all_users(cls):
@@ -59,18 +66,23 @@ class User(ModelWrapper):
     def profile(self):
         return _Profile.objects.get(firebase_id=self._object.username)
     
-    # This returns a set of users which are contacts to this user.
+    # This returns a set of UIDs of users who are contacts with this users.
+    @property
+    def contact_uids(self):
+        # contact_names might be blank, so return an empty tuple in that case.
+        return frozenset(self.profile.contact_list.contact_names or ())
+    
+    # This returns a set of users who are contacts with this user.
     @property
     def contacts(self):
-        contact_ids = self.profile.contact_list.contact_names
-        return frozenset(User.from_uid(uid) for uid in contact_ids)
+        return User.from_uids(self.contact_uids)
     
     # This returns a set of groups that this user is a member of.
     @property
     def groups(self):
         from .group import Group
         return frozenset(
-            group for group in Group.all_groups if self in group.members
+            group for group in Group.all_groups if self.uid in group.member_uids
         )
     
     # This returns a set of events that this user is a member of.
@@ -78,7 +90,7 @@ class User(ModelWrapper):
     def events(self):
         from .event import Event
         return frozenset(
-            event for event in Event.all_events if self in event.members
+            event for event in Event.all_events if self.uid in event.member_uids
         )
     
     # This returns a set of invites that this user has sent or received.
@@ -125,7 +137,7 @@ class User(ModelWrapper):
         from .invites.user_invite import UserInvite
         return frozenset(
             invite for invite in UserInvite.all_invites
-            if invite.sender == self
+            if invite.sender_uid == self.uid
         )
     
     # This returns a set of user invites that this user has received.
@@ -134,7 +146,7 @@ class User(ModelWrapper):
         from .invites.user_invite import UserInvite
         return frozenset(
             invite for invite in UserInvite.all_invites
-            if self in invite.receivers
+            if self.uid in invite.receiver_uids
         )
     
     # This returns a set of group invites that this user has sent.
@@ -143,7 +155,7 @@ class User(ModelWrapper):
         from .invites.group_invite import GroupInvite
         return frozenset(
             invite for invite in GroupInvite.all_invites
-            if self in invite.sender.administrators
+            if self.uid in invite.sender_uids
         )
     
     # This returns a set of group invites that this user has received.
@@ -152,7 +164,7 @@ class User(ModelWrapper):
         from .invites.group_invite import GroupInvite
         return frozenset(
             invite for invite in GroupInvite.all_invites
-            if self in invite.receivers
+            if self.uid in invite.receiver_uids
         )
     
     # This returns a set of event invites that this user has sent.
@@ -161,7 +173,7 @@ class User(ModelWrapper):
         from .invites.event_invite import EventInvite
         return frozenset(
             invite for invite in EventInvite.all_invites
-            if invite.sender == self
+            if invite.sender_uid == self.uid
         )
     
     # This returns a set of event invites that this user has received.
@@ -170,5 +182,5 @@ class User(ModelWrapper):
         from .invites.event_invite import EventInvite
         return frozenset(
             invite for invite in EventInvite.all_invites
-            if self in invite.receivers
+            if self.uid in invite.receiver_uids
         )

@@ -26,6 +26,11 @@ class Invite(ModelWrapper):
     Class properties and methods
     """
     
+    # This returns the UIDs of all the invites in the database.
+    @classproperty
+    def all_invite_uids(cls):
+        return frozenset(invite.invite_id for invite in cls._root.objects.all())
+    
     # This returns all the invites in the database.
     @classproperty
     def all_invites(cls):
