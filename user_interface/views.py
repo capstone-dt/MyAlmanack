@@ -306,6 +306,42 @@ def redirFirebase(request, firebase_id_requested):
 	alias_requested = firebaseIdToAlias(firebase_id_requested)
 	return HttpResponseRedirect("/profile/" + alias_requested)
 
+def getFriendsInfo(user_firebase_id):
+	retArray = []
+	# Get contact list
+	data_contact_list = getContactListData(user_firebase_id)
+	# Get contact names
+	database_contact_names = data_contact_list["contact_names"]
+	if(database_contact_names == None):
+		database_contact_names = []
+	# Get contact data per contact name
+	for f_id in database_contact_names:
+		curr_struct = {}
+		curr_prof_data = getProfileData(f_id)
+		curr_struct["first_name"] = curr_prof_data["first_name"]
+		curr_struct["last_name"] = curr_prof_data["last_name"]
+		curr_struct["alias"] = curr_prof_data["alias"]
+		curr_struct["firebase_id"] = curr_prof_data["firebase_id"]
+		curr_struct["profile_picture"] = getProfilePictureFirebaseId(curr_prof_data["firebase_id"])
+		retArray.append(curr_struct)
+	return retArray
+
+def getGroupsInfo(user_firebase_id):
+	retArray = []
+	# Get contact list
+	data_contact_list = getContactListData(user_firebase_id)
+	# Get memberships
+	database_group_names = data_contact_list["memberships"]
+	if(database_group_names == None):
+		database_group_names = []
+	# Get group data per membership
+	for g_name in database_group_names:
+		curr_struct = {}
+		curr_group_data = getGroupData(g_name)
+		curr_struct["group_name"] = curr_group_data["group_name"]
+		retArray.append(curr_struct)
+	return retArray
+
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
@@ -333,6 +369,8 @@ class ProfileView(TemplateView):
 			firebase_id_selected = aliasToFirebaseId(name_selected)
 			selected_user_data = getProfileData(firebase_id_selected)
 			selected_user_data["profile_picture"] = getProfilePictureFirebaseId(firebase_id_selected)
+			selected_user_data["friends_info"] = getFriendsInfo(firebase_id_selected)
+			selected_user_data["groups_info"] = getGroupsInfo(firebase_id_selected)
 			print("firebase_id_selected", firebase_id_selected)
 		else:
 			return redir404(request)
