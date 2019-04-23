@@ -12,12 +12,12 @@ class Invite(ModelWrapper):
     
     _root = _Invite
     
-    # This returns the ID of this invite.
+    # This returns the UID of this invite.
     @property
     def uid(self):
         return self._object.invite_id
     
-    # This returns an invite in the database given its ID.
+    # This returns an invite in the database given its UID.
     @classmethod
     def from_uid(cls, uid):
         return cls(cls._root.objects.get(invite_id=uid))
@@ -25,6 +25,11 @@ class Invite(ModelWrapper):
     """
     Class properties and methods
     """
+    
+    # This returns the UIDs of all the invites in the database.
+    @classproperty
+    def all_invite_uids(cls):
+        return frozenset(invite.invite_id for invite in cls._root.objects.all())
     
     # This returns all the invites in the database.
     @classproperty
