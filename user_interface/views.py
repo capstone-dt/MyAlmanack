@@ -793,15 +793,15 @@ def submitEvent(request):
 	event_start = event_form['EIstart'].value()
 	event_end = event_form['EIend'].value()
 	invite_ids = []
-	if(event_form['EIinvite'].value() != None):
+	if(event_form['EIinvite'].value() != None and event_form['EIinvite'].value() != ""):
 		invite_ids = event_form['EIinvite'].value().split(",")
 
 	whitelist_ids = []
-	if(event_form['EIwhitelist'].value() != None):
+	if(event_form['EIwhitelist'].value() != None and event_form['EIwhitelist'].value() != ""):
 		whitelist_ids = event_form['EIwhitelist'].value().split(",")
 	
 	blacklist_ids = []
-	if(event_form['EIblacklist'].value() != None):
+	if(event_form['EIblacklist'].value() != None and event_form['EIblacklist'].value() != ""):
 		blacklist_ids = event_form['EIblacklist'].value().split(",")
 	
 	event_id = generateEventId()
@@ -816,7 +816,8 @@ def submitEvent(request):
 		createRepeatEvent(event_name, event_desc, [user_firebase_id], [user_firebase_id], whitelist_ids, blacklist_ids,
 			int(event_start), int(event_end), str(user_firebase_id), "weekly", int(event_start), int(event_end), repeat_pattern)
 
-	if(len(invite_ids) > 0):
+	if(len(invite_ids) > 0 and event_form['EIinvite'].value() != None):
+		print("sendEventInvites(", user_firebase_id, invite_ids, event_id)
 		sendEventInvites(user_firebase_id, invite_ids, event_id)
 
 def respondEvent(request):
