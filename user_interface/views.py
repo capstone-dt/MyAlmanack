@@ -767,7 +767,7 @@ def formController(request):
 			leaveGroup(user_firebase_id, group_name)
 		return HttpResponseRedirect("/group/" + group_name)
 	elif(switchType == "EventResponse"):
-		# respondEvent(request)
+		respondEvent(request)
 		return HttpResponseRedirect("/profile/");
 
 

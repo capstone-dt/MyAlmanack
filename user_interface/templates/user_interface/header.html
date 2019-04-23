@@ -348,9 +348,11 @@
 
 		function populateGroupDropdown(){
 			var notif_div = document.getElementById("g_drop");
-			for(var i = 0; i < 20; i++){
+			var group_requests = database_header_info.group_requests.invites;
+
+			for(var i = 0; i < group_requests.length; i++){
 				// CHANGE TO ACTUAL Group Name
-				var group_id = i;
+				var group_id = group_requests[i].group_name;
 
 				var curr_elem = document.createElement('a');
 				curr_elem.className= "dropdown-item overAll";
@@ -358,7 +360,7 @@
 				curr_elem.id = "g_" + group_id;
 				curr_elem.setAttribute("event_id", group_id);
 				var event_text_div = document.createElement('div');
-				event_text_div.innerHTML = "Group Invite  " + i;
+				event_text_div.innerHTML = "Group Invite  " + group_id;
 				event_text_div.style ="display:inline;";
 				curr_elem.appendChild(event_text_div);
 				var button_cont = document.createElement('div');

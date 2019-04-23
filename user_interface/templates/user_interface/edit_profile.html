@@ -187,11 +187,8 @@
 				uploadProfilePicture();
 				var entered_alais = document.getElementById("inputAlias");
 				if(valid_alias || entered_alais.value == profile_struct.alias){
-					performEditProfileAjax(
-						function (){
-							var submit_button = document.getElementById("submitChangesButton");
-							submit_button.click();
-						}, function(){});
+					var submit_button = document.getElementById("submitChangesButton");
+					submit_button.click();
 					remainderEdit();
 				}
 			}
