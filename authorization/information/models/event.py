@@ -13,12 +13,12 @@ class Event(ModelWrapper):
     
     _root = _Event
     
-    # This returns the ID of this event.
+    # This returns the UID of this event.
     @property
     def uid(self):
         return self._object.event_id
     
-    # This returns an event in the database given its ID.
+    # This returns an event in the database given its UID.
     @classmethod
     def from_uid(cls, uid):
         return cls(cls._root.objects.get(event_id=uid))

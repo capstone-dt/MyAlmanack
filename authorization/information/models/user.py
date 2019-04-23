@@ -26,17 +26,17 @@ class User(ModelWrapper):
     def is_wrappable(cls, object):
         return isinstance(object, (_User, _Profile))
     
-    # This returns the ID of this user.
+    # This returns the UID of this user.
     @property
     def uid(self):
         return self._object.username
     
-    # This returns a user in the database given their ID.
+    # This returns a user in the database given their UID.
     @classmethod
     def from_uid(cls, uid):
         return cls(_User.objects.get(username=uid))
     
-    # This returns a set of users in the database given their IDs.
+    # This returns a set of users in the database given their UIDs.
     @classmethod
     def from_uids(cls, uids):
         return frozenset(cls.from_uid(uid) for uid in uids)

@@ -13,12 +13,12 @@ class Group(ModelWrapper):
     
     _root = _Group
     
-    # This returns the ID of this group.
+    # This returns the UID of this group.
     @property
     def uid(self):
         return self._object.group_name
     
-    # This returns a group in the database given its ID.
+    # This returns a group in the database given its UID.
     @classmethod
     def from_uid(cls, uid):
         return cls(cls._root.objects.get(group_name=uid))
