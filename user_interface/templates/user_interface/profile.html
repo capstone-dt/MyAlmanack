@@ -11,20 +11,21 @@
 	    		</div> 
 	    	</div>
 	    	<div class="col-4">
-	    	<button class="friendButton" id="friendButtonId" onclick="addFriendClicked()" style="display:none;">Add Friend</button>
+	    	<button class="friendButton" id="friendButtonId" onclick="addFriendClicked()" style="display:none; width:200px;">Add Friend</button>
 	    	<form action="/profile/" method="post">
 				{% csrf_token %}
-				{{ friend_req.as_ul }}
+				{{ profile_forms.friend_req.as_ul }}
 				<input type="hidden" name="formType" value="FriendRequest">
-				<input type="submit" style="display: none;" id="subitAddFriend">
+				<input type="submit" style="display: none;" id="submitAddFriend">
 	    	</form>
-	    	<button class="removeFriendButton" id="removeFriendButtonId" onclick="remFriendClicked()" style="display:none;">Remove Friend</button>
+	    	<button class="removeFriendButton" id="removeFriendButtonId" onclick="remFriendClicked()" style="display:none; width:200px;">Remove Friend</button>
 	    	<form action="/profile/" method="post">
 				{% csrf_token %}
-				{{ friend_rem.as_ul }}
+				{{ profile_forms.friend_rem.as_ul }}
 				<input type="hidden" name="formType" value="FriendRemove">
-				<input type="submit" style="display: none;" id="subitRemFriend">
+				<input type="submit" style="display: none;" id="submitRemFriend">
 	    	</form>
+	    	<div class="requestedButton" id="requestedFriendId" style="display:none; width:200px;">Friend Requested</div>
 	    	</div>
 	    	</div>
 	    </h1>
@@ -49,56 +50,31 @@
 	<hr>
 	</div>
 	
+
+
     <div id="calendarLoc">
     	{% with calendarFrame as sub_template %}
     		{% include calendarFrame %}
     	{% endwith %}
     </div>
 	<hr>
-	<style type="text/css">
-		.friendButton{
-			background-color: #7EDD81; /* Green */
-			border: none;
-			color: white;
-			padding: 15px 32px;
-			text-align: center;
-			text-decoration: none;
-			display: inline-block;
-			font-size: 16px;
-			margin: 4px 2px;
-			cursor: pointer;
-		}
-		.friendButton:hover{
-			background-color: #6AB76B;
-		}
-		.removeFriendButton{
-			background-color: #FF9999;
-			border: none;
-			color: white;
-			padding: 15px 32px;
-			text-align: center;
-			text-decoration: none;
-			display: inline-block;
-			font-size: 16px;
-			margin: 4px 2px;
-			cursor: pointer;
-		}
-		.removeFriendButton:hover{
-			background-color: #E57575;
-		}
-		
-		</style>
 
-<script type="text/javascript">
+	<script type="text/javascript">
 		var friendButton = document.getElementById("friendButtonId");
 		var removeFriendButton = document.getElementById("removeFriendButtonId");
+		var requestedDiv = document.getElementById("requestedFriendId");
 		if("{{profile_mode}}" != "self"){
 			if("{{is_friend}}" == "true"){
 				friendButton.style.display = "none";
 				removeFriendButton.style.display = "block";
 			}else{
-				friendButton.style.display = "block";
-				removeFriendButton.style.display = "none";
+				if("{{is_requested}}" == "true"){
+					requestedDiv.style.display = "block";
+				}else{
+					friendButton.style.display = "block";
+					removeFriendButton.style.display = "none";
+				}
+				console.log("is_requested", "{{is_requested}}");
 			}
 		}else{
 			friendButton.style.display = "none";
@@ -110,7 +86,7 @@
 			var addFormElem = document.getElementById("id_FIreqalias");
 			addFormElem.value = _name_selected;
 			console.log(addFormElem);
-			var submitAddFriend = document.getElementById("subitAddFriend");
+			var submitAddFriend = document.getElementById("submitAddFriend");
 			submitAddFriend.click();
 		}
 		function remFriendClicked(){
@@ -119,7 +95,7 @@
 			var remFormElem = document.getElementById("id_FIremalias");
 			remFormElem.value = _name_selected;
 			console.log(remFormElem);
-			var submitRemFriend = document.getElementById("subitRemFriend");
+			var submitRemFriend = document.getElementById("submitRemFriend");
 			submitRemFriend.click();
 		}
 		var database_user_json = {};
@@ -143,23 +119,11 @@
 
 		database_user_json = parseQuotesJson("{{user_database}}");
 		database_selected_json = parseQuotesJson("{{name_selected_data}}");
-		database_user_events = parseQuotesJson("{{user_events_database}}");
-		database_contact_list = parseQuotesJson("{{user_contact_list}}");
 		console.log("user_database", database_user_json);
-		console.log("database_user_events", database_user_events);
-		console.log("database_contact_list", database_contact_list);
 		console.log("database_selected_json", database_selected_json);
-		var database_calendar_struct = parseQuotesJson("{{database_calendar_dict}}");
-		console.log("database_calendar_struct", database_calendar_struct);
 		loadSelectedData();
-		// Need to comment out and replace.
-		// loadCalendarDataProfile("{{user_events}}", "{{member_events}}");
-		// loadProfileDummyData("{{dummy_events}}", "{{dummy_profiles}}", "{{dummy_contacts}}", "{{user}}", "{{user_contact_list}}");
-		// mainProf("{{calendar_mode}}", "{{name_selected}}");
 		_name_selected = "{{name_selected}}";
-		main_renderCalendar(database_calendar_struct);
-
-
-</script>
+		loadCalendarIfNonNull();
+	</script>
 
 {% endblock %}
