@@ -126,7 +126,7 @@ def actionEventInvite(invite_id, receiver_firebase_id, accept):
 		if accept == True:
 			# If event-invite acceptance is true, then update the receiver's user_events and the event's participating_users.
 			# Else, do nothing.
-			cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, %s)'
+			cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, (SELECT CAST (%s AS SMALLINT)))'
 				+ ' WHERE firebase_id = %s', [event_id, receiver_firebase_id])
 			cursor.execute('UPDATE "Event" SET participating_users = array_append(participating_users, %s)'
 				+ ' WHERE event_id = %s', [receiver_firebase_id, event_id])
