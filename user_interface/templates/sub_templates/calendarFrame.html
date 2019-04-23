@@ -139,7 +139,6 @@
 	        </button>
 	      </div>
 	      <div class="modal-body">
-	        <form action="/profile/" method="post">
 			  	<div class="form-group">
 				    <label class="reqField" for="inputEventName">Event Name</label>
 				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputEventName" pattern="^[a-zA-Z0-9 ]*$" required>
@@ -168,20 +167,280 @@
 				    <input onchange="updateEventForm()" class="form-control" type="time" id="inputEndTime" required>
 				  </div>
 				</div>
-				<div class="form-group">
+				<div class="form-text">
 				    <label for="inputInviteList">Invite</label>
-				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputInviteList" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$">
+				    <div class="dropdown" >
+					  <button class="btn btn-secondary dropdown-toggle" type="button" id="invites_select_dropdown_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: black;">
+					    <div id="inviteNameId" style="color:black;">
+					    	Select members to invite...
+					    </div>
+					  </button>
+					  <div class="dropdown-menu friendsSelectDropdown overAll" aria-labelledby="invites_select_dropdown_button"
+					  	style="position:absolute; z-index: 20;" id="invites_select_dropdown">
+					  </div>
+					</div>
 				</div>
-				<div class="form-row">
-				  <div class="form-group col-md-6">
+				<script type="text/javascript">
+							$(document).ready(function() {
+							  populateInviteSelectDropdown();
+							  populateWhitelistSelectDropdown();
+							  populateBlacklistSelectDropdown();
+							});
+							var invite_ids = [];
+							function populateInviteSelectDropdown(){
+								var friends_to_pop = _calendar_struct.calendar_data.member_info;
+								var invitesSelectDropdown = document.getElementById("invites_select_dropdown");
+								for(var i = 0; i < friends_to_pop.length; i++){
+									var curr_friend = friends_to_pop[i];
+									var curr_a = document.createElement("a");
+									curr_a.className = "dropdown-item";
+									var temp_id = curr_friend.alias + "_check_i";
+									curr_a.href = "#";
+									curr_a.setAttribute("onclick", "checkInviteSelect('" + temp_id + "')");
+									var curr_label = document.createElement("label");
+									curr_label.className = "check_container";
+									curr_label.innerText = curr_friend.first_name + " " + curr_friend.last_name;
+									var curr_input = document.createElement("input");
+									curr_input.type = "checkbox";
+									curr_input.id = temp_id;
+									curr_input.setAttribute("alias", curr_friend.alias);
+									var curr_span = document.createElement("span");
+									curr_span.className = "checkmark";
+									curr_label.appendChild(curr_input);
+									curr_label.appendChild(curr_span);
+									curr_a.appendChild(curr_label);
+									var temp_form = document.createElement('form');
+									temp_form.appendChild(curr_a);
+									invitesSelectDropdown.appendChild(temp_form);
+									invite_ids.push({"check_id" : temp_id, "alias" : curr_friend.alias, "firebase_id" : curr_friend.firebase_id});
+								}
+							}
+							function checkInviteSelect(sel_id){
+								var check_input = document.getElementById(sel_id);
+								if(check_input.checked){
+									check_input.checked = false;
+									check_input.setAttribute("flag", "false");
+								}else{
+									check_input.checked = true;
+									check_input.setAttribute("flag", "true");
+								}
+								var inviteTitle = document.getElementById("inviteNameId");
+								var str_place = "";
+								var invitesSelected = getInvitesSelected();
+								for(var i = 0; i < invitesSelected.length; i++){
+									str_place += "@" + invitesSelected[i];
+									if(i != invitesSelected.length - 1){
+										str_place += ", ";
+									}
+								}
+								inviteTitle.innerText = str_place;
+								if(str_place == ""){
+									inviteTitle.innerText = 'Select members to invite...'
+								}
+							}
+							function getInvitesSelected(){
+								var valid = [];
+								for(var i = 0; i < invite_ids.length; i++){
+									var curr_div = document.getElementById(invite_ids[i].check_id);
+									if(curr_div.getAttribute("flag") == "true"){
+										valid.push(invite_ids[i].alias);
+									}
+								}
+								return valid;
+							}
+							function getInvitesSelectedFirebase(){
+								var valid = [];
+								for(var i = 0; i < invite_ids.length; i++){
+									var curr_div = document.getElementById(invite_ids[i].check_id);
+									if(curr_div.getAttribute("flag") == "true"){
+										valid.push(invite_ids[i].firebase_id);
+									}
+								}
+								return valid;
+							}
+
+						</script>
+				  <div class="form-group">
 				    <label for="inputWhitelist">Whitelist</label>
-				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputWhitelist" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$">
+				    <!-- <input onchange="updateEventForm()" type="text" class="form-control" id="inputWhitelist" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$"> -->
+				    <div class="dropdown" >
+					  <button class="btn btn-secondary dropdown-toggle" type="button" id="whitelist_select_dropdown_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: black;">
+					    <div id="whitelistNameId" style="color:black;">
+					    	Select members to Whitelist...
+					    </div>
+					  </button>
+					  <div class="dropdown-menu friendsSelectDropdown overAll" aria-labelledby="whitelist_select_dropdown_button"
+					  	style="position:absolute; z-index: 20;" id="whitelist_select_dropdown">
+					  </div>
+					</div>
+					<script type="text/javascript">
+						var whitelist_ids = [];
+
+						function populateWhitelistSelectDropdown(){
+								var friends_to_pop = _calendar_struct.calendar_data.member_info;
+								var whitelistSelectDropdown = document.getElementById("whitelist_select_dropdown");
+								for(var i = 0; i < friends_to_pop.length; i++){
+									var curr_friend = friends_to_pop[i];
+									var curr_a = document.createElement("a");
+									curr_a.className = "dropdown-item";
+									var temp_id = curr_friend.alias + "_check_w";
+									curr_a.href = "#";
+									curr_a.setAttribute("onclick", "checkWhitelistSelect('" + temp_id + "')");
+									var curr_label = document.createElement("label");
+									curr_label.className = "check_container";
+									curr_label.innerText = curr_friend.first_name + " " + curr_friend.last_name;
+									var curr_input = document.createElement("input");
+									curr_input.type = "checkbox";
+									curr_input.id = temp_id;
+									curr_input.setAttribute("alias", curr_friend.alias);
+									var curr_span = document.createElement("span");
+									curr_span.className = "checkmark";
+									curr_label.appendChild(curr_input);
+									curr_label.appendChild(curr_span);
+									curr_a.appendChild(curr_label);
+									var temp_form = document.createElement('form');
+									temp_form.appendChild(curr_a);
+									whitelistSelectDropdown.appendChild(temp_form);
+									whitelist_ids.push({"check_id" : temp_id, "alias" : curr_friend.alias, "firebase_id" : curr_friend.firebase_id});
+								}
+							}
+							function checkWhitelistSelect(sel_id){
+								var check_input = document.getElementById(sel_id);
+								if(check_input.checked){
+									check_input.checked = false;
+									check_input.setAttribute("flag", "false");
+								}else{
+									check_input.checked = true;
+									check_input.setAttribute("flag", "true");
+								}
+								var whitelistTitle = document.getElementById("whitelistNameId");
+								var str_place = "";
+								var whitelistSelected = getWhitelistSelected();
+								for(var i = 0; i < whitelistSelected.length; i++){
+									str_place += "@" + whitelistSelected[i];
+									if(i != whitelistSelected.length - 1){
+										str_place += ", ";
+									}
+								}
+								whitelistTitle.innerText = str_place;
+								if(str_place == ""){
+									whitelistTitle.innerText = 'Select members to Whitelist...'
+								}
+							}
+
+							function getWhitelistSelected(){
+								var valid = [];
+								for(var i = 0; i < whitelist_ids.length; i++){
+									var curr_div = document.getElementById(whitelist_ids[i].check_id);
+									if(curr_div.getAttribute("flag") == "true"){
+										valid.push(whitelist_ids[i].alias);
+									}
+								}
+								return valid;
+							}
+							function getWhitelistSelectedFirebase(){
+								var valid = [];
+								for(var i = 0; i < whitelist_ids.length; i++){
+									var curr_div = document.getElementById(whitelist_ids[i].check_id);
+									if(curr_div.getAttribute("flag") == "true"){
+										valid.push(whitelist_ids[i].firebase_id);
+									}
+								}
+								return valid;
+							}
+						
+					</script>
 				  </div>	
-				  <div class="form-group col-md-6">
+				  <div class="form-group">
 				    <label for="inputBlacklist">Blacklist</label>
-				    <input onchange="updateEventForm()" type="text" class="form-control" id="inputBlacklist" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$">
+				    <!-- <input onchange="updateEventForm()" type="text" class="form-control" id="inputBlacklist" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$"> -->
+				    <div class="dropdown" >
+					  <button class="btn btn-secondary dropdown-toggle" type="button" id="blacklist_select_dropdown_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: black;">
+					    <div id="blacklistNameId" style="color:black;">
+					    	Select members to Blacklist...
+					    </div>
+					  </button>
+					  <div class="dropdown-menu friendsSelectDropdown overAll" aria-labelledby="blacklist_select_dropdown_button"
+					  	style="position:absolute; z-index: 20;" id="blacklist_select_dropdown">
+					  </div>
+					</div>
+					<script type="text/javascript">
+						var blacklist_ids = [];
+
+						function populateBlacklistSelectDropdown(){
+								var friends_to_pop = _calendar_struct.calendar_data.member_info;
+								var blacklistSelectDropdown = document.getElementById("blacklist_select_dropdown");
+								for(var i = 0; i < friends_to_pop.length; i++){
+									var curr_friend = friends_to_pop[i];
+									var curr_a = document.createElement("a");
+									curr_a.className = "dropdown-item";
+									var temp_id = curr_friend.alias + "_check_b";
+									curr_a.href = "#";
+									curr_a.setAttribute("onclick", "checkBlacklistSelect('" + temp_id + "')");
+									var curr_label = document.createElement("label");
+									curr_label.className = "check_container";
+									curr_label.innerText = curr_friend.first_name + " " + curr_friend.last_name;
+									var curr_input = document.createElement("input");
+									curr_input.type = "checkbox";
+									curr_input.id = temp_id;
+									curr_input.setAttribute("alias", curr_friend.alias);
+									var curr_span = document.createElement("span");
+									curr_span.className = "checkmark";
+									curr_label.appendChild(curr_input);
+									curr_label.appendChild(curr_span);
+									curr_a.appendChild(curr_label);
+									var temp_form = document.createElement('form');
+									temp_form.appendChild(curr_a);
+									blacklistSelectDropdown.appendChild(temp_form);
+									blacklist_ids.push({"check_id" : temp_id, "alias" : curr_friend.alias, "firebase_id" : curr_friend.firebase_id});
+								}
+							}
+							function checkBlacklistSelect(sel_id){
+								var check_input = document.getElementById(sel_id);
+								if(check_input.checked){
+									check_input.checked = false;
+									check_input.setAttribute("flag", "false");
+								}else{
+									check_input.checked = true;
+									check_input.setAttribute("flag", "true");
+								}
+								var blacklistTitle = document.getElementById("blacklistNameId");
+								var str_place = "";
+								var blacklistSelected = getBlacklistSelected();
+								for(var i = 0; i < blacklistSelected.length; i++){
+									str_place += "@" + blacklistSelected[i];
+									if(i != blacklistSelected.length - 1){
+										str_place += ", ";
+									}
+								}
+								blacklistTitle.innerText = str_place;
+								if(str_place == ""){
+									blacklistTitle.innerText = 'Select members to Whitelist...'
+								}
+							}
+
+							function getBlacklistSelected(){
+								var valid = [];
+								for(var i = 0; i < blacklist_ids.length; i++){
+									var curr_div = document.getElementById(blacklist_ids[i].check_id);
+									if(curr_div.getAttribute("flag") == "true"){
+										valid.push(blacklist_ids[i].alias);
+									}
+								}
+								return valid;
+							}
+							function getBlacklistSelectedFirebase(){
+								var valid = [];
+								for(var i = 0; i < blacklist_ids.length; i++){
+									var curr_div = document.getElementById(blacklist_ids[i].check_id);
+									if(curr_div.getAttribute("flag") == "true"){
+										valid.push(blacklist_ids[i].firebase_id);
+									}
+								}
+								return valid;
+							}
+					</script>
 				  </div>
-				</div>
 				<div class="form-row">
 				  <div class="form-group col-md-6">
 				    <label for="doRepeatSwitch">Repeat</label>
@@ -244,7 +503,7 @@
 						var form_start = document.getElementById("id_EIstart");
 						var start_date_day = new Date(enter_start_date.value + " " + enter_start_time.value);
 						form_start.value = start_date_day.getTime() + "";
-						console.log(form_start);
+						// console.log(form_start);
 						// ADD DATE FORMATTING
 
 						// form_start.value = enter_start.value;
@@ -253,7 +512,7 @@
 						var form_end = document.getElementById("id_EIend");
 						var end_date_day = new Date(enter_end_date.value + " " + enter_end_time.value);
 						form_end.value = end_date_day.getTime() + "";
-						console.log(form_end);
+						// console.log(form_end);
 						// ADD DATE FORMATTING
 
 						// form_end.value = enter_end.value;
@@ -279,52 +538,75 @@
 						form_repeat_pattern.value = pattern_str;
 
 						// Invites
-						var enter_invite = document.getElementById("inputInviteList");
+						// var enter_invite = document.getElementById("inputInviteList");
 						var form_invite = document.getElementById("id_EIinvite");
-						form_invite.value = enter_invite.value;
+						var invite_string = "";
+						var invite_sel = getInvitesSelectedFirebase();
+						for(var i = 0; i < invite_sel.length; i++){
+							invite_string += invite_sel[i];
+							if(i != invite_sel.length - 1){
+								invite_string += ",";
+							}
+						}
+						form_invite.value = invite_string;
 
 						// Whitelist
-						var enter_whitelist = document.getElementById("inputWhitelist");
+						// var enter_whitelist = document.getElementById("inputWhitelist");
 						var form_whitelist = document.getElementById("id_EIwhitelist");
-						form_whitelist.value = enter_whitelist.value;
+						var whitelist_string = "";
+						var whitelist_sel = getWhitelistSelectedFirebase();
+						for(var i = 0; i < whitelist_sel.length; i++){
+							whitelist_string += whitelist_sel[i];
+							if(i != whitelist_sel.length - 1){
+								whitelist_string += ",";
+							}
+						}
+						form_whitelist.value = whitelist_string;
 
 						// Blacklist
-						var enter_blacklist = document.getElementById("inputBlacklist");
+						// var enter_blacklist = document.getElementById("inputBlacklist");
 						var form_blacklist = document.getElementById("id_EIblacklist");
-						form_blacklist.value = enter_blacklist.value;
+						var blacklist_string = "";
+						var blacklist_sel = getBlacklistSelectedFirebase();
+						for(var i = 0; i < blacklist_sel.length; i++){
+							blacklist_string += blacklist_sel[i];
+							if(i != blacklist_sel.length - 1){
+								blacklist_string += ",";
+							}
+						}
+						form_blacklist.value = blacklist_string;
 					}
+					function validEventForm(){
+						var form_name = document.getElementById("id_EIname");
+						if(form_name.value == ""){
+							return false;
+						}
+						var form_start = document.getElementById("id_EIstart");
+						if(form_start.value == "" || form_start.value == "NaN"){
+							return false;
+						}
+						var form_end = document.getElementById("id_EIend");
+						if(form_end.value == "" || form_end.value == "NaN"){
+							return false;
+						}
+						return true;
+					}
+
 					function updateAndSubmit(){
 						updateEventForm();
-						var submitButton = document.getElementById("createEventHidden");
-						submitButton.click();
+						if(validEventForm() == true){
+							var submitButton = document.getElementById("createEventHidden");
+							submitButton.click();
+						}
 					}
 				</script>
+
+	        <form action="/profile/" method="post">
 				{% csrf_token %}
-				{{ event_form.as_ul }}
+				{{ calendar_forms.event_form.as_ul }}
 				<input type="hidden" name="formType" value="SubmitEvent">
 				<input type="submit"  style="display: none;" id="createEventHidden">
 			</form>
-	      </div>
-	    </div>
-	  </div>
-	</div>
-	<div class="modal fade" id="editEventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-	  <div class="modal-dialog modal-dialog-centered" role="document">
-	    <div class="modal-content">
-	      <div class="modal-header">
-	        <h5 class="modal-title" id="editEventModalLongTitle">Edit</h5>
-	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          <span aria-hidden="true">&times;</span>
-	        </button>
-	      </div>
-	      <div class="modal-body">
-	        <form>
-				<div class="form-group">
-				    <label class="reqField" for="inputEmailLogin">Email Address</label>
-				    <input type="text" class="form-control" id="inputEmailLogin" pattern="^([\w\-\.]+)@((\[([0-9]{1,3}\.){3}[0-9]{1,3}\])|(([\w\-]+\.)+)([a-zA-Z]{2,4}))$" required>
-				</div>
-				<button type="submit" class="btn btn-primary">Login Button Here</button>
-				</form>
 	      </div>
 	    </div>
 	  </div>
@@ -351,3 +633,12 @@
 	    </div>
 	  </div>
 	</div>
+	<div style="display:none;" onclick="loadCalendarFrame()" id="loadCalendarFrameID"></div>
+
+	<script type="text/javascript">
+		var database_calendar_struct = parseQuotesJson("{{database_calendar_dict}}");
+		console.log("database_calendar_struct", database_calendar_struct);
+		function loadCalendarFrame(){
+			main_renderCalendar(database_calendar_struct);
+		}
+	</script>

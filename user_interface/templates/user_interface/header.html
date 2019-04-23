@@ -1,15 +1,16 @@
 <head>
 	{% load static %}
 	 <!-- Comes from open-source https://materializecss.com/getting-started.html-->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
 	<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
+	  rel="stylesheet">
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 	{% load static %}
 	<script src="{% static 'user_interface/js/utilities.js' %}"> </script>
+	<link rel="stylesheet" href="{% static 'user_interface/css/buttons.css' %}">
 	<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
 	<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/js/bootstrap4-toggle.min.js"></script>
 	<link rel="shortcut icon" type="image/png" href="{% static 'compass_PSN_icon.ico' %}"/>
@@ -19,83 +20,101 @@
 <body>
 
 	<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
-      <a class="navbar-brand" href="/profile/">MyAlmanack</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsableNav" aria-controls="collapsableNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+	  <a class="navbar-brand" href="/profile/">MyAlmanack</a>
+	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsableNav" aria-controls="collapsableNav" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	  </button>
 
-      <div class="collapse navbar-collapse" id="collapsableNav">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item dropdown">
-            <a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">notification_important</i></a>
-            <div class="dropdown-menu  dropdown-menu-left overAll" aria-labelledby="dropdown03">
-            	<form>
-            	<div class="dropHeader" id="e_drop_label" style="">Event Invites</div>
-            	<div class="dropdown-divider"></div>
-            	<div class="navbarDropdownClass" id="e_drop"></div>
-            	</form>
-            </div>
-          </li>
-        </ul>
-        <div class="form-inline justify-content-center" style="width:75%;" action="#">
-          <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onclick="searchBarUpdate();" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
-          <script type="text/javascript">
-          	$(document).ready(function(){
-			    $('#firstSearch').keypress(function(e){
-			      if(e.keyCode==13){
-			      	console.log("enter pressed");
-			      	searchBarUpdate();
-			      	submitSearch();
-			      }
-			    });
+	  <div class="collapse navbar-collapse" id="collapsableNav">
+		<ul class="navbar-nav mr-auto">
+		  <li class="nav-item dropdown">
+			<a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">notification_important</i></a>
+			<div class="dropdown-menu  dropdown-menu-left overAll" aria-labelledby="dropdown03">
+				<form>
+				<div class="dropHeader" id="e_drop_label" style="">Event Invites</div>
+				<div class="dropdown-divider"></div>
+				<div class="navbarDropdownClass" id="e_drop"></div>
+				</form>
+			</div>
+		  </li>
+		</ul>
+		<div class="form-inline justify-content-center" style="width:75%;" action="#">
+		  <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onclick="searchBarUpdate();" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
+		  <script type="text/javascript">
+			$(document).ready(function(){
+				$("form").each(function(){
+					var curr = $(this);
+					var allowed = false;
+					for(var i = 0; i < curr.length; i++){
+						if(curr[i].className == "canEnter"){
+							allowed = true;
+							break;
+						}
+					}
+					if(allowed == false){
+						curr.keydown(function(event){
+							if(event.keyCode == 13) {
+							  event.preventDefault();
+							  return false;
+							}
+						  });
+					}
+				});
+				$('#firstSearch').keypress(function(e){
+				  if(e.keyCode==13){
+					console.log("enter pressed");
+					searchBarUpdate();
+					submitSearch();
+				  }
+				});
 			});
-          	function searchBarUpdate(){
-          		var search_form_param = document.getElementById("id_SIstring");
-          		var firstSearch = document.getElementById("firstSearch");
-          		search_form_param.value = firstSearch.value;
-          		if(firstSearch.value == ""){
-          			search_form_param.value = " ";
-          		}
-          	}
-          	function submitSearch(){
-          		var search_submit_button = document.getElementById("searchSubmitButton");
-          		search_submit_button.click();
-          	}
-          </script>
-        </div>
-        <ul class= "navbar-nav ml-auto">
-          <li class="nav-item dropdown overAll">
-            <a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">person</i></a>
-            <div class="dropdown-menu dropdown-menu-right overAll" aria-labelledby="dropdown04">
-            	<form>
-            	<div class="dropHeader" id="f_drop_label" style="">Friend Requests</div>
-            	<div class="dropdown-divider"></div>
-            	<div class="navbarDropdownClass" id="f_drop">
-            	</div>
-            	</form>
-            </div>
-          </li>
-          <li class="nav-item dropdown overAll">
-            <a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">group</i></a>
-            <div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown05">
-            	<form>
-            	<div class="dropHeader" id="g_drop_label" style="">Group Invites</div>
-            	<div class="dropdown-divider"></div>
-            	<div class="navbarDropdownClass" id="g_drop"></div>
-            	</form>
-            </div>
-          </li>
-          <li class="nav-item dropdown overAll">
-            <a class="nav-link" href="http://example.com" id="dropdown06" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">settings</i></a>
-            <div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown06" id="s_drop">
-              <a class="dropdown-item" data-toggle="modal" data-target="#createGroupModal" href="#">Create Group</a>
-              <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
-              <a class="dropdown-item" href="/logout">Log Out</a>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </nav>
+			function searchBarUpdate(){
+				var search_form_param = document.getElementById("id_SIstring");
+				var firstSearch = document.getElementById("firstSearch");
+				search_form_param.value = firstSearch.value;
+				if(firstSearch.value == ""){
+					search_form_param.value = " ";
+				}
+			}
+			function submitSearch(){
+				var search_submit_button = document.getElementById("searchSubmitButton");
+				search_submit_button.click();
+			}
+		  </script>
+		</div>
+		<ul class= "navbar-nav ml-auto">
+		  <li class="nav-item dropdown overAll">
+			<a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">person</i></a>
+			<div class="dropdown-menu dropdown-menu-right overAll" aria-labelledby="dropdown04">
+				<form>
+				<div class="dropHeader" id="f_drop_label" style="">Friend Requests</div>
+				<div class="dropdown-divider"></div>
+				<div class="navbarDropdownClass" id="f_drop">
+				</div>
+				</form>
+			</div>
+		  </li>
+		  <li class="nav-item dropdown overAll">
+			<a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">group</i></a>
+			<div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown05">
+				<form>
+				<div class="dropHeader" id="g_drop_label" style="">Group Invites</div>
+				<div class="dropdown-divider"></div>
+				<div class="navbarDropdownClass" id="g_drop"></div>
+				</form>
+			</div>
+		  </li>
+		  <li class="nav-item dropdown overAll">
+			<a class="nav-link" href="http://example.com" id="dropdown06" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">settings</i></a>
+			<div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown06" id="s_drop">
+			  <a class="dropdown-item" data-toggle="modal" data-target="#createGroupModal" href="#">Create Group</a>
+			  <a class="dropdown-item" href="/profile/edit">Edit Profile</a>
+			  <a class="dropdown-item" href="/logout">Log Out</a>
+			</div>
+		  </li>
+		</ul>
+	  </div>
+	</nav>
 	{% block content %}
 	{% endblock %}
 
@@ -106,7 +125,22 @@
 		<input type="submit"  style="display: none;" id="friendRespondRequest">
 	</form>
 
-	<form action="/search/" method="post">
+	<form action="/profile/" method="post">
+		{% csrf_token %}
+		{{ header_forms.event_response.as_ul }}
+		<input type="hidden" name="formType" value="EventResponse">
+		<input type="submit"  style="display: none;" id="eventRespondInvite">
+	</form>
+
+
+	<form action="/profile/" method="post">
+		{% csrf_token %}
+		{{ header_forms.group_response.as_ul }}
+		<input type="hidden" name="formType" value="GroupResponse">
+		<input type="submit"  style="display: none;" id="groupRespondInvite">
+	</form>
+
+	<form action="/search/" method="post" class="canEnter">
 		{% csrf_token %}
 		{{ header_forms.search_form.as_ul }}
 		<input type="hidden" name="formType" value="SearchTerm">
@@ -123,7 +157,7 @@
 	<style type="text/css">
 		.reqField:before{
 			content:"*" ;
-     		color:red;
+			color:red;
 		}
 		.navbarDropdownClass{
 			height:200px;
@@ -192,6 +226,9 @@
 		.confirmButton:hover{
 			background-color: #728AFF;
 		}
+		.dropdown-toggle:after{
+			content: "";
+		}
 	</style>
 
 	<script type="text/javascript">
@@ -213,9 +250,12 @@
 
 		function populateEventInvitesDropdown(){
 			var notif_div = document.getElementById("e_drop");
-			for(var i = 0; i < 20; i++){
+			var event_invites = database_header_info.event_invites;
+			for(var i = 0; i < event_invites.length; i++){
 				// CHANGE TO ACTUAL ID
-				var event_id = i;
+				var curr_invite = event_invites[i];
+				var creator_data = curr_invite.creator_data;
+				var event_id = curr_invite.event_id;
 
 				var curr_elem = document.createElement('a');
 				curr_elem.className= "dropdown-item overAll";
@@ -223,7 +263,21 @@
 				curr_elem.id = "e_" + event_id;
 				curr_elem.setAttribute("event_id", event_id);
 				var event_text_div = document.createElement('div');
-				event_text_div.innerHTML = "Event Description " + i;
+				event_text_div.innerHTML = creator_data.first_name + " " + creator_data.last_name + "<br>";
+				event_text_div.innerHTML += "Invited you to:" + "<br><br>" + curr_invite.event_title + "<br>";
+				var date_parse_start = new Date(curr_invite.start_date);
+				var start_date_formatted = customDateString(date_parse_start);
+				var second_line_formatted = "";
+				if(new Date(curr_invite.start_date).setHours(0,0,0) == new Date(curr_invite.end_date).setHours(0,0,0)){
+					second_line_formatted = customTimeString(new Date(curr_invite.start_date)) + " - "
+					+ customTimeString(new Date(curr_invite.end_date)); 
+				}else{
+					start_date_formatted += customTimeString(new Date(curr_invite.start_date)) + "<br>";
+					second_line_formatted = customDateString(new Date(curr_invite.end_date)) + "<br>" 
+					+ customTimeString(new Date(curr_invite.end_date));
+				}
+				event_text_div.innerHTML += start_date_formatted + "<br>";
+				event_text_div.innerHTML += second_line_formatted + "<br>";
 				event_text_div.style ="display:inline;";
 				curr_elem.appendChild(event_text_div);
 				var button_cont = document.createElement('div');
@@ -233,11 +287,11 @@
 				var confirm = document.createElement('div');
 				confirm.className = "col confirmButton";
 				confirm.innerText = "Confirm";
-				confirm.setAttribute("onclick", "confirmButtonEvent('" + curr_elem.id + "', '" + event_id + "')");
+				confirm.setAttribute("onclick", "confirmButtonEvent('" + curr_elem.id + "', '" + curr_invite.invite_id + "')");
 				var reject = document.createElement('div');
 				reject.className = "col rejectButton";
 				reject.innerText = "Reject";
-				reject.setAttribute("onclick", "rejectButtonEvent('" + curr_elem.id + "', '" + event_id + "')");
+				reject.setAttribute("onclick", "rejectButtonEvent('" + curr_elem.id + "', '" + curr_invite.invite_id + "')");
 				button_row.appendChild(confirm);
 				button_row.appendChild(reject);
 				button_cont.appendChild(button_row);
@@ -294,9 +348,11 @@
 
 		function populateGroupDropdown(){
 			var notif_div = document.getElementById("g_drop");
-			for(var i = 0; i < 20; i++){
+			var group_requests = database_header_info.group_requests.invites;
+
+			for(var i = 0; i < group_requests.length; i++){
 				// CHANGE TO ACTUAL Group Name
-				var group_id = i;
+				var group_id = group_requests[i].group_name;
 
 				var curr_elem = document.createElement('a');
 				curr_elem.className= "dropdown-item overAll";
@@ -304,7 +360,7 @@
 				curr_elem.id = "g_" + group_id;
 				curr_elem.setAttribute("event_id", group_id);
 				var event_text_div = document.createElement('div');
-				event_text_div.innerHTML = "Group Invite  " + i;
+				event_text_div.innerHTML = "Group Invite  " + group_id;
 				event_text_div.style ="display:inline;";
 				curr_elem.appendChild(event_text_div);
 				var button_cont = document.createElement('div');
@@ -356,16 +412,28 @@
 			respondFriendPost(invite_id, "reject");
 		}
 
-		function confirmButtonEvent(div_id, event_id){
-			console.log("confirm:" + event_id);
-			var cont_div = document.getElementById(div_id);
-			cont_div.parentNode.removeChild(cont_div);
+		function respondEventPost(invite_id, action){
+			var response_form_id = document.getElementById("id_EIinvite_id");
+			var response_form_action = document.getElementById("id_EIaction");
+			response_form_id.value = invite_id;
+			response_form_action.value = action;
+			var submitResponseButton = document.getElementById("eventRespondInvite");
+			submitResponseButton.click();
 		}
 
-		function rejectButtonEvent(div_id, event_id){
-			console.log("reject:" + event_id);
+		function confirmButtonEvent(div_id, invite_id){
+			console.log("confirm:" + invite_id);
 			var cont_div = document.getElementById(div_id);
 			cont_div.parentNode.removeChild(cont_div);
+			respondEventPost(invite_id, "accept");
+		}
+
+		function rejectButtonEvent(div_id, invite_id){
+			console.log("reject:" + invite_id);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+			respondEventPost(invite_id, "reject");
+
 		}
 
 
@@ -383,55 +451,254 @@
 
 		populateDropdowns();
 
+		function clearDropdowns(){
+			var event_div = document.getElementById("e_drop");
+			while(event_div.hasChildNodes()){
+				event_div.removeChild(event_div.firstChild);
+			}
+			var friend_div = document.getElementById("f_drop");
+			while(friend_div.hasChildNodes()){
+				friend_div.removeChild(friend_div.firstChild);
+			}
+			var group_div = document.getElementById("g_drop");
+			while(group_div.hasChildNodes()){
+				group_div.removeChild(group_div.firstChild);
+			}
+		}
+
+		function updateDropdownData(){
+			// console.log("update");
+			$.ajax({
+					url: '/ajax/get_invite_data/',
+					data: {},
+					dataType: 'json',
+					success: function (data) {
+						database_header_info = data;
+						clearDropdowns();
+						populateDropdowns();
+						// console.log(database_header_info);
+					}
+			});
+		}
+		$(document).ready(function() {
+			  setInterval(
+				  () => {
+				    updateDropdownData();
+				  },
+				  5 * 1000
+				);
+			});
+
 	</script>
 
 
 	<div class="modal fade" id="createGroupModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 	  <div class="modal-dialog modal-dialog-centered" role="document">
-	    <div class="modal-content">
-	      <div class="modal-header">
-	        <h5 class="modal-title" id="createGroupModalLongTitle">Create Group</h5>
-	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          <span aria-hidden="true">&times;</span>
-	        </button>
-	      </div>
-	      <div class="modal-body">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="createGroupModalLongTitle">Create Group</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
 				<div class="form-group">
-				    <label class="reqField" for="inputGroupName">Group Name</label>
-				    <input type="text"  onchange="updateGroupForm()" class="form-control" id="inputGroupName" pattern="[A-Za-z0-9]{1,}$" required>
+					<label class="reqField" for="inputGroupName">Group Name</label>
+					<div class="row" style="padding-left: 15px; padding-right: 20px;">
+						<input type="text" class="form-control col-11" onchange="updateGroupForm()" 
+						onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();"
+						class="form-control" id="inputGroupName" pattern="[A-Za-z0-9]{1,}$" required>
+						<i class="col-1 material-icons" id="groupnameValidationId">check_circle_outline</i>
+					</div>
 				</div>
 				<div class="form-group">
-				    <label for="inputGroupDescription">Description</label>
-				    <input type="text"  onchange="updateGroupForm()" class="form-control" id="inputGroupDescription" >
+					<label for="inputGroupDescription">Description</label>
+					<input type="text"  onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" id="inputGroupDescription" >
 				</div>
 				<div class="form-group">
-				    <label for="inputGroupInvites">Invites</label>
-				    <input type="text" onchange="updateGroupForm()"  class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites">
+					<label for="inputGroupInvites">Invites</label>
+					<!-- <input type="text" onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites"> -->
+					<div class="dropdown" >
+					  <button class="btn btn-secondary dropdown-toggle" type="button" id="groupInvites_select_dropdown_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: black;">
+					    <div id="groupInviteNameId" style="color:black;">
+					    	Select friends to invite...
+					    </div>
+					  </button>
+					  <div class="dropdown-menu friendsSelectDropdown overAll" aria-labelledby="groupInvites_select_dropdown_button"
+					  	style="position:absolute; z-index: 20;" id="groupInvites_select_dropdown">
+					  </div>
+					</div>
+					<script type="text/javascript">
+						$(document).ready(function() {
+							populateGroupInviteSelectDropdown();
+						});
+						var group_invite_ids = [];
+						function populateGroupInviteSelectDropdown(){
+							var friends_to_pop = database_header_info.friend_info;
+							var groupInvitesSelectDropdown = document.getElementById("groupInvites_select_dropdown");
+							for(var i = 0; i < friends_to_pop.length; i++){
+								var curr_friend = friends_to_pop[i];
+								var curr_a = document.createElement("a");
+								curr_a.className = "dropdown-item";
+								var temp_id = curr_friend.alias + "_check_gi";
+								curr_a.href = "#";
+								curr_a.setAttribute("onclick", "checkGroupInviteSelect('" + temp_id + "')");
+								var curr_label = document.createElement("label");
+								curr_label.className = "check_container";
+								curr_label.innerText = curr_friend.first_name + " " + curr_friend.last_name;
+								var curr_input = document.createElement("input");
+								curr_input.type = "checkbox";
+								curr_input.id = temp_id;
+								curr_input.setAttribute("alias", curr_friend.alias);
+								var curr_span = document.createElement("span");
+								curr_span.className = "checkmark";
+								curr_label.appendChild(curr_input);
+								curr_label.appendChild(curr_span);
+								curr_a.appendChild(curr_label);
+								var temp_form = document.createElement('form');
+								temp_form.appendChild(curr_a);
+								groupInvitesSelectDropdown.appendChild(temp_form);
+								group_invite_ids.push({"check_id" : temp_id, "alias" : curr_friend.alias, "firebase_id" : curr_friend.firebase_id});
+							}
+						}
+						function checkGroupInviteSelect(sel_id){
+							var check_input = document.getElementById(sel_id);
+							if(check_input.checked){
+								check_input.checked = false;
+								check_input.setAttribute("flag", "false");
+							}else{
+								check_input.checked = true;
+								check_input.setAttribute("flag", "true");
+							}
+							var groupInviteTitle = document.getElementById("groupInviteNameId");
+							var str_place = "";
+							var groupInvitesSelected = getGroupInvitesSelected();
+							for(var i = 0; i < groupInvitesSelected.length; i++){
+								str_place += "@" + groupInvitesSelected[i];
+								if(i != groupInvitesSelected.length - 1){
+									str_place += ", ";
+								}
+							}
+							groupInviteTitle.innerText = str_place;
+							if(str_place == ""){
+								groupInviteTitle.innerText = 'Select members to invite...'
+							}
+							remainderEditGroup();
+						}
+						function getGroupInvitesSelected(){
+							var valid = [];
+							for(var i = 0; i < group_invite_ids.length; i++){
+								var curr_div = document.getElementById(group_invite_ids[i].check_id);
+								if(curr_div.getAttribute("flag") == "true"){
+									valid.push(group_invite_ids[i].alias);
+								}
+							}
+							return valid;
+						}
+						function getGroupInvitesSelectedFirebase(){
+							var valid = [];
+							for(var i = 0; i < group_invite_ids.length; i++){
+								var curr_div = document.getElementById(group_invite_ids[i].check_id);
+								if(curr_div.getAttribute("flag") == "true"){
+									valid.push(group_invite_ids[i].firebase_id);
+								}
+							}
+							return valid;
+						}
+					</script>
 				</div>
 				<script type="text/javascript">
+					var valid_group = false;
+					var previous_valid_group = true;
+					$(document).ready(function() {
+						setInterval(
+						  () => {
+							if(valid_group != previous_valid_group){
+								updateGroupForm();
+							}
+						  },
+						  1000
+						);
+					});
+
+					function setxgroup(){
+						var groupnameValidation = document.getElementById("groupnameValidationId");
+						groupnameValidation.innerText = "highlight_off";
+					}
+
+					function setcheckgroup(){
+						var groupnameValidation = document.getElementById("groupnameValidationId");
+						groupnameValidation.innerText = "check_circle_outline";
+					}
+					function performEditGroupAjax(callback, after){
+						var div_group_name = document.getElementById("inputGroupName");
+						$.ajax({
+							url: '/ajax/validate_group_name/',
+							data: {
+							  'group_name': div_group_name.value
+							},
+							dataType: 'json',
+							success: function (data) {
+							  if (data.is_taken) {
+								previous_valid_group = valid_group;
+								valid_group = false;
+								setxgroup();
+							  }else{
+								previous_valid_group = valid_group;
+								valid_group = true;
+								setcheckgroup();
+								callback();
+							  }
+							  after();
+							}
+						});
+					}
 					function updateGroupForm(){
 						var form_group_name = document.getElementById("id_GIname");
 						var div_group_name = document.getElementById("inputGroupName");
-						form_group_name.value = div_group_name.value;
 
+						if(div_group_name.value != ""){
+							var temp_callback = function(){
+								var form_group_name = document.getElementById("id_GIname");
+								var div_group_name = document.getElementById("inputGroupName");
+								form_group_name.value = div_group_name.value;
+							};
+							performEditGroupAjax(temp_callback,remainderEditGroup);
+						}
+					}
+					function remainderEditGroup(){
 						var form_group_desc = document.getElementById("id_GIdescription");
 						var div_group_desc = document.getElementById("inputGroupDescription");
 						form_group_desc.value = div_group_desc.value;
 
 						var form_group_inv = document.getElementById("id_GIinvite");
-						var div_group_inv = document.getElementById("inputGroupInvites");
-						form_group_inv.value = div_group_inv.value;
+						var firebase_selected_group = getGroupInvitesSelectedFirebase();
+						var temp_string = "";
+						for(var i = 0; i < firebase_selected_group.length; i++){
+							temp_string += firebase_selected_group[i];
+							if(i != firebase_selected_group.length - 1){
+								temp_string += ",";
+							}
+						}
+						console.log("remainderEditGroup invites:", temp_string);
+						form_group_inv.value = temp_string;
 					}
+
+
 					function updateAndClickGroup(){
 						updateGroupForm();
-						var submitButton = document.getElementById("submitCreateGroup");
-						submitButton.click();
+						if(valid_group == true){
+							var submitButton = document.getElementById("submitCreateGroup");
+							submitButton.click();
+						}
 					}
+
+
 				</script>
 				<input type="button" class="confirmButton" style="width:100%; height:50px;" value="Create Group" onclick="updateAndClickGroup()">
 
-	      </div>
-	    </div>
+		  </div>
+		</div>
 	  </div>
 	</div>
 
