@@ -244,6 +244,7 @@ def getHeaderDict(firebase_id):
 		for g_name in group_invite_names:
 			request_data = getGroupInviteData(g_name)
 			curr_group_data = getGroupData(request_data["group_name"])
+			curr_group_data["invite_id"] = g_name
 			retHeader["group_requests"]["invites"].append(curr_group_data)
 
 	database_contact_ids = contact_list["contact_names"]
@@ -769,6 +770,9 @@ def formController(request):
 	elif(switchType == "EventResponse"):
 		respondEvent(request)
 		return HttpResponseRedirect("/profile/");
+	elif(switchType == "GroupResponse"):
+		respondGroup(request)
+
 
 
 
@@ -832,6 +836,20 @@ def respondEvent(request):
 		action = False
 	user_firebase_id = getCurrentFirebaseId(request)
 	actionEventInvite(int(invite_id), user_firebase_id, action)
+
+def respondGroup(request):
+	group_form = GroupRespondRequest(request.POST)
+	print(group_form)
+	invite_id = group_form["GIinvite_id"].value()
+	action_s = group_form["GIaction"].value()
+	action = False
+	if(action_s == "accept"):
+		action = True
+	else:
+		action = False
+	user_firebase_id = getCurrentFirebaseId(request)
+	# def actionGroupInvite(invite_id, receiver_firebase_id, accept):
+	actionGroupInvite(invite_id, user_firebase_id, action)
 
 
 

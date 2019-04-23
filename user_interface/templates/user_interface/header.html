@@ -370,11 +370,11 @@
 				var accept = document.createElement('div');
 				accept.className = "col acceptButton";
 				accept.innerText = "Accept";
-				accept.setAttribute("onclick", "acceptButtonGroup('" + curr_elem.id + "', '" + group_id + "')");
+				accept.setAttribute("onclick", "acceptButtonGroup('" + curr_elem.id + "', '" + group_requests[i].invite_id + "')");
 				var reject = document.createElement('div');
 				reject.className = "col rejectButton";
 				reject.innerText = "Reject";
-				reject.setAttribute("onclick", "rejectButtonGroup('" + curr_elem.id + "', '" + group_id + "')");
+				reject.setAttribute("onclick", "rejectButtonGroup('" + curr_elem.id + "', '" + group_requests[i].invite_id + "')");
 				button_row.appendChild(accept);
 				button_row.appendChild(reject);
 				button_cont.appendChild(button_row);
@@ -437,17 +437,30 @@
 		}
 
 
-		function acceptButtonGroup(div_id, alias){
-			console.log("accept:" + alias);
-			var cont_div = document.getElementById(div_id);
-			cont_div.parentNode.removeChild(cont_div);
+		function respondGroupPost(invite_id, action){
+			var response_form_id = document.getElementById("id_GIinvite_id");
+			var response_form_action = document.getElementById("id_GIaction");
+			response_form_id.value = invite_id;
+			response_form_action.value = action;
+			var submitResponseButton = document.getElementById("groupRespondInvite");
+			submitResponseButton.click();
 		}
 
-		function rejectButtonGroup(div_id, alias){
-			console.log("reject:" + alias);
+
+		function acceptButtonGroup(div_id, invite_id){
+			console.log("accept:" + invite_id);
 			var cont_div = document.getElementById(div_id);
 			cont_div.parentNode.removeChild(cont_div);
+			respondGroupPost(invite_id, "accept");
 		}
+
+		function rejectButtonGroup(div_id, invite_id){
+			console.log("reject:" + invite_id);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+			respondGroupPost(invite_id, "reject");
+		}
+
 
 		populateDropdowns();
 
