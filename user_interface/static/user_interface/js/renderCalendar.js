@@ -119,7 +119,7 @@ function clickAnywhere(event){
 		clicked_structs.push(getEventStruct(curr_id));
 	}
 
-	if(clicked_structs.length > 0 && allModalsClosed()){
+	if(clicked_structs.length > 0 && allModalsClosed() && allDropdownsClosed()){
 		clearShowEvents();
 		populateShowEvents(clicked_structs);
 		showEventsModal();
@@ -160,6 +160,16 @@ function allModalsClosed(){
 	for(var i = 0; i < allModals.length; i++){
 		var curr_modal = allModals[i];
 		if(curr_modal.className.includes(" show")){
+			return false;
+		}
+	}
+	return true;
+}
+function allDropdownsClosed(){
+	var allDropdowns = document.getElementsByClassName("dropdown-menu");
+	for(var i = 0; i < allDropdowns.length; i++){
+		var curr_dropdown = allDropdowns[i];
+		if(curr_dropdown.className.includes(" show")){
 			return false;
 		}
 	}
@@ -607,13 +617,17 @@ function combinedFreeToHours(combined_free, month_start, month_end){
 			var date_affected = new Date(new Date(curr_split[j].start_date).setHours(0,0,0));
 			// console.log("date_affected", date_affected);
 			var temp_hours = 0;
+			var index_found = -1;
 			for(var k = 0; k < retArray.length; k++){
 				if(retArray[k].date.getTime() == date_affected.getTime()){
 					temp_hours += delta_h;
+					index_found = k;
 					break;
 				}
 			}
-			retArray[k].hours += temp_hours;
+			if(index_found != -1){
+				retArray[index_found].hours += temp_hours;
+			}
 			// console.log(delta_h);
 		}
 	}

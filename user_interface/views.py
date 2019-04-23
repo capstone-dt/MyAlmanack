@@ -210,14 +210,21 @@ def getHeaderDict(firebase_id):
 		retHeader["event_invites"] = []
 	else:
 		event_invite_ids = contact_list["received_event_invites"]
+		if(event_invite_ids == None):
+			event_invite_ids = []
 		for e_id in event_invite_ids:
-			curr_event_data = getEventData(e_id)
+			print("e_id", e_id)
+			curr_event_invite_data = getEventInviteData(e_id)
+			curr_event_data = getEventData(curr_event_invite_data["event_id"])
+			event_owner_data = getProfileData(curr_event_data["event_creator_firebase_id"])
+			curr_event_data["creator_data"] = event_owner_data
 			retHeader["event_invites"].append(curr_event_data)
 	if(contact_list["received_friend_requests"] == None):
 		retHeader["friend_requests"] = []
 	else:
 		friend_invite_ids = contact_list["received_friend_requests"]
-		print("recieved:", friend_invite_ids)
+		if(friend_invite_ids == None):
+			friend_invite_ids = []
 		for f_id in friend_invite_ids:
 			request_data = getFriendRequestData(f_id)
 			print("request_data", request_data)
@@ -230,6 +237,8 @@ def getHeaderDict(firebase_id):
 		retHeader["group_requests"]["invites"] = []
 	else:
 		group_invite_names = contact_list["received_group_invites"]
+		if(group_invite_names == None):
+			group_invite_names = []
 		for g_name in group_invite_names:
 			curr_group_data = getGroupData(g_name)
 			retHeader["group_requests"]["invites"].append(curr_group_data)
@@ -389,6 +398,9 @@ class ProfileView(TemplateView):
 def validate_alias(request):
 	alias = request.GET.get("alias", None)
 	is_taken = (validAlias(alias) == False)
+	if(alias.lower() == "edit"):
+		is_taken = True;
+	
 	data = {
 		"is_taken" : is_taken
 	}
@@ -399,8 +411,7 @@ def validate_alias(request):
 # EDIT PROFILE
 
 def redirForce(request):
-	e = EditProfileView()
-	return e.get(request)
+	return HttpResponseRedirect("/profile/edit/")
 
 class EditProfileView(TemplateView):
 	template_name = 'user_interface/edit_profile.html'
@@ -764,36 +775,25 @@ def respondFriend(request):
 def submitEvent(request):
 	user_firebase_id = getCurrentFirebaseId(request)
 	event_form = EventForm(request.POST)
+	print("EVENT SUBMIT:", event_form)
 	event_name = event_form['EIname'].value()
 	event_desc = event_form['EIdescription'].value()
 	event_start = event_form['EIstart'].value()
 	event_end = event_form['EIend'].value()
-	invite = event_form['EIinvite'].value().split(",")
 	invite_ids = []
-	for alias in invite:
-		valid_alias = validAlias(alias)
-		if(valid_alias == False):
-			# In database
-			f_id = aliasToFirebaseId(alias)
-			invite_ids.append(str(f_id))
+	if(event_form['EIinvite'].value() != None):
+		invite_ids = event_form['EIinvite'].value().split(",")
 
-	whitelist = event_form['EIwhitelist'].value().split(",")
 	whitelist_ids = []
-	for alias in whitelist:
-		valid_alias = validAlias(alias)
-		if(valid_alias == False):
-			# In database
-			f_id = aliasToFirebaseId(alias)
-			whitelist_ids.append(str(f_id))
-
-	blacklist = event_form['EIblacklist'].value().split(",")
+	if(event_form['EIwhitelist'].value() != None):
+		whitelist_ids = event_form['EIwhitelist'].value().split(",")
+	
 	blacklist_ids = []
-	for alias in blacklist:
-		valid_alias = validAlias(alias)
-		if(valid_alias == False):
-			# In database
-			f_id = aliasToFirebaseId(alias)
-			blacklist_ids.append(str(f_id))
+	if(event_form['EIblacklist'].value() != None):
+		blacklist_ids = event_form['EIblacklist'].value().split(",")
+	
+	event_id = generateEventId()
+	print("EVENT_ID", event_id)
 
 	repeat = event_form['EIrepeat'].value()
 	repeat_pattern = event_form['EIrepeat_pattern'].value()
@@ -803,6 +803,12 @@ def submitEvent(request):
 	else:
 		createRepeatEvent(event_name, event_desc, [user_firebase_id], [user_firebase_id], whitelist_ids, blacklist_ids,
 			int(event_start), int(event_end), str(user_firebase_id), "weekly", int(event_start), int(event_end), repeat_pattern)
+
+	if(len(invite_ids) > 0):
+		sendEventInvites(user_firebase_id, invite_ids, event_id)
+
+
+
 
 def sendFriendRequestUI(sender_firebase_id, reciever_alias):
 	reciever_firebase_id = aliasToFirebaseId(reciever_alias)
