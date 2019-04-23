@@ -14,11 +14,6 @@ var populatedEvents = [];
 var populatedEvents_w = [];
 var populatedEvents_d = [];
 var x_offset = 0, y_offset = 0;
-var _days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
-var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-var _months_of_year = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-var _times_of_day_12 = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"];
 var _month_selected = "03";
 var _year_selected = "2019";
 var _day_selected = "1";
@@ -752,31 +747,6 @@ function drawColorGrid(isRainbow) {
 	return retArray;
 }
 
-function customDateString(date){
-	var date_string = _months_of_year[date.getMonth()] + " ";
-	date_string += date.getDate() + ", ";
-	date_string += date.getFullYear();
-	return date_string;
-}
-
-function customTimeString(date){
-	var hr = date.getHours();
-	var min = date.getMinutes();
-	if (min < 10) {
-	    min = "0" + min;
-	}
-	var ampm = "am";
-	if( hr > 12 ) {
-	    hr -= 12;
-	    ampm = "pm";
-	}
-	if(hr == 0){
-		hr = 12;
-		ampm = "am";
-	}
-	var time_string = hr + ":" + min + ampm;
-	return time_string;
-}
 function makeList(cont_id){
 	// console.log("makeList");
 	clearEvents();

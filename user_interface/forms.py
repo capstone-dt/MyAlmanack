@@ -20,8 +20,8 @@ class EventRespondRequest(forms.Form):
 
 class GroupForm(forms.Form):
 	GIname = forms.CharField(widget=forms.HiddenInput())
-	GIdescription = forms.CharField(widget=forms.HiddenInput())
-	GIinvite = forms.CharField(widget=forms.HiddenInput())
+	GIdescription = forms.CharField(widget=forms.HiddenInput(), required=False)
+	GIinvite = forms.CharField(widget=forms.HiddenInput(), required=False)
 
 class GroupRespondRequest(forms.Form):
 	GIinvite_id = forms.CharField(widget=forms.HiddenInput())

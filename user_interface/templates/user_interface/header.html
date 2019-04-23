@@ -125,6 +125,21 @@
 		<input type="submit"  style="display: none;" id="friendRespondRequest">
 	</form>
 
+	<form action="/profile/" method="post">
+		{% csrf_token %}
+		{{ header_forms.event_response.as_ul }}
+		<input type="hidden" name="formType" value="EventResponse">
+		<input type="submit"  style="display: none;" id="eventRespondInvite">
+	</form>
+
+
+	<form action="/profile/" method="post">
+		{% csrf_token %}
+		{{ header_forms.group_response.as_ul }}
+		<input type="hidden" name="formType" value="GroupResponse">
+		<input type="submit"  style="display: none;" id="groupRespondInvite">
+	</form>
+
 	<form action="/search/" method="post" class="canEnter">
 		{% csrf_token %}
 		{{ header_forms.search_form.as_ul }}
@@ -211,6 +226,9 @@
 		.confirmButton:hover{
 			background-color: #728AFF;
 		}
+		.dropdown-toggle:after{
+			content: "";
+		}
 	</style>
 
 	<script type="text/javascript">
@@ -232,9 +250,12 @@
 
 		function populateEventInvitesDropdown(){
 			var notif_div = document.getElementById("e_drop");
-			for(var i = 0; i < 20; i++){
+			var event_invites = database_header_info.event_invites;
+			for(var i = 0; i < event_invites.length; i++){
 				// CHANGE TO ACTUAL ID
-				var event_id = i;
+				var curr_invite = event_invites[i];
+				var creator_data = curr_invite.creator_data;
+				var event_id = curr_invite.event_id;
 
 				var curr_elem = document.createElement('a');
 				curr_elem.className= "dropdown-item overAll";
@@ -242,7 +263,21 @@
 				curr_elem.id = "e_" + event_id;
 				curr_elem.setAttribute("event_id", event_id);
 				var event_text_div = document.createElement('div');
-				event_text_div.innerHTML = "Event Description " + i;
+				event_text_div.innerHTML = creator_data.first_name + " " + creator_data.last_name + "<br>";
+				event_text_div.innerHTML += "Invited you to:" + "<br><br>" + curr_invite.event_title + "<br>";
+				var date_parse_start = new Date(curr_invite.start_date);
+				var start_date_formatted = customDateString(date_parse_start);
+				var second_line_formatted = "";
+				if(new Date(curr_invite.start_date).setHours(0,0,0) == new Date(curr_invite.end_date).setHours(0,0,0)){
+					second_line_formatted = customTimeString(new Date(curr_invite.start_date)) + " - "
+					+ customTimeString(new Date(curr_invite.end_date)); 
+				}else{
+					start_date_formatted += customTimeString(new Date(curr_invite.start_date)) + "<br>";
+					second_line_formatted = customDateString(new Date(curr_invite.end_date)) + "<br>" 
+					+ customTimeString(new Date(curr_invite.end_date));
+				}
+				event_text_div.innerHTML += start_date_formatted + "<br>";
+				event_text_div.innerHTML += second_line_formatted + "<br>";
 				event_text_div.style ="display:inline;";
 				curr_elem.appendChild(event_text_div);
 				var button_cont = document.createElement('div');
@@ -252,11 +287,11 @@
 				var confirm = document.createElement('div');
 				confirm.className = "col confirmButton";
 				confirm.innerText = "Confirm";
-				confirm.setAttribute("onclick", "confirmButtonEvent('" + curr_elem.id + "', '" + event_id + "')");
+				confirm.setAttribute("onclick", "confirmButtonEvent('" + curr_elem.id + "', '" + curr_invite.invite_id + "')");
 				var reject = document.createElement('div');
 				reject.className = "col rejectButton";
 				reject.innerText = "Reject";
-				reject.setAttribute("onclick", "rejectButtonEvent('" + curr_elem.id + "', '" + event_id + "')");
+				reject.setAttribute("onclick", "rejectButtonEvent('" + curr_elem.id + "', '" + curr_invite.invite_id + "')");
 				button_row.appendChild(confirm);
 				button_row.appendChild(reject);
 				button_cont.appendChild(button_row);
@@ -375,16 +410,28 @@
 			respondFriendPost(invite_id, "reject");
 		}
 
-		function confirmButtonEvent(div_id, event_id){
-			console.log("confirm:" + event_id);
-			var cont_div = document.getElementById(div_id);
-			cont_div.parentNode.removeChild(cont_div);
+		function respondEventPost(invite_id, action){
+			var response_form_id = document.getElementById("id_EIinvite_id");
+			var response_form_action = document.getElementById("id_EIaction");
+			response_form_id.value = invite_id;
+			response_form_action.value = action;
+			var submitResponseButton = document.getElementById("eventRespondInvite");
+			submitResponseButton.click();
 		}
 
-		function rejectButtonEvent(div_id, event_id){
-			console.log("reject:" + event_id);
+		function confirmButtonEvent(div_id, invite_id){
+			console.log("confirm:" + invite_id);
 			var cont_div = document.getElementById(div_id);
 			cont_div.parentNode.removeChild(cont_div);
+			respondEventPost(invite_id, "accept");
+		}
+
+		function rejectButtonEvent(div_id, invite_id){
+			console.log("reject:" + invite_id);
+			var cont_div = document.getElementById(div_id);
+			cont_div.parentNode.removeChild(cont_div);
+			respondEventPost(invite_id, "reject");
+
 		}
 
 
@@ -468,7 +515,95 @@
 				</div>
 				<div class="form-group">
 					<label for="inputGroupInvites">Invites</label>
-					<input type="text" onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites">
+					<!-- <input type="text" onchange="updateGroupForm()" onkeypress="updateGroupForm();" onpaste="updateGroupForm();" oninput="updateGroupForm();" class="form-control" pattern="(^$)|[0-9a-zA-Z]+(,[0-9a-zA-Z]+)*$" id="inputGroupInvites"> -->
+					<div class="dropdown" >
+					  <button class="btn btn-secondary dropdown-toggle" type="button" id="groupInvites_select_dropdown_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: black;">
+					    <div id="groupInviteNameId" style="color:black;">
+					    	Select friends to invite...
+					    </div>
+					  </button>
+					  <div class="dropdown-menu friendsSelectDropdown overAll" aria-labelledby="groupInvites_select_dropdown_button"
+					  	style="position:absolute; z-index: 20;" id="groupInvites_select_dropdown">
+					  </div>
+					</div>
+					<script type="text/javascript">
+						$(document).ready(function() {
+							populateGroupInviteSelectDropdown();
+						});
+						var group_invite_ids = [];
+						function populateGroupInviteSelectDropdown(){
+							var friends_to_pop = database_header_info.friend_info;
+							var groupInvitesSelectDropdown = document.getElementById("groupInvites_select_dropdown");
+							for(var i = 0; i < friends_to_pop.length; i++){
+								var curr_friend = friends_to_pop[i];
+								var curr_a = document.createElement("a");
+								curr_a.className = "dropdown-item";
+								var temp_id = curr_friend.alias + "_check_gi";
+								curr_a.href = "#";
+								curr_a.setAttribute("onclick", "checkGroupInviteSelect('" + temp_id + "')");
+								var curr_label = document.createElement("label");
+								curr_label.className = "check_container";
+								curr_label.innerText = curr_friend.first_name + " " + curr_friend.last_name;
+								var curr_input = document.createElement("input");
+								curr_input.type = "checkbox";
+								curr_input.id = temp_id;
+								curr_input.setAttribute("alias", curr_friend.alias);
+								var curr_span = document.createElement("span");
+								curr_span.className = "checkmark";
+								curr_label.appendChild(curr_input);
+								curr_label.appendChild(curr_span);
+								curr_a.appendChild(curr_label);
+								var temp_form = document.createElement('form');
+								temp_form.appendChild(curr_a);
+								groupInvitesSelectDropdown.appendChild(temp_form);
+								group_invite_ids.push({"check_id" : temp_id, "alias" : curr_friend.alias, "firebase_id" : curr_friend.firebase_id});
+							}
+						}
+						function checkGroupInviteSelect(sel_id){
+							var check_input = document.getElementById(sel_id);
+							if(check_input.checked){
+								check_input.checked = false;
+								check_input.setAttribute("flag", "false");
+							}else{
+								check_input.checked = true;
+								check_input.setAttribute("flag", "true");
+							}
+							var groupInviteTitle = document.getElementById("groupInviteNameId");
+							var str_place = "";
+							var groupInvitesSelected = getGroupInvitesSelected();
+							for(var i = 0; i < groupInvitesSelected.length; i++){
+								str_place += "@" + groupInvitesSelected[i];
+								if(i != groupInvitesSelected.length - 1){
+									str_place += ", ";
+								}
+							}
+							groupInviteTitle.innerText = str_place;
+							if(str_place == ""){
+								groupInviteTitle.innerText = 'Select members to invite...'
+							}
+							remainderEditGroup();
+						}
+						function getGroupInvitesSelected(){
+							var valid = [];
+							for(var i = 0; i < group_invite_ids.length; i++){
+								var curr_div = document.getElementById(group_invite_ids[i].check_id);
+								if(curr_div.getAttribute("flag") == "true"){
+									valid.push(group_invite_ids[i].alias);
+								}
+							}
+							return valid;
+						}
+						function getGroupInvitesSelectedFirebase(){
+							var valid = [];
+							for(var i = 0; i < group_invite_ids.length; i++){
+								var curr_div = document.getElementById(group_invite_ids[i].check_id);
+								if(curr_div.getAttribute("flag") == "true"){
+									valid.push(group_invite_ids[i].firebase_id);
+								}
+							}
+							return valid;
+						}
+					</script>
 				</div>
 				<script type="text/javascript">
 					var valid_group = false;
@@ -528,8 +663,6 @@
 							};
 							performEditGroupAjax(temp_callback,remainderEditGroup);
 						}
-						
-
 					}
 					function remainderEditGroup(){
 						var form_group_desc = document.getElementById("id_GIdescription");
@@ -537,21 +670,24 @@
 						form_group_desc.value = div_group_desc.value;
 
 						var form_group_inv = document.getElementById("id_GIinvite");
-						var div_group_inv = document.getElementById("inputGroupInvites");
-						form_group_inv.value = div_group_inv.value;
+						var firebase_selected_group = getGroupInvitesSelectedFirebase();
+						var temp_string = "";
+						for(var i = 0; i < firebase_selected_group.length; i++){
+							temp_string += firebase_selected_group[i];
+							if(i != firebase_selected_group.length - 1){
+								temp_string += ",";
+							}
+						}
+						console.log("remainderEditGroup invites:", temp_string);
+						form_group_inv.value = temp_string;
 					}
 
 
 					function updateAndClickGroup(){
 						updateGroupForm();
 						if(valid_group == true){
-							performEditGroupAjax(
-								function(){
-									var submitButton = document.getElementById("submitCreateGroup");
-									submitButton.click();
-								},
-								function(){}
-								);
+							var submitButton = document.getElementById("submitCreateGroup");
+							submitButton.click();
 						}
 					}
 

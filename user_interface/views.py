@@ -198,7 +198,8 @@ def getHeaderDict(firebase_id):
 		"group_requests" : {
 			"join_requests" : [],
 			"invites" : []
-		}
+		},
+		"friend_info" :[],
 	}
 	user_firebase_id = firebase_id
 	isValid = validFirebaseId(user_firebase_id);
@@ -213,11 +214,11 @@ def getHeaderDict(firebase_id):
 		if(event_invite_ids == None):
 			event_invite_ids = []
 		for e_id in event_invite_ids:
-			print("e_id", e_id)
 			curr_event_invite_data = getEventInviteData(e_id)
 			curr_event_data = getEventData(curr_event_invite_data["event_id"])
 			event_owner_data = getProfileData(curr_event_data["event_creator_firebase_id"])
 			curr_event_data["creator_data"] = event_owner_data
+			curr_event_data["invite_id"] = e_id
 			retHeader["event_invites"].append(curr_event_data)
 	if(contact_list["received_friend_requests"] == None):
 		retHeader["friend_requests"] = []
@@ -239,9 +240,19 @@ def getHeaderDict(firebase_id):
 		group_invite_names = contact_list["received_group_invites"]
 		if(group_invite_names == None):
 			group_invite_names = []
+		print("invite_ids", group_invite_names)
 		for g_name in group_invite_names:
-			curr_group_data = getGroupData(g_name)
+			request_data = getGroupInviteData(g_name)
+			curr_group_data = getGroupData(request_data["group_name"])
 			retHeader["group_requests"]["invites"].append(curr_group_data)
+
+	database_contact_ids = contact_list["contact_names"]
+	if(database_contact_ids == None):
+		database_contact_ids = []
+	for f_id in database_contact_ids:
+		curr_info = getProfileData(f_id)
+		retHeader["friend_info"].append(curr_info)
+
 	return retHeader
 
 def getHeaderForms():
@@ -712,7 +723,6 @@ def formController(request):
 	#SearchTerm
 	if(switchType == "FriendResponse"):
 		respondFriend(request)
-		current_url = resolve(request.path_info).url_name
 		return HttpResponseRedirect("/profile/")
 	elif(switchType == "SubmitEvent"):
 		submitEvent(request)
@@ -738,8 +748,6 @@ def formController(request):
 		createGroupLocal(request)
 		group_form = GroupForm(request.POST)
 		group_name = group_form["GIname"].value()
-		group_desc = group_form["GIdescription"].value()
-		group_invite = group_form["GIinvite"].value().split(",")
 		return HttpResponseRedirect("/group/" + group_name)
 	elif(switchType == "SearchTerm"):
 		search_form = SearchForm(request.POST)
@@ -751,13 +759,17 @@ def formController(request):
 		new_invite_id = generateInviteId()
 		sendGroupInvites(group_name, [user_firebase_id])
 		actionGroupInvite(new_invite_id, user_firebase_id, True)
-		return HttpResponseRedirect("/group/" + group_name);
+		return HttpResponseRedirect("/group/" + group_name)
 	elif(switchType == "LeaveGroup"):
 		group_form = GroupJoinForm(request.POST)
 		group_name = group_form["GIreqname"].value()
 		if isAdminOfGroup(user_firebase_id, group_name) == False:
 			leaveGroup(user_firebase_id, group_name)
-		return HttpResponseRedirect("/group/" + group_name);
+		return HttpResponseRedirect("/group/" + group_name)
+	elif(switchType == "EventResponse"):
+		# respondEvent(request)
+		return HttpResponseRedirect("/profile/");
+
 
 
 def respondFriend(request):
@@ -807,6 +819,18 @@ def submitEvent(request):
 	if(len(invite_ids) > 0):
 		sendEventInvites(user_firebase_id, invite_ids, event_id)
 
+def respondEvent(request):
+	event_form = EventRespondRequest(request.POST)
+	print(event_form)
+	invite_id = event_form["EIinvite_id"].value()
+	action_s = event_form["EIaction"].value()
+	action = False
+	if(action_s == "accept"):
+		action = True
+	else:
+		action = False
+	user_firebase_id = getCurrentFirebaseId(request)
+	actionEventInvite(int(invite_id), user_firebase_id, action)
 
 
 
@@ -849,9 +873,15 @@ def createGroupLocal(request):
 	print(group_form)
 	group_name = group_form["GIname"].value()
 	group_desc = group_form["GIdescription"].value()
-	group_invite = group_form["GIinvite"].value().split(",")
+	group_invites = []
+	if(group_form["GIinvite"].value() != "" and group_form["GIinvite"].value() != None ):
+		group_invites = group_form["GIinvite"].value().split(",")
 	# def createGroup(firebase_id, group_name, group_admin, group_members, group_desc)
 	createGroup(firebase_id, group_name, [], [], group_desc)
+	print("GROUP INVITES", group_invites)
+	if(len(group_invites) > 0):
+		for inv in group_invites:
+			sendGroupInvites(group_name, [inv])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
