@@ -126,7 +126,7 @@ def actionEventInvite(invite_id, receiver_firebase_id, accept):
 		if accept == True:
 			# If event-invite acceptance is true, then update the receiver's user_events and the event's participating_users.
 			# Else, do nothing.
-			cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, %s)'
+			cursor.execute('UPDATE "Profile" SET user_events = array_append(user_events, (SELECT CAST (%s AS SMALLINT)))'
 				+ ' WHERE firebase_id = %s', [event_id, receiver_firebase_id])
 			cursor.execute('UPDATE "Event" SET participating_users = array_append(participating_users, %s)'
 				+ ' WHERE event_id = %s', [receiver_firebase_id, event_id])
@@ -421,6 +421,12 @@ def getEventData(event_id):
 	# Return dictionary containing event data information.
 	return event_data
 
+# Get repeat-event data based on event_id.
+def getRepeatEventData(event_id):
+	repeat_event_data = RepeatEvent.objects.filter(pk=event_id).values()[0]
+	# Return dictionary containing repeat-event data information.
+	return repeat_event_data
+
 # Create an event and update the event creator's user_events.
 def createEvent(event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
 	end_date, event_creator_firebase_id):
@@ -519,9 +525,9 @@ def getContactEvents(user_f_id, contact_f_id):
 def searchEvents(search_term):
 	# Run Trigram Similarity search on Event based on the search term.
 	search = Event.objects.annotate(similarity=TrigramSimilarity('event_title', search_term)).filter(
-		similarity__gt=0.3).order_by('-similarity').values('event_title')
+		similarity__gt=0.3).order_by('-similarity').values('event_id')
 	# Return a list of event_ids similar to the search term.
-	return [item['event_title'] for item in search]
+	return [item['event_id'] for item in search]
 
 # Search for contacts based on user attributes.
 def searchContacts(search_term, user_f_id):

@@ -14,21 +14,12 @@ var populatedEvents = [];
 var populatedEvents_w = [];
 var populatedEvents_d = [];
 var x_offset = 0, y_offset = 0;
-var _days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
-var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-var _months_of_year = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-var _times_of_day_12 = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"];
 var _month_selected = "03";
 var _year_selected = "2019";
 var _day_selected = "1";
 var _week_selected = [];
 var _curr_month = "currMonth";
 var _curr_month_not = "currMonthNot";
-var _dummy_events_json;
-var _dummy_profiles_json;
-var _dummy_contacts_json;
-var _dummy_user_json;
 var _prev_scroll_y = 0;
 
 var user_contact_list;
@@ -122,7 +113,8 @@ function clickAnywhere(event){
 		var curr_id = clicked_ids[i];
 		clicked_structs.push(getEventStruct(curr_id));
 	}
-	if(clicked_structs.length > 0){
+
+	if(clicked_structs.length > 0 && allModalsClosed() && allDropdownsClosed()){
 		clearShowEvents();
 		populateShowEvents(clicked_structs);
 		showEventsModal();
@@ -158,6 +150,27 @@ function showEventsModal(){
 	var open_events = document.getElementById("viewEventsOpenButton");
 	open_events.click();
 }
+function allModalsClosed(){
+	var allModals = document.getElementsByClassName("modal");
+	for(var i = 0; i < allModals.length; i++){
+		var curr_modal = allModals[i];
+		if(curr_modal.className.includes(" show")){
+			return false;
+		}
+	}
+	return true;
+}
+function allDropdownsClosed(){
+	var allDropdowns = document.getElementsByClassName("dropdown-menu");
+	for(var i = 0; i < allDropdowns.length; i++){
+		var curr_dropdown = allDropdowns[i];
+		if(curr_dropdown.className.includes(" show")){
+			return false;
+		}
+	}
+	return true;
+}
+
 
 function ensureBoxSize(){
 	// console.log(calArray);
@@ -393,6 +406,189 @@ function testEventHoursSplit(){
 	console.log(eventHoursSplit(temp_struct));
 }
 
+function testCombineEventsDayAffected(){
+	var test1 = {
+		start_date : new Date("April 4 2019 10:00 AM").getTime(),
+		end_date : new Date("April 4 2019 3:00 PM").getTime()
+	};
+	var test2 = {
+		start_date : new Date("April 4 2019 1:00 PM").getTime(),
+		end_date : new Date("April 4 2019 5:00 PM").getTime()
+	};
+	var test3 = {
+		start_date : new Date("April 5 2019 5:00 PM").getTime(),
+		end_date : new Date("April 5 2019 10:00 PM").getTime()
+	};
+	var test4 = {
+		start_date : new Date("April 5 2019 8:00 PM").getTime(),
+		end_date : new Date("April 5 2019 11:00 PM").getTime()
+	};
+	var res = combineEventsDayAffected([test1, test2, test3, test4]);
+	for(var i = 0; i < res.length; i++){
+		var curr_struct = res[i];
+		console.log(curr_struct.affected);
+		for(var j = 0; j < curr_struct.events.length; j++){
+			var curr_event = curr_struct.events[j];
+			console.log("start", new Date(curr_event.start_date), "end", new Date(curr_event.end_date));
+		}
+	}
+}
+
+// Assumes already split using splitEventStructure(event)
+function combineEventsDayAffected(event_arr_passed){
+	var retArray = [];
+	var dates_affected = [];
+	for(var i = 0; i < event_arr_passed.length; i++){
+		var curr_event = event_arr_passed[i];
+		var date_affected = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+		var loc_contains = false;
+		for(var j = 0; j < dates_affected.length; j++){
+			if(dates_affected[j].getTime() == date_affected.getTime()){
+				loc_contains = true;
+				break;
+			}
+		}
+		if(loc_contains == false){
+			dates_affected.push(date_affected);
+		}
+	}
+	for(var k=0; k < dates_affected.length; k++){
+		var affected_array = [];
+		for(var i = 0; i < event_arr_passed.length; i++){
+			var curr_event = event_arr_passed[i];
+			var date_affected = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+			if(date_affected.getTime() == dates_affected[k].getTime()){
+				affected_array.push(curr_event);
+			}
+		}
+		var tempDict = {};
+		tempDict.affected = dates_affected[k];
+		tempDict.events = affected_array;
+		retArray.push(tempDict);
+	}
+	return retArray;
+}
+
+function unionEventsTwo(event1, event2){
+	if(inRange(event1.start_date, event2.start_date, event1.end_date) ||
+		inRange(event1.start_date, event2.end_date, event1.end_date)
+		|| inRange(event2.start_date, event1.start_date, event2.end_date) ||
+		inRange(event2.start_date, event1.end_date, event2.end_date)){
+		var unionedEvent = {};
+		unionedEvent.start_date = Math.min(event1.start_date, event2.start_date);
+		unionedEvent.end_date = Math.max(event1.end_date, event2.end_date);
+		return [unionedEvent];
+	}else{
+		return [event1, event2];
+	}
+}
+
+function testUnionEvents(){
+	var test1 = {
+		start_date : new Date("April 4 2019 10:00 AM").getTime(),
+		end_date : new Date("April 4 2019 3:00 PM").getTime()
+	};
+	var test2 = {
+		start_date : new Date("April 4 2019 1:00 PM").getTime(),
+		end_date : new Date("April 4 2019 5:00 PM").getTime()
+	};
+	var test3 = {
+		start_date : new Date("April 4 2019 5:00 PM").getTime(),
+		end_date : new Date("April 4 2019 10:00 PM").getTime()
+	};
+	var test4 = {
+		start_date : new Date("April 4 2019 8:00 PM").getTime(),
+		end_date : new Date("April 4 2019 11:00 PM").getTime()
+	};
+	var res = unionEvents([test1, test2, test3, test4]);
+	for(var i = 0; i < res.length; i++){
+		console.log("start", new Date(res[i].start_date), "end", new Date(res[i].end_date));
+	}
+}
+
+// Creates a convex hull in one dimension
+function unionEvents(event_arr_passed){
+	var allOne = false;
+	var deep_clone = [];
+	for(var i = 0; i < event_arr_passed.length; i++){
+		var curr_event = event_arr_passed[i];
+		var cloned = {};
+		cloned.start_date = curr_event.start_date;
+		cloned.end_date = curr_event.end_date;
+		deep_clone.push(cloned);
+	}
+	while(allOne == false){
+		var forAll = true;
+		for(var i =0; i < deep_clone.length; i++){
+			var curr_event = deep_clone[i];
+			for(var j=0; j < deep_clone.length; j++){
+				// Don't union with self
+				if(i == j){
+					break;
+				}
+				var postUnion = unionEventsTwo(curr_event, deep_clone[j]);
+				if(postUnion.length == 2){
+					forAll &= true;
+					continue;
+				}else{
+					deep_clone.splice(i, 1);
+					deep_clone.splice(j, 1);
+					deep_clone.push(postUnion[0]);
+					forAll = false;
+					continue;
+				}
+
+			}
+		}
+		allOne = forAll;
+	}
+	return deep_clone;
+}
+
+
+function testUnionDaysAffected(){
+	var test2 = {
+		start_date : new Date("April 17 2019 12:00 AM").getTime(),
+		end_date : new Date("April 17 2019 11:59 PM").getTime()
+	};
+	var test1 = {
+		start_date : new Date("April 17 2019 11:00 AM").getTime(),
+		end_date : new Date("April 17 2019 12:00 PM").getTime()
+	};
+	var res = unionEventsTwo(test1, test2);
+	for(var i = 0; i < res.length; i++){
+		console.log("start", new Date(res[i].start_date), "end", new Date(res[i].end_date));
+	}
+}
+
+// Assumes events passed are already split
+function unionDaysAffected(event_arr_passed){
+	var retArray = [];
+	console.log("event_arr_passed", event_arr_passed);
+	var combinedDaysAffected = combineEventsDayAffected(event_arr_passed);
+	// console.log("daysAffected");
+	// console.log(combinedDaysAffected);
+	// for(var i = 0; i < combinedDaysAffected.length; i++){
+	// 	var temp_events = combinedDaysAffected[i].events;
+	// 	for(var j = 0; j < temp_events.length; j++){
+	// 		console.log("start", new Date(temp_events[j].start_date), "end", new Date(temp_events[j].end_date));
+	// 	}
+	// }
+	console.log("unioned");
+	for(var i = 0; i < combinedDaysAffected.length; i++){
+		var curr_struct = combinedDaysAffected[i];
+		var unioned_day = unionEvents(curr_struct.events);
+		for(var j = 0; j < unioned_day.length; j++){
+			// console.log("start", new Date(unioned_day[j].start_date), "end", new Date(unioned_day[j].end_date));
+			unioned_day[j].reg_date = new Date(unioned_day[j].start_date);
+			unioned_day[j].delta = Math.abs(unioned_day[j].end_date - unioned_day[j].start_date)/(1000*60*60);
+			retArray.push(unioned_day[j]);
+		}
+	}
+	return retArray;
+}
+
+
 function combinedFreeToHours(combined_free, month_start, month_end){
 	var retArray = [];
 	// Populate retarray with basic structures
@@ -410,21 +606,30 @@ function combinedFreeToHours(combined_free, month_start, month_end){
 		var curr_split = splitEventStructure(combined_free[i]);
 		// console.log("curr_split:",curr_split);
 		for(var j = 0; j < curr_split.length; j++){
+			// console.log("j:" + j,"start_date", new Date(curr_split[j].start_date), "end_date", new Date(curr_split[j].end_date));
 			var delta_h = Math.abs(curr_split[j].end_date - curr_split[j].start_date)/(1000*60*60);
+			// console.log("delta_h", delta_h);
 			var date_affected = new Date(new Date(curr_split[j].start_date).setHours(0,0,0));
+			// console.log("date_affected", date_affected);
+			var temp_hours = 0;
+			var index_found = -1;
 			for(var k = 0; k < retArray.length; k++){
 				if(retArray[k].date.getTime() == date_affected.getTime()){
-					retArray[k].hours += delta_h;
+					temp_hours += delta_h;
+					index_found = k;
 					break;
 				}
+			}
+			if(index_found != -1){
+				retArray[index_found].hours += temp_hours;
 			}
 			// console.log(delta_h);
 		}
 	}
-	for(var i = 0; i < retArray.length; i++){
-		var currStruct = retArray[i];
-		
-	}
+	// for(var i = 0; i < retArray.length; i++){
+	// 	retArray[i].hours %= 24;
+	// }
+	console.log("combined_free", retArray);
 	return retArray;
 }
 
@@ -452,14 +657,22 @@ function drawColorGrid(isRainbow) {
 		}
 	}
 	console.log("temp_convert_split", temp_convert_split);
+	var combined_affected = combineEventsDayAffected(temp_convert_split);
+	console.log("combined_affected", combined_affected);
+	var unioned_split = unionDaysAffected(temp_convert_split);
+	console.log("unioned_split", unioned_split);
+	// for(var i = 0; i < unioned_split.length; i++){
+	// 	console.log("start", new Date(unioned_split[i].start_date), "end", new Date(unioned_split[i].end_date));
+	// }
+	// console.log("temp_convert_split", temp_convert_split);
 	var month_start = new Date(_year_selected, _month_selected, 1);
 	var month_end = new Date(_year_selected, _month_selected + 1, 0);
 	month_end = new Date(month_end.setHours(23,59,59));
 	var temp_cal = new Calendar("temp_cal");
-	var freetimeArray = temp_cal.freetime_per_day(temp_convert_split, month_start.getTime(), month_end.getTime());
+	var freetimeArray = temp_cal.freetime_per_day(unioned_split, month_start.getTime(), month_end.getTime());
 	var combined_free = [];
 
-	console.log("freetimeArray", freetimeArray);
+	// console.log("freetimeArray", freetimeArray);
 	for(var i = 0; i < freetimeArray.length; i++){
 		var curr_arr = freetimeArray[i];
 		if(curr_arr != null){
@@ -475,14 +688,10 @@ function drawColorGrid(isRainbow) {
 			}
 		}
 	}			
-	console.log("combinedFree", combined_free);
-	for(var i = 0; i < combined_free.length; i++){
-		console.log("i:",i, new Date(combined_free[i].start_date), new Date(combined_free[i].end_date));
-	}
-	console.log("month_start", month_start, "month_end", month_end);
+	// console.log("combinedFree", combined_free);
+	// console.log("month_start", month_start, "month_end", month_end);
 	var hours_temp = combinedFreeToHours(combined_free, month_start, month_end);
-	console.log(hours_temp);
-	var eventsHours = getEventsDays(combined_free);
+	console.log("hours_temp", hours_temp);
 	var count = 0;
 	for(var i = 0; i < calArray.length; i++){
 		for(var j = 0; j < calArray[i].length; j++){
@@ -496,11 +705,22 @@ function drawColorGrid(isRainbow) {
 			temp_date = temp_date.getTime();
 			var hoursFree = 24;
 			// console.log(temp_date);
-			for(var k = 0; k < eventsHours.length; k++){
+			for(var k = 0; k < hours_temp.length; k++){
 				// console.log(eventsHours[k]);
-				if(Number(temp_date) == Number(eventsHours[k].start_time)){
+				if(Number(temp_date) == hours_temp[k].date.getTime()){
 					// console.log("FOUND");
-					hoursFree = eventsHours[k].hours;
+					hoursFree = hours_temp[k].hours;
+					if(hoursFree > 23){
+						for(var L = 0; L < unioned_split.length; L++){
+							var curr_un = unioned_split[L];
+							if(Number(temp_date) == new Date(curr_un.reg_date.getTime()).setHours(0,0,0)){
+								if(curr_un.delta > 23){
+									hoursFree = 24 - curr_un.delta;
+									break;
+								}
+							}
+						}
+					}
 					break;
 				}
 			}
@@ -527,31 +747,6 @@ function drawColorGrid(isRainbow) {
 	return retArray;
 }
 
-function customDateString(date){
-	var date_string = _months_of_year[date.getMonth()] + " ";
-	date_string += date.getDate() + ", ";
-	date_string += date.getFullYear();
-	return date_string;
-}
-
-function customTimeString(date){
-	var hr = date.getHours();
-	var min = date.getMinutes();
-	if (min < 10) {
-	    min = "0" + min;
-	}
-	var ampm = "am";
-	if( hr > 12 ) {
-	    hr -= 12;
-	    ampm = "pm";
-	}
-	if(hr == 0){
-		hr = 12;
-		ampm = "am";
-	}
-	var time_string = hr + ":" + min + ampm;
-	return time_string;
-}
 function makeList(cont_id){
 	// console.log("makeList");
 	clearEvents();
@@ -825,12 +1020,12 @@ function aliasToFirebaseID(alias){
 		return _calendar_struct.calendar_data.user_info.firebase_id;
 	}
 	var temp_member_info = _calendar_struct.calendar_data.member_info;
-	console.log("temp_member_info", temp_member_info);
+	// console.log("temp_member_info", temp_member_info);
 	for(var i = 0; i < temp_member_info.length; i++){
 		var curr_member_info = temp_member_info[i];
-		console.log("curr_member_info", curr_member_info);
+		// console.log("curr_member_info", curr_member_info);
 		if(alias == curr_member_info.alias){
-			console.log("MATCH");
+			// console.log("MATCH");
 			return temp_member_info[i].firebase_id;
 		}
 	}
@@ -1317,8 +1512,9 @@ function leftArrowClick(){
 			_day_selected = temp_date.getDate();
 			// console.log(temp_date);
 			// console.log(_day_selected);
-			selectDayHard(temp_date.getDate());
-			updateMonthYearHard(_month_selected, _year_selected, _day_selected);
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
+			selectDayHard(_day_selected);
 			break;
 		case "day":
 			var temp_date = new Date(_year_selected, parseInt(_month_selected), _day_selected);
@@ -1326,8 +1522,9 @@ function leftArrowClick(){
 			_month_selected = temp_date.getMonth();
 			_year_selected = temp_date.getFullYear();
 			_day_selected = temp_date.getDate();
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
 			selectDayHard(_day_selected);
-			updateMonthYearHard(_month_selected, _year_selected, _day_selected);
 			break;
 		default:
 	}
@@ -1436,6 +1633,7 @@ function checkFriendSelect(sel_id){
 	switchCalendarView(_cont_id, _switchType);
 }
 
+
 function getMembersSelected(){
 	var valid = [];
 	for(var i = 0; i < member_check_ids.length; i++){
@@ -1532,10 +1730,10 @@ function select(select_id){
 		return;
 	}
 	_select_id = select_id;
-	console.log("select_new:" + select_id);
+	// console.log("select_new:" + select_id);
 }
 function dayClickM(click_id){
-	console.log("dayClick:" + click_id);
+	// console.log("dayClick:" + click_id);
 	_prev_scroll_y = window.scrollY;
 	var temp_div = document.getElementById(click_id);
 	if(temp_div.className.includes(_curr_month_not)){
@@ -1547,7 +1745,7 @@ function dayClickM(click_id){
 	switchCalendarView(_cont_id, _switchType);
 	addEvents();
 	if(pre_check == false){
-		console.log(temp_div.style.backgroundColor);
+		// console.log(temp_div.style.backgroundColor);
 		temp_div = document.getElementById(click_id);
 		temp_div.style.backgroundColor = select_color;
 	}
@@ -1747,7 +1945,6 @@ function drawEventUnsafe_w_color(start, day_width, start_time, length, event_obj
 function drawEventUnsafe_m(start, day_width, flags, event_object){
 	drawEventUnsafe_m_color(start, day_width, flags, event_object, user_color);
 }
-
 function drawEventUnsafe_m_color(start, day_width, flags, event_object, color){
 	var coords = getRowCol(start);
 	// console.log("drawEventUnsafe_m:");
@@ -1813,6 +2010,13 @@ function splitEventStructure(curr_event){
 	var day_event_ends =  new Date((new Date(Number(curr_event.end_date))).setHours(23,59,59));
 	if(day_event_starts.getTime() == day_event_ends.getTime()){
 		return [curr_event];
+		console.log("SAME TIME");
+	}
+	var day_affected_start = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+	var day_affected_end = new Date(new Date(curr_event.end_date).setHours(0,0,0));
+	if(day_affected_start.getTime() == day_affected_end.getTime()){
+		return [curr_event];
+		console.log("IN SAME DAY");
 	}
 	var retArray = [];
 	var initDate = {};
@@ -1940,7 +2144,7 @@ function containsStruct_d(curr_struct){
 	var contains = false;
 	for(var i = 0; i < populatedEvents_d.length; i++){
 		if(populatedEvents_d[i].event_object.start_date == curr_struct.event_object.start_date
-			&& populatedEvents_d[i].event_object.start_date == curr_struct.event_object.start_date &&
+			&& populatedEvents_d[i].event_object.end_date == curr_struct.event_object.end_date &&
 			populatedEvents_d[i].event_object.event_id == curr_struct.event_object.event_id){
 			contains = true;
 			break;
@@ -2080,6 +2284,16 @@ function main_renderCalendar(calendar_struct){
 	windowResized();
 	console.log("member_events_all", member_events_all);
 	console.log("calendar_data.member_events",  _calendar_struct.calendar_data.member_events);
+	if(_calendar_mode == "FRIEND"){
+		var friend_alias = _calendar_struct.calendar_data.member_info[0].alias;
+		var temp_id = friend_alias + "_check";
+		var invis_div = document.createElement('div');
+		invis_div.id = temp_id;
+		invis_div.style = "display:none;";
+		document.body.appendChild(invis_div);
+		member_check_ids.push({"check_id" : temp_id, "alias" : friend_alias});
+		checkFriendSelect(temp_id);
+	}
 }
 
 
