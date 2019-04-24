@@ -9,14 +9,14 @@
 	    		</div>
 	    		<div class="col-4">
 	    			<button class="joinGroupButton" style="display: none;" onclick="joinGroupClicked();" id="joinGroupButton"> Join Group </button>
-	    			<form action="/group/" method="post">
+	    			<form action="/profile/" method="post">
 						{% csrf_token %}
 						{{ group_forms.join_group.as_ul }}
 						<input type="hidden" name="formType" value="JoinGroup">
 						<input type="submit" style="display: none;" id="submitJoinGroup">
 			    	</form>
 			    	<button class="leaveGroupButton" style="display: none;"  onclick="leaveGroupClicked();" id="leaveGroupButton"> Leave Group </button>
-	    			<form action="/group/" method="post">
+	    			<form action="/profile/" method="post">
 						{% csrf_token %}
 						{{ group_forms.leave_group.as_ul }}
 						<input type="hidden" name="formType" value="LeaveGroup">
@@ -164,7 +164,7 @@
 				var col_div = document.createElement("div");
 				col_div.className = "col card-col";
 				var card_div = document.createElement("div");
-				card_div.className = "card card-block";
+				card_div.className = "card pr-0";
 
 				var row_div = document.createElement("div");
 				row_div.className = "row";
@@ -193,7 +193,9 @@
 				card_div.appendChild(row_div);
 				col_div.appendChild(card_div);
 				admin_cont_div.appendChild(col_div);
-				card_div.style = "width:" + (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px; height:100px;";
+				card_div.setAttribute("width", (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px");
+				card_div.setAttribute("height", "120px");
+				col_div.setAttribute("height", "120px");
 			}
 		}
 		function updateMemberCards(){
@@ -214,7 +216,7 @@
 				var col_div = document.createElement("div");
 				col_div.className = "col card-col";
 				var card_div = document.createElement("div");
-				card_div.className = "card card-block";
+				card_div.className = "card pr-0";
 
 				var row_div = document.createElement("div");
 				row_div.className = "row";
@@ -243,7 +245,9 @@
 				card_div.appendChild(row_div);
 				col_div.appendChild(card_div);
 				member_cont_div.appendChild(col_div);
-				card_div.style = "width:" + (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px; height:100px;";
+				card_div.setAttribute("width", (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px");
+				card_div.setAttribute("height", "120px");
+				col_div.setAttribute("height", "120px");
 			}
 		}
 
