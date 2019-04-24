@@ -384,9 +384,9 @@ def leaveGroup(firebase_id, group_name):
 		user_cl_id = Profile.objects.filter(pk=firebase_id).values('contact_list_id')[0]['contact_list_id']
 		# Remove user from the contact's contact_names and vice versa.
 		cursor.execute('UPDATE "Contact_List" SET memberships = array_remove(memberships, %s)'
-			+ 'WHERE contact_list_id=(SELECT CAST (%s AS SMALLINT))', [group_name, user_cl_id])
+			+ ' WHERE contact_list_id=(SELECT CAST (%s AS SMALLINT))', [group_name, user_cl_id])
 		cursor.execute('UPDATE "Group" SET group_members = array_remove(group_members, %s)'
-			+ 'WHERE group_name=(SELECT CAST (%s AS SMALLINT))', [firebase_id, group_name])
+			+ ' WHERE group_name=%s', [firebase_id, group_name])
 
 # Return all group names currently in the database.
 def getAllGroupNames():

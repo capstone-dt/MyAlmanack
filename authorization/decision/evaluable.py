@@ -1,6 +1,6 @@
 class EvaluableMetaclass(type):
-    def __new__(cls, name, bases, kwargs):
-        _class = super().__new__(cls, name, bases, kwargs)
+    def __new__(cls, name, bases, keywords):
+        _class = super().__new__(cls, name, bases, keywords)
         
         # Make all subclass instances inherit the magic methods as well.
         _class.__invert__ = cls.__invert__
@@ -32,9 +32,4 @@ class EvaluableMetaclass(type):
 
 
 class Evaluable(metaclass=EvaluableMetaclass):
-    @classmethod
-    def evaluate(cls, *args, **kwargs):
-        raise NotImplementedError(
-            "The evaluate() method of %s has not been implemented!" %
-            cls.__name__
-        )
+    pass

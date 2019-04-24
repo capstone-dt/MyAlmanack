@@ -1,1 +1,0 @@
-from .subject_is_resource import SubjectIsResource

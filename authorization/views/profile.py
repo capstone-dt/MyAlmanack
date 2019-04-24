@@ -1,30 +1,26 @@
-import authorization
-from authentication.firebase import get_session_claims
+import authorization.api
+from database.models import Profile
 
 # Django
-from django.contrib.auth import get_user_model
-from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.shortcuts import render
 
 
 def profile(request, uid):
-    # Get the user from their Firebase ID given in the URL.
+    # Try to get the profile if it exists.
     try:
-        user = get_user_model().objects.get(username=uid)
-    except get_user_model().DoesNotExist:
-        raise PermissionDenied
+        profile = Profile.objects.get(firebase_id=uid)
+    except Profile.DoesNotExist:
+        raise Http404
     
     # Check authorization.
-    authorization.authorize(
+    authorization.api.authorize(
         request,
-        action=authorization.actions.user.profile.ViewProfile,
-        resource=user
+        action=authorization.api.actions.user.profile.ViewUserProfile,
+        resource=profile
     )
     
     # Render the profile page.
-    claims = get_session_claims(request)
     return render(request, "authorization/profile.html", context={
-        "name": claims["name"],
-        "image": claims["picture"],
-        "claims": claims
+        "name": "%s %s" % (profile.first_name, profile.last_name)
     })

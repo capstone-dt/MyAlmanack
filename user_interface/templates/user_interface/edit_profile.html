@@ -17,11 +17,11 @@
 	
 	<!-- edit form column -->
 	<div class="col-md-9 personal-info">
-		<div class="alert alert-info alert-dismissable">
+<!-- 		<div class="alert alert-info alert-dismissable">
 		<a class="panel-close close" data-dismiss="alert">×</a> 
 		<i class="fa fa-coffee"></i>
 		This is an <strong>.alert</strong>. Use this to show important messages to the user.
-		</div>
+		</div> -->
 		<h3>Personal info</h3>
 		
 		<form class="form-horizontal" role="form" 
@@ -36,6 +36,7 @@
 					value="Save Changes" id="submitChangesButton">
 			</div>
 		</form>
+
 			<div class="form-row d-flex">
 			<div class="col-lg-11">
 				<label class="float-right" for="blankLine" style="color:#ff3f3f; text-align: right;">&nbsp* Denotes a Required Field</label>
@@ -60,7 +61,7 @@
 			<div class="row">
 				<a class=""> &nbsp &nbsp</a>
 			<input class="form-control col-10" type="text" id="inputAlias" required onchange="editProfileUpdate();" onkeypress="editProfileUpdate();" onpaste="editProfileUpdate();" oninput="editProfileUpdate();" pattern="[A-Za-z0-9]{1,}$">
-			<i class="col-1 material-icons right">check_circle</i>
+			<i class="col-1 material-icons right" id="aliasValidationId">check_circle_outline</i>
 			</div>
 			</div>
 		</div>
@@ -97,27 +98,71 @@
 		<input type="button" class="col-lg-11 confirmButton" style="width:100%; height:50px;" onclick="submitChanges()" value="Save Changes">
 		</div>
 		<script type="text/javascript">
+			$(document).ready(function() {
+			  setInterval(
+				  () => {
+				  	if(valid_alias != previous_valid){
+				    	editProfileUpdate();
+				  	}
+				  },
+				  1000
+				);
+			});
 			function exchangeValues(div_id, form_id){
-			var temp_div = document.getElementById(div_id);
-			var temp_form = document.getElementById(form_id);
-			temp_form.value=temp_div.value;
-			console.log(temp_form);
+				var temp_div = document.getElementById(div_id);
+				var temp_form = document.getElementById(form_id);
+				temp_form.value=temp_div.value;
+			}
+			var valid_alias = false;
+			var previous_valid = true;
+			function setxalias(){
+				var aliasValidation = document.getElementById("aliasValidationId");
+				aliasValidation.innerText = "highlight_off";
+			}
+			function setcheckalias(){
+				var aliasValidation = document.getElementById("aliasValidationId");
+				aliasValidation.innerText = "check_circle_outline";
+			}
+			function performEditProfileAjax(callback, after){
+					var entered_alais = document.getElementById("inputAlias");
+					$.ajax({
+						url: '/ajax/validate_alias/',
+						data: {
+						  'alias': entered_alais.value
+						},
+						dataType: 'json',
+						success: function (data) {
+						  if (data.is_taken) {
+						  	previous_valid = valid_alias;
+						  	valid_alias = false;
+							setxalias();
+						  }else{
+						  	previous_valid = valid_alias;
+						  	valid_alias = true;
+						  	setcheckalias();
+						  	callback();
+						  }
+						  after();
+						}
+					});
 			}
 			function editProfileUpdate(){
-			exchangeValues("inputFirstname", "id_PIfirst");
-			exchangeValues("inputLastname", "id_PIlast");
-			exchangeValues("inputAlias", "id_PIalias");
-			exchangeValues("inputEmail", "id_PIemail");
-			var unique_alias = true;
-			if(unique_alias){
-				exchangeValues("inputAlias", "id_PIalias");
+				var entered_alais = document.getElementById("inputAlias");
+				if(entered_alais.value != "" && entered_alais.value != profile_struct.alias){
+					var temp_func = function(){exchangeValues("inputAlias", "id_PIalias");};
+					performEditProfileAjax(temp_func, remainderEdit);
+				}
 			}
-			var temp_div = document.getElementById("inputBirthday");
-			var temp_form = document.getElementById("id_PIbirthday");
-			temp_form.value= new Date(temp_div.value).getTime() + "" ;
-			exchangeValues("inputPhone", "id_PIphone");
-			exchangeValues("inputOrganization", "id_PIorganization");
-			exchangeValues("inputDescription", "id_PIdescription");
+			function remainderEdit(){
+				exchangeValues("inputFirstname", "id_PIfirst");
+				exchangeValues("inputLastname", "id_PIlast");
+				exchangeValues("inputEmail", "id_PIemail");
+				var temp_div = document.getElementById("inputBirthday");
+				var temp_form = document.getElementById("id_PIbirthday");
+				temp_form.value= new Date(temp_div.value).getTime() + "" ;
+				exchangeValues("inputPhone", "id_PIphone");
+				exchangeValues("inputOrganization", "id_PIorganization");
+				exchangeValues("inputDescription", "id_PIdescription");
 			}
 			function uploadProfilePicture(){
 			var picture_div = document.getElementById("inputProfilePicture");
@@ -127,7 +172,10 @@
 				const reader = new FileReader();
 				reader.onload = function(e) {
 				picture_form.value = e.target.result;
-				console.log(picture_form);
+				var prof_pic_div = document.getElementById("imageDisplay");
+				prof_pic_div.setAttribute('src', e.target.result);
+				prof_pic_div.style.width = "200px";
+				prof_pic_div.style.height = "200px";
 				};
 				reader.readAsDataURL(picture_file);
 			}else{
@@ -137,8 +185,13 @@
 			function submitChanges(){
 				editProfileUpdate();
 				uploadProfilePicture();
-				var submit_button = document.getElementById("submitChangesButton");
-				submit_button.click();
+				var entered_alais = document.getElementById("inputAlias");
+				if(valid_alias || entered_alais.value == profile_struct.alias){
+					exchangeValues("inputAlias", "id_PIalias");
+					remainderEdit();
+					var submit_button = document.getElementById("submitChangesButton");
+					submit_button.click();
+				}
 			}
 		</script>
 	</div>
@@ -167,9 +220,8 @@
 		today = yyyy+'-'+mm+'-'+dd;
 		document.getElementById("inputBirthday").setAttribute("max", today);
 	console.log("Profile Info:\n", parseQuotesJson("{{profile_info}}"));
-	var profile_struct = {};
+	var profile_struct = parseQuotesJson("{{profile_info}}");
 	function populateFields(){
-		profile_struct = parseQuotesJson("{{profile_info}}");
 		if(profile_struct.alias != undefined){
 			var first_div = document.getElementById("inputFirstname");
 			first_div.value = profile_struct.first_name;

@@ -14,21 +14,12 @@ var populatedEvents = [];
 var populatedEvents_w = [];
 var populatedEvents_d = [];
 var x_offset = 0, y_offset = 0;
-var _days_of_week = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
-var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-var _months_of_year = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-var _times_of_day_12 = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"];
 var _month_selected = "03";
 var _year_selected = "2019";
 var _day_selected = "1";
 var _week_selected = [];
 var _curr_month = "currMonth";
 var _curr_month_not = "currMonthNot";
-var _dummy_events_json;
-var _dummy_profiles_json;
-var _dummy_contacts_json;
-var _dummy_user_json;
 var _prev_scroll_y = 0;
 
 var user_contact_list;
@@ -43,6 +34,7 @@ var freetimeChecked = false;
 var timeout_mil = 20;
 var _calendar_mode = "";
 var _name_selected = "";
+var _calendar_struct = {};
 // Friends enabled test
 
 /*
@@ -121,10 +113,185 @@ function clickAnywhere(event){
 		var curr_id = clicked_ids[i];
 		clicked_structs.push(getEventStruct(curr_id));
 	}
-	if(clicked_structs.length > 0){
-		console.log(clicked_structs);
+
+	if(clicked_structs.length > 0 && allModalsClosed() && allDropdownsClosed()){
+		if(clicked_structs.length == 1){
+			var temp_event_struct = clicked_structs[0];
+			clickedViewSelect(temp_event_struct.event_id);
+		}else{
+			clearShowEvents();
+			populateShowEvents(clicked_structs);
+			showEventsModal();
+		}
 	}
 }
+function clearShowEvents(){
+	var view_events_div = document.getElementById("viewEventsScrollCont");
+	while(view_events_div.firstChild){
+		view_events_div.removeChild(view_events_div.firstChild);
+	}
+}
+
+function getEventCreatorFirebaseID(event_id){
+	for(var i = 0; i < member_events_all.length; i++){
+		var curr_event = member_events_all[i];
+		if(curr_event.event_id == event_id){
+			return curr_event.event_creator_firebase_id;
+		}
+	}
+	for(var i = 0; i < user_events_all.length; i++){
+		var curr_event = user_events_all[i];
+		if(curr_event.event_id == event_id){
+			return curr_event.event_creator_firebase_id;
+		}
+	}
+	return null;
+}
+
+function getEventById(event_id){
+	for(var i = 0; i < member_events_all.length; i++){
+		var curr_event = member_events_all[i];
+		if(curr_event.event_id == event_id){
+			return curr_event;
+		}
+	}
+	for(var i = 0; i < user_events_all.length; i++){
+		var curr_event = user_events_all[i];
+		if(curr_event.event_id == event_id){
+			return curr_event;
+		}
+	}
+	return null;
+}
+
+function populateViewSelect(event_id){
+	var displayEventCreator = document.getElementById("displayEventCreator");
+	var displayEventName = document.getElementById("displayEventName");
+	var displayEventDescription = document.getElementById("displayEventDescription");
+	var displayEventStart = document.getElementById("displayEventStart");
+	var displayEventEnd = document.getElementById("displayEventEnd");
+	var view_event = getEventById(event_id);
+	// console.log("populate", view_event);
+	displayEventCreator.innerText = "@" + firebaseIDtoAlias(view_event.event_creator_firebase_id);
+	displayEventCreator.setAttribute("href", "javascript:redir('redirfb/" + view_event.event_creator_firebase_id + "');");
+	displayEventName.innerText = view_event.event_title;
+	displayEventDescription.innerText = view_event.description;
+	if(view_event.description == ""){
+		displayEventDescription.innerText = "No description has been provided.";
+		displayEventDescription.style.color = "grey";
+	}
+	var start_str = customDateString(new Date(view_event.start_date)) + " " + customTimeString(new Date(view_event.start_date));
+	displayEventStart.innerText = start_str;
+	var end_str = customDateString(new Date(view_event.end_date)) + " " + customTimeString(new Date(view_event.end_date));
+	displayEventEnd.innerText = end_str;
+}
+
+function formatDateHTML(dateObj){
+	return dateObj.getFullYear() + "-" + ('0' + (dateObj.getMonth() + 1)).slice(-2) + "-" + ('0' + dateObj.getDate()).slice(-2);
+}
+
+function formatTimeHTML(dateObj){
+	var h = dateObj.getHours();
+	var m = dateObj.getMinutes();
+	if(h < 10){
+		h = "0" + h;
+	}
+	if(m < 10){
+		m = "0" + m;
+	}
+	return h + ":" + m;
+}
+
+
+function populateEditSelect(event_id){
+	var edit_event_id = document.getElementById("id_EIediteventid");
+	edit_event_id.value = event_id;
+	var inputEditEventName = document.getElementById("inputEditEventName");
+	var inputEditEventDesc = document.getElementById("inputEditEventDesc");
+	var inputEditStartDate = document.getElementById("inputEditStartDate");
+	var inputEditEndDate = document.getElementById("inputEditEndDate");
+	var inputEditStartTime = document.getElementById("inputEditStartTime");
+	var inputEditEndTime = document.getElementById("inputEditEndTime");
+	var edit_event = getEventById(event_id);
+	inputEditEventName.value = edit_event.event_title;
+	inputEditEventDesc.value = edit_event.description;
+	var startDateObj = new Date(edit_event.start_date);
+	var startDateStr = formatDateHTML(startDateObj);
+	inputEditStartDate.value = startDateStr;
+	var endDateObj = new Date(edit_event.end_date);
+	var endDateStr = formatDateHTML(endDateObj);
+	inputEditEndDate.value = endDateStr;
+	inputEditStartTime.value = formatTimeHTML(startDateObj);
+	inputEditEndTime.value = formatTimeHTML(endDateObj);
+}
+
+function clickedViewSelect(event_id_clicked){
+	console.log("clickedViewSelect:", event_id_clicked);
+	closeAllModals();
+	var fb_clicked = getEventCreatorFirebaseID(event_id_clicked);
+	if(fb_clicked == _calendar_struct.calendar_data.user_info.firebase_id){
+		// Edit event window
+		//viewEditEventButton
+		console.log("own clicked");
+		populateEditSelect(event_id_clicked);
+		var editSelectButton = document.getElementById("viewEditEventButton");
+		editSelectButton.click();
+	}else{
+		// View event window
+		console.log("other clicked:", fb_clicked);
+		populateViewSelect(event_id_clicked);
+		var viewSelectButton = document.getElementById("viewSelectEventButton");
+		viewSelectButton.click();
+	}
+
+}
+
+
+function populateShowEvents(clicked_structs){
+	var view_events_div = document.getElementById("viewEventsScrollCont");
+	console.log("populateShowEvents");
+	for(var i = 0; i < clicked_structs.length; i++){
+		var curr_struct = clicked_structs[i];
+		var curr_elem = document.createElement("a");
+		curr_elem.className = "dropdown-item";
+		curr_elem.id = "ve_" + curr_struct.event_id;
+		curr_elem.href = "#";
+		curr_elem.setAttribute("onclick", "clickedViewSelect('" + curr_struct.event_id + "')"); 
+		var event_text_div = document.createElement("div");
+		event_text_div.innerHTML = curr_struct.event_title;
+		var event_creator_alias = firebaseIDtoAlias(curr_struct.event_creator_firebase_id);
+		console.log("populate:", curr_struct, "\nfirebase_id:", curr_struct.event_creator_firebase_id);
+		console.log("event_creator_alias:"+ event_creator_alias);
+		event_text_div.innerHTML += "<br>@" + event_creator_alias;
+		curr_elem.appendChild(event_text_div);
+		view_events_div.appendChild(curr_elem);
+	}
+}
+function showEventsModal(){
+	var open_events = document.getElementById("viewEventsOpenButton");
+	open_events.click();
+}
+function allModalsClosed(){
+	var allModals = document.getElementsByClassName("modal");
+	for(var i = 0; i < allModals.length; i++){
+		var curr_modal = allModals[i];
+		if(curr_modal.className.includes(" show")){
+			return false;
+		}
+	}
+	return true;
+}
+function allDropdownsClosed(){
+	var allDropdowns = document.getElementsByClassName("dropdown-menu");
+	for(var i = 0; i < allDropdowns.length; i++){
+		var curr_dropdown = allDropdowns[i];
+		if(curr_dropdown.className.includes(" show")){
+			return false;
+		}
+	}
+	return true;
+}
+
 
 function ensureBoxSize(){
 	// console.log(calArray);
@@ -360,6 +527,233 @@ function testEventHoursSplit(){
 	console.log(eventHoursSplit(temp_struct));
 }
 
+function testCombineEventsDayAffected(){
+	var test1 = {
+		start_date : new Date("April 4 2019 10:00 AM").getTime(),
+		end_date : new Date("April 4 2019 3:00 PM").getTime()
+	};
+	var test2 = {
+		start_date : new Date("April 4 2019 1:00 PM").getTime(),
+		end_date : new Date("April 4 2019 5:00 PM").getTime()
+	};
+	var test3 = {
+		start_date : new Date("April 5 2019 5:00 PM").getTime(),
+		end_date : new Date("April 5 2019 10:00 PM").getTime()
+	};
+	var test4 = {
+		start_date : new Date("April 5 2019 8:00 PM").getTime(),
+		end_date : new Date("April 5 2019 11:00 PM").getTime()
+	};
+	var res = combineEventsDayAffected([test1, test2, test3, test4]);
+	for(var i = 0; i < res.length; i++){
+		var curr_struct = res[i];
+		console.log(curr_struct.affected);
+		for(var j = 0; j < curr_struct.events.length; j++){
+			var curr_event = curr_struct.events[j];
+			console.log("start", new Date(curr_event.start_date), "end", new Date(curr_event.end_date));
+		}
+	}
+}
+
+// Assumes already split using splitEventStructure(event)
+function combineEventsDayAffected(event_arr_passed){
+	var retArray = [];
+	var dates_affected = [];
+	for(var i = 0; i < event_arr_passed.length; i++){
+		var curr_event = event_arr_passed[i];
+		var date_affected = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+		var loc_contains = false;
+		for(var j = 0; j < dates_affected.length; j++){
+			if(dates_affected[j].getTime() == date_affected.getTime()){
+				loc_contains = true;
+				break;
+			}
+		}
+		if(loc_contains == false){
+			dates_affected.push(date_affected);
+		}
+	}
+	for(var k=0; k < dates_affected.length; k++){
+		var affected_array = [];
+		for(var i = 0; i < event_arr_passed.length; i++){
+			var curr_event = event_arr_passed[i];
+			var date_affected = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+			if(date_affected.getTime() == dates_affected[k].getTime()){
+				affected_array.push(curr_event);
+			}
+		}
+		var tempDict = {};
+		tempDict.affected = dates_affected[k];
+		tempDict.events = affected_array;
+		retArray.push(tempDict);
+	}
+	return retArray;
+}
+
+function unionEventsTwo(event1, event2){
+	if(inRange(event1.start_date, event2.start_date, event1.end_date) ||
+		inRange(event1.start_date, event2.end_date, event1.end_date)
+		|| inRange(event2.start_date, event1.start_date, event2.end_date) ||
+		inRange(event2.start_date, event1.end_date, event2.end_date)){
+		var unionedEvent = {};
+		unionedEvent.start_date = Math.min(event1.start_date, event2.start_date);
+		unionedEvent.end_date = Math.max(event1.end_date, event2.end_date);
+		return [unionedEvent];
+	}else{
+		return [event1, event2];
+	}
+}
+
+function testUnionEvents(){
+	var test1 = {
+		start_date : new Date("April 4 2019 10:00 AM").getTime(),
+		end_date : new Date("April 4 2019 3:00 PM").getTime()
+	};
+	var test2 = {
+		start_date : new Date("April 4 2019 1:00 PM").getTime(),
+		end_date : new Date("April 4 2019 5:00 PM").getTime()
+	};
+	var test3 = {
+		start_date : new Date("April 4 2019 5:00 PM").getTime(),
+		end_date : new Date("April 4 2019 10:00 PM").getTime()
+	};
+	var test4 = {
+		start_date : new Date("April 4 2019 8:00 PM").getTime(),
+		end_date : new Date("April 4 2019 11:00 PM").getTime()
+	};
+	var res = unionEvents([test1, test2, test3, test4]);
+	for(var i = 0; i < res.length; i++){
+		console.log("start", new Date(res[i].start_date), "end", new Date(res[i].end_date));
+	}
+}
+
+// Creates a convex hull in one dimension
+function unionEvents(event_arr_passed){
+	var allOne = false;
+	var deep_clone = [];
+	for(var i = 0; i < event_arr_passed.length; i++){
+		var curr_event = event_arr_passed[i];
+		var cloned = {};
+		cloned.start_date = curr_event.start_date;
+		cloned.end_date = curr_event.end_date;
+		deep_clone.push(cloned);
+	}
+	while(allOne == false){
+		var forAll = true;
+		for(var i =0; i < deep_clone.length; i++){
+			var curr_event = deep_clone[i];
+			for(var j=0; j < deep_clone.length; j++){
+				// Don't union with self
+				if(i == j){
+					break;
+				}
+				var postUnion = unionEventsTwo(curr_event, deep_clone[j]);
+				if(postUnion.length == 2){
+					forAll &= true;
+					continue;
+				}else{
+					deep_clone.splice(i, 1);
+					deep_clone.splice(j, 1);
+					deep_clone.push(postUnion[0]);
+					forAll = false;
+					continue;
+				}
+
+			}
+		}
+		allOne = forAll;
+	}
+	return deep_clone;
+}
+
+
+function testUnionDaysAffected(){
+	var test2 = {
+		start_date : new Date("April 17 2019 12:00 AM").getTime(),
+		end_date : new Date("April 17 2019 11:59 PM").getTime()
+	};
+	var test1 = {
+		start_date : new Date("April 17 2019 11:00 AM").getTime(),
+		end_date : new Date("April 17 2019 12:00 PM").getTime()
+	};
+	var res = unionEventsTwo(test1, test2);
+	for(var i = 0; i < res.length; i++){
+		console.log("start", new Date(res[i].start_date), "end", new Date(res[i].end_date));
+	}
+}
+
+// Assumes events passed are already split
+function unionDaysAffected(event_arr_passed){
+	var retArray = [];
+	console.log("event_arr_passed", event_arr_passed);
+	var combinedDaysAffected = combineEventsDayAffected(event_arr_passed);
+	// console.log("daysAffected");
+	// console.log(combinedDaysAffected);
+	// for(var i = 0; i < combinedDaysAffected.length; i++){
+	// 	var temp_events = combinedDaysAffected[i].events;
+	// 	for(var j = 0; j < temp_events.length; j++){
+	// 		console.log("start", new Date(temp_events[j].start_date), "end", new Date(temp_events[j].end_date));
+	// 	}
+	// }
+	console.log("unioned");
+	for(var i = 0; i < combinedDaysAffected.length; i++){
+		var curr_struct = combinedDaysAffected[i];
+		var unioned_day = unionEvents(curr_struct.events);
+		for(var j = 0; j < unioned_day.length; j++){
+			// console.log("start", new Date(unioned_day[j].start_date), "end", new Date(unioned_day[j].end_date));
+			unioned_day[j].reg_date = new Date(unioned_day[j].start_date);
+			unioned_day[j].delta = Math.abs(unioned_day[j].end_date - unioned_day[j].start_date)/(1000*60*60);
+			retArray.push(unioned_day[j]);
+		}
+	}
+	return retArray;
+}
+
+
+function combinedFreeToHours(combined_free, month_start, month_end){
+	var retArray = [];
+	// Populate retarray with basic structures
+	for(var currDate = new Date(month_start.getTime());
+		currDate.getTime() <= month_end.getTime();
+		currDate = new Date(new Date(currDate.getTime()).setDate(currDate.getDate() + 1))
+		){
+		var currStruct = {};
+		currStruct.date = new Date(currDate.getTime());
+		currStruct.hours = 0;
+		retArray.push(currStruct);
+	}
+	for(var i = 0; i < combined_free.length; i++){
+		var currFree = combined_free[i];
+		var curr_split = splitEventStructure(combined_free[i]);
+		// console.log("curr_split:",curr_split);
+		for(var j = 0; j < curr_split.length; j++){
+			// console.log("j:" + j,"start_date", new Date(curr_split[j].start_date), "end_date", new Date(curr_split[j].end_date));
+			var delta_h = Math.abs(curr_split[j].end_date - curr_split[j].start_date)/(1000*60*60);
+			// console.log("delta_h", delta_h);
+			var date_affected = new Date(new Date(curr_split[j].start_date).setHours(0,0,0));
+			// console.log("date_affected", date_affected);
+			var temp_hours = 0;
+			var index_found = -1;
+			for(var k = 0; k < retArray.length; k++){
+				if(retArray[k].date.getTime() == date_affected.getTime()){
+					temp_hours += delta_h;
+					index_found = k;
+					break;
+				}
+			}
+			if(index_found != -1){
+				retArray[index_found].hours += temp_hours;
+			}
+			// console.log(delta_h);
+		}
+	}
+	// for(var i = 0; i < retArray.length; i++){
+	// 	retArray[i].hours %= 24;
+	// }
+	console.log("combined_free", retArray);
+	return retArray;
+}
+
 function drawColorGrid(isRainbow) {
 	var retArray = [];
 	if(_switchType != "month"){
@@ -375,27 +769,31 @@ function drawColorGrid(isRainbow) {
 	}
 	combinedEvents = combinedEvents.sort(function(a,b){return a.start_date - b.start_date});
 	var temp_convert_split = [];
-	var pooya_array = convertEventListPooya(combinedEvents);
 
-	for(var i = 0; i < pooya_array.length; i++){
-		var sub_array = eventHoursSplit(pooya_array[i]);
-		// console.log(pooya_array[i]);
-		// console.log("sub_array", sub_array);
+	for(var i = 0; i < combinedEvents.length; i++){
+		var sub_array = splitEventStructure(combinedEvents[i]);
 		for(var j = 0; j < sub_array.length; j++){
+			sub_array[j].event_id = combinedEvents[i].event_id;
 			temp_convert_split.push(sub_array[j]);
 		}
 	}
+	console.log("temp_convert_split", temp_convert_split);
+	var combined_affected = combineEventsDayAffected(temp_convert_split);
+	console.log("combined_affected", combined_affected);
+	var unioned_split = unionDaysAffected(temp_convert_split);
+	console.log("unioned_split", unioned_split);
+	// for(var i = 0; i < unioned_split.length; i++){
+	// 	console.log("start", new Date(unioned_split[i].start_date), "end", new Date(unioned_split[i].end_date));
+	// }
 	// console.log("temp_convert_split", temp_convert_split);
-	var pooya_array = convertEventListPooya(temp_convert_split);
-	// console.log("pooya_array", pooya_array);
-	
 	var month_start = new Date(_year_selected, _month_selected, 1);
 	var month_end = new Date(_year_selected, _month_selected + 1, 0);
+	month_end = new Date(month_end.setHours(23,59,59));
 	var temp_cal = new Calendar("temp_cal");
-	var freetimeArray = temp_cal.freetime_per_day(pooya_array, month_start.getTime(), month_end.getTime());
+	var freetimeArray = temp_cal.freetime_per_day(unioned_split, month_start.getTime(), month_end.getTime());
 	var combined_free = [];
 
-	// console.log(freetimeArray);
+	// console.log("freetimeArray", freetimeArray);
 	for(var i = 0; i < freetimeArray.length; i++){
 		var curr_arr = freetimeArray[i];
 		if(curr_arr != null){
@@ -411,8 +809,10 @@ function drawColorGrid(isRainbow) {
 			}
 		}
 	}			
-	// console.log(combined_free);
-	var eventsHours = getEventsDays(combined_free);
+	// console.log("combinedFree", combined_free);
+	// console.log("month_start", month_start, "month_end", month_end);
+	var hours_temp = combinedFreeToHours(combined_free, month_start, month_end);
+	console.log("hours_temp", hours_temp);
 	var count = 0;
 	for(var i = 0; i < calArray.length; i++){
 		for(var j = 0; j < calArray[i].length; j++){
@@ -422,15 +822,26 @@ function drawColorGrid(isRainbow) {
 			}
 			var month_day = Number(curr_elem.innerText);
 			var temp_date = new Date(_year_selected, _month_selected, month_day);
-			temp_date.setHours(0,0,0);
-			temp_date = temp_date.getTime();
+			temp_date = temp_date.setHours(0,0,0);
 			var hoursFree = 24;
 			// console.log(temp_date);
-			for(var k = 0; k < eventsHours.length; k++){
+			for(var k = 0; k < hours_temp.length; k++){
 				// console.log(eventsHours[k]);
-				if(Number(temp_date) == Number(eventsHours[k].start_time)){
+				if(temp_date == hours_temp[k].date.getTime()){
 					// console.log("FOUND");
-					hoursFree = eventsHours[k].hours;
+					// console.log("temp_date", temp_date, "hours_temp[k]", hours_temp[k]);
+					hoursFree = hours_temp[k].hours;
+					if(hoursFree > 23){
+						for(var L = 0; L < unioned_split.length; L++){
+							var curr_un = unioned_split[L];
+							if(Number(temp_date) == new Date(curr_un.reg_date.getTime()).setHours(0,0,0)){
+								if(curr_un.delta > 23){
+									hoursFree = 24 - curr_un.delta;
+									break;
+								}
+							}
+						}
+					}
 					break;
 				}
 			}
@@ -442,7 +853,7 @@ function drawColorGrid(isRainbow) {
 			}else{
 				alpha = (hoursFree - 8)/16;
 			}
-			if(getEventsCurrMonthUser().length == 0){
+			if(getEventsCurrMonthUser().length == 0 && getEventsCurrMonthSelected().length == 0){
 				alpha = 1;
 			}
 
@@ -457,34 +868,42 @@ function drawColorGrid(isRainbow) {
 	return retArray;
 }
 
-function friendsEnabled(){
-	return false;
-}
-function customDateString(date){
-	var date_string = _months_of_year[date.getMonth()] + " ";
-	date_string += date.getDate() + ", ";
-	date_string += date.getFullYear();
-	return date_string;
+function clickUserEvent(event_id_clicked){
+	if(_redirecting){
+		// console.log("redirecting, no action");
+		return;
+	}
+	// console.log("all good!");
+	clickedViewSelect(event_id_clicked);
 }
 
-function customTimeString(date){
-	var hr = date.getHours();
-	var min = date.getMinutes();
-	if (min < 10) {
-	    min = "0" + min;
-	}
-	var ampm = "am";
-	if( hr > 12 ) {
-	    hr -= 12;
-	    ampm = "pm";
-	}
-	if(hr == 0){
-		hr = 12;
-		ampm = "am";
-	}
-	var time_string = hr + ":" + min + ampm;
-	return time_string;
+function clickFreetime(start_end_date){
+	console.log("clickFreetime");
+	var create_event_button = document.getElementById("createNewEventButton");
+	create_event_button.click();
+	var start_end_arr = start_end_date.split("$");
+	var start_date = start_end_arr[0];
+	var end_date = start_end_arr[1];
+	console.log(start_date, end_date);
+	var enter_start_date = document.getElementById("inputStartDate");
+	var enter_start_time = document.getElementById("inputStartTime");
+	var enter_end_date = document.getElementById("inputEndDate");
+	var enter_end_time = document.getElementById("inputEndTime");
+	var startDateObj = new Date(parseInt(start_date));
+	var startDateStr = formatDateHTML(startDateObj);
+	enter_start_date.value = startDateStr;
+	var endDateObj = new Date(parseInt(end_date));
+	var endDateStr = formatDateHTML(endDateObj);
+	enter_end_date.value = endDateStr;
+	enter_start_time.value = formatTimeHTML(startDateObj);
+	enter_end_time.value = formatTimeHTML(endDateObj);
+	// closeAllModals();
+	console.log(startDateObj, endDateObj);
+	console.log(create_event_button);
+	console.log(enter_start_date, enter_start_time, enter_end_date, enter_end_time);
 }
+
+
 function makeList(cont_id){
 	// console.log("makeList");
 	clearEvents();
@@ -503,15 +922,20 @@ function makeList(cont_id){
 	sub_list.style.borderStyle = "solid";
 	sub_list.style.borderWidth = "1px";
 	// Freetime not checked.
-	var selected_events = getMembersSelectedEvents();
 	var createFuncEvent = function(external_div, arr, i){
 		var list_elem = document.createElement('li');
 		list_elem.className = "nav-item";
 		list_elem.style.width = "100%";
 		var a_elem = document.createElement('a');
-		a_elem.className = "navbar-text";
-		a_elem.innerHTML = arr[i].description  + "<br>";
-		a_elem.innerHTML += "@" + arr[i].event_creator_alias;
+		a_elem.className = "navbar-text calListDiv";
+		a_elem.setAttribute("onclick", "clickUserEvent('" + arr[i].event_id + "');");
+		a_elem.innerHTML = arr[i].event_title  + "<br>";
+		var event_creator_alias = firebaseIDtoAlias(arr[i].event_creator_firebase_id);
+		var alias_elem = document.createElement('a');
+		alias_elem.innerText = "@" + event_creator_alias;
+		alias_elem.href = "javascript:redir('redirfb/" + arr[i].event_creator_firebase_id + "');";
+		alias_elem.setAttribute("onclick", "_redirecting = true;");
+		a_elem.appendChild(alias_elem);
 		var temp_date_time = new Date(Number(arr[i].start_date));
 		var date_string_start = customDateString(temp_date_time);
 		var time_string_start = customTimeString(temp_date_time);
@@ -528,11 +952,13 @@ function makeList(cont_id){
 	};
 	var createFuncFree = function(external_div, arr, i){
 		var list_elem = document.createElement('li');
-		list_elem.className = "nav-item";
+		list_elem.className = "nav-item calListDiv";
 		list_elem.style.width = "100%";
 		var a_elem = document.createElement('a');
 		a_elem.className = "navbar-text";
 		a_elem.innerHTML =  "Freetime <br>";
+		var s_e_string = arr[i].start_date + "$" + arr[i].end_date;
+		a_elem.setAttribute("onclick", "clickFreetime('" + s_e_string + "');");
 		var temp_date_time = new Date(Number(arr[i].start_date));
 		var date_string_start = customDateString(temp_date_time);
 		var time_string_start = customTimeString(temp_date_time);
@@ -547,6 +973,7 @@ function makeList(cont_id){
 		list_elem.appendChild(a_elem);
 		external_div.appendChild(list_elem);
 	};
+	var selected_events = getMembersSelectedEvents();
 	var combinedEvents = [];
 	for(var i = 0; i < user_events_all.length; i++){
 		combinedEvents.push(user_events_all[i]);
@@ -554,45 +981,88 @@ function makeList(cont_id){
 	for(var i = 0; i < selected_events.length; i++){
 		combinedEvents.push(selected_events[i]);
 	}
-	if(combinedEvents.length > 0){
 	combinedEvents.sort(function(a, b){return a.start_date - b.start_date});
-	if(freetimeChecked == false){
-		for(var i = 0; i < combinedEvents.length; i++){
-			if(combinedEvents[i].isHidden != undefined && combinedEvents[i].isHidden){
-				continue;
+	if(combinedEvents.length > 0){
+		if(freetimeChecked == false){
+			for(var i = 0; i < combinedEvents.length; i++){
+				if(combinedEvents[i].isHidden != undefined && combinedEvents[i].isHidden){
+					continue;
+				}
+				createFuncEvent(sub_list, combinedEvents, i);
 			}
-			createFuncEvent(sub_list, combinedEvents, i);
-		}
-	}else{
-		// Get freetime of all people
+		}else{
+			// Get freetime of all people
 
-		var pooya_array = convertEventListPooya(combinedEvents);
-		// console.log("pooya_array", pooya_array);
-		
-		var month_start = new Date(_year_selected, _month_selected, _day_selected);
-		var month_end = new Date(Number(combinedEvents[combinedEvents.length - 1].end_date));
-		month_end.setDate(month_end.getDate() + 1);
-		var temp_cal = new Calendar("temp_cal");
-		console.log("makeList free", pooya_array);
-		console.log(month_start, month_end);
-		var freetimeArray = temp_cal.freetime_per_day(pooya_array, month_start.getTime(), month_end.getTime());
-		var combined_free = [];
-		// console.log(freetimeArray);
-		for(var i = 0; i < freetimeArray.length; i++){
-			var curr_arr = freetimeArray[i];
-			if(curr_arr != null){
-				// console.log("non null");
-				for(var j = 0; j < curr_arr.length; j++){
-					// console.log(curr_arr);
-					combined_free.push(curr_arr[j]);
+			var pooya_array = convertEventListPooya(combinedEvents);
+			// console.log("pooya_array", pooya_array);
+			
+			var month_start = new Date(new Date(_year_selected, _month_selected, _day_selected).setHours(0,0,0));
+			var month_end = new Date(new Date(month_start.getTime()).setMonth(month_start.getMonth() + 1));
+			console.log("makeList free", pooya_array);
+			console.log(month_start, month_end);
+			if(month_start.getDate() > month_end.getDate()){
+				month_start = new Date(new Date(_year_selected, _month_selected, 1).setHours(0,0,0));
+			}
+			combinedEvents = combinedEvents.sort(function(a,b){return a.start_date - b.start_date});
+			var temp_convert_split = [];
+
+			for(var i = 0; i < combinedEvents.length; i++){
+				var sub_array = splitEventStructure(combinedEvents[i]);
+				for(var j = 0; j < sub_array.length; j++){
+					sub_array[j].event_id = combinedEvents[i].event_id;
+					temp_convert_split.push(sub_array[j]);
 				}
 			}
+			var unioned_split = unionDaysAffected(temp_convert_split);
+			console.log("unioned_split", unioned_split);
+			var temp_cal = new Calendar("temp_cal");
+			var freetimeArray = temp_cal.freetime_per_day(unioned_split, month_start.getTime(), month_end.getTime());
+			var combined_free = [];
+			console.log(freetimeArray);
+			var forAllNull = true;
+			for (var i = 0; i < freetimeArray.length; i++) {
+				var curr_free = freetimeArray[i];
+				if(curr_free != null){
+					forAllNull = false;
+					break;
+				}
+			}
+			for(var i = 0; i < freetimeArray.length; i++){
+				var curr_arr = freetimeArray[i];
+				if(forAllNull){
+					// create new freetime event;
+					var curr_ev_new = {};
+					curr_ev_new.start_date = new Date(new Date(month_start.getTime()).setHours(0,0,0)).setDate(month_start.getDate() + i);
+					curr_ev_new.end_date = new Date(new Date(month_start.getTime()).setHours(23,59,59)).setDate(month_start.getDate() + i);
+					curr_arr = [curr_ev_new];
+					combined_free.push(curr_ev_new);
+				}else if (curr_arr != null){
+					// console.log("non null");
+					for(var j = 0; j < curr_arr.length; j++){
+						// console.log(curr_arr);
+						var start_date_obj = new Date(curr_arr[j].start_date);
+						if( start_date_obj.getHours() == 23 && start_date_obj.getMinutes() == 59){
+							curr_arr[j].start_date = new Date(new Date(curr_arr[j].start_date).setDate(start_date_obj.getDate() + 1)).setHours(0,0,0);
+							// console.log("Set equals", curr_arr[j], new Date(curr_arr[j].start_date), start_date_obj);
+						}
+						var end_date_obj = new Date(curr_arr[j].end_date);
+						if(curr_arr[j].end_date == new Date(curr_arr[j].end_date).setHours(0,0,0)){
+							curr_arr[j].end_date = new Date(new Date(curr_arr[j].end_date).setDate(end_date_obj.getDate() - 1)).setHours(23,59,0);
+							// console.log("Set equals", curr_arr[j], new Date(curr_arr[j].end_date), end_date_obj);
+						}
+						if(curr_arr[j].end_date - curr_arr[j].start_date > 600000 && curr_arr[j].end_date > curr_arr[j].start_date){
+							curr_arr[j].delta = (curr_arr[j].end_date - curr_arr[j].start_date)/(600000);
+							curr_arr[j].start_date_obj = new Date(curr_arr[j].start_date);
+							combined_free.push(curr_arr[j]);
+						}
+					}
+				}
+			}
+			console.log(combined_free);
+			for(var i = 0; i < combined_free.length; i++){
+				createFuncFree(sub_list, combined_free, i);
+			}
 		}
-		console.log(combined_free);
-		for(var i = 0; i < combined_free.length; i++){
-			createFuncFree(sub_list, combined_free, i);
-		}
-	}
 	
 	}
 	// list_div.style.height = "100%";
@@ -673,6 +1143,7 @@ function makeGrid(cont_id, rowClass, colClass, name, dim_x, dim_y, onclick_func,
 		window.scrollTo(0, _prev_scroll_y);
 	}
 }
+
 function switchCalendarView(cont_id, switchType){
 	var cont_div = document.getElementById(cont_id);
 	cont_div.innerHTML = "";
@@ -751,6 +1222,34 @@ function splitEvent(start, end){
 	return retArr;
 }
 
+function aliasToFirebaseID(alias){
+	if(alias == _calendar_struct.calendar_data.user_info.alias){
+		return _calendar_struct.calendar_data.user_info.firebase_id;
+	}
+	var temp_member_info = _calendar_struct.calendar_data.member_info;
+	// console.log("temp_member_info", temp_member_info);
+	for(var i = 0; i < temp_member_info.length; i++){
+		var curr_member_info = temp_member_info[i];
+		// console.log("curr_member_info", curr_member_info);
+		if(alias == curr_member_info.alias){
+			// console.log("MATCH");
+			return temp_member_info[i].firebase_id;
+		}
+	}
+}
+
+function firebaseIDtoAlias(firebase_id){
+	if(firebase_id == _calendar_struct.calendar_data.user_info.firebase_id){
+		return _calendar_struct.calendar_data.user_info.alias;
+	}
+	var temp_member_info = _calendar_struct.calendar_data.member_info;
+	for(var i = 0; i < temp_member_info.length; i++){
+		if(firebase_id == temp_member_info[i].firebase_id){
+			return temp_member_info[i].alias;
+		}
+	}
+}
+
 function filterAlias(array, alias){
 	var filtered = [];
 	for(var i = 0; i < array.length; i++){
@@ -764,7 +1263,8 @@ function filterAlias(array, alias){
 function filterAliasArray(event_array, alias_array){
 	var retArray = [];
 	for(var i = 0; i < alias_array.length; i++){
-		var curr_filtered = filterAlias(event_array, alias_array[i]);
+		var temp_firebase_id = aliasToFirebaseID(alias_array[i]);
+		var curr_filtered = filterEventsFirebaseID(event_array, temp_firebase_id);
 		for(var j = 0; j < curr_filtered.length; j++){
 			retArray.push(curr_filtered[j]);
 		}
@@ -772,9 +1272,30 @@ function filterAliasArray(event_array, alias_array){
 	return retArray;
 }
 
+function filterEventsFirebaseID(array, firebase_id){
+	var firebase_events = _calendar_struct.calendar_data.member_events;
+	var temp_events_all = [];
+	for(var i =0; i < firebase_events.length; i++){
+		if(firebase_events[i].firebase_id == firebase_id){
+			temp_events_all = firebase_events[i].participating_events;
+			break;
+		}
+	}
+	var retArray = [];
+	for(var i = 0; i < temp_events_all.length; i++){
+		for(var j = 0; j < array.length; j++){
+			if(temp_events_all[i].event_id == array[j].event_id){
+				retArray.push(array[j]);
+			}
+		}
+	}
+	return retArray;
+}
+
 function getAllEventStructsCurrMonthAlias(alias){
 	var allCurr = getAllEventStructsCurrMonth();
-	return filterAlias(allCurr, alias);
+	var firebase_id = aliasToFirebaseID(alias);
+	return filterEventsFirebaseID(allCurr, firebase_id);
 }
 function getAllEventStructsCurrMonth(){
 	var retArr = [];
@@ -877,7 +1398,9 @@ function getEventsCurrMonthMembers(){
 }
 
 function getEventsCurrMonthSelected(){
+	console.log("getEventsCurrMonthSelected");
 	var selected_members = getMembersSelected();
+	console.log(selected_members);
 	if(selected_members.length == 0){
 		return [];
 	}
@@ -968,7 +1491,13 @@ function getEventsOnDate(date_obj){
 		if(inRange(beginning_day.getTime(), curr_event.start_date, end_day.getTime())
 			|| inRange(beginning_day.getTime(), curr_event.end_date, end_day.getTime())){
 			retArr.push(populatedEvents_d[i]);
+			continue;
 		}
+		var day_aff = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+		console.log("day_aff", day_aff, "curr_event", curr_event);
+		// if(day_aff = date_obj.getTime()){
+		// 	retArr.push(populatedEvents_d[i]);
+		// }
 	}
 	return retArr;
 }
@@ -1188,10 +1717,11 @@ function leftArrowClick(){
 			_month_selected = temp_date.getMonth();
 			_year_selected = temp_date.getFullYear();
 			_day_selected = temp_date.getDate();
-			console.log(temp_date);
-			console.log(_day_selected);
-			selectDayHard(temp_date.getDate());
-			updateMonthYearHard(_month_selected, _year_selected, _day_selected);
+			// console.log(temp_date);
+			// console.log(_day_selected);
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
+			selectDayHard(_day_selected);
 			break;
 		case "day":
 			var temp_date = new Date(_year_selected, parseInt(_month_selected), _day_selected);
@@ -1199,8 +1729,9 @@ function leftArrowClick(){
 			_month_selected = temp_date.getMonth();
 			_year_selected = temp_date.getFullYear();
 			_day_selected = temp_date.getDate();
+			updateMonthYear(_month_selected, _year_selected);
+			_day_selected = temp_date.getDate();
 			selectDayHard(_day_selected);
-			updateMonthYearHard(_month_selected, _year_selected, _day_selected);
 			break;
 		default:
 	}
@@ -1234,7 +1765,7 @@ function rightArrowClick(){
 		case "week":
 			var temp_date = new Date(_year_selected, parseInt(_month_selected), _day_selected);
 			temp_date.setDate(temp_date.getDate() + 7);
-			console.log(temp_date);
+			// console.log(temp_date);
 			_month_selected = temp_date.getMonth();
 			_year_selected = temp_date.getFullYear();
 			updateMonthYear(_month_selected, _year_selected);
@@ -1260,18 +1791,18 @@ function populateFriendsSelectDropdown(){
 	var friendsSelectDropdown = document.getElementById("members_select_dropdown");
 	var friendsSelectDropdownButton = document.getElementById("members_select_dropdown_button");
 	switch(_calendar_mode){
-		case "self":
+		case "USER":
 			break;
-		case "friend":
+		case "FRIEND":
 			console.log(friendsSelectDropdown);
 			friendsSelectDropdownButton.style.display = "none";
 			return;
-		case "group":
+		case "GROUP":
 			friendsSelectDropdownButton.innerText = "Members";
 			break;
 		default:
 	}
-	var friends_to_pop = getFriendsUserData();
+	var friends_to_pop = _calendar_struct.calendar_data.member_info;
 	for(var i = 0; i < friends_to_pop.length; i++){
 		var curr_friend = friends_to_pop[i];
 		var curr_a = document.createElement("a");
@@ -1309,6 +1840,7 @@ function checkFriendSelect(sel_id){
 	switchCalendarView(_cont_id, _switchType);
 }
 
+
 function getMembersSelected(){
 	var valid = [];
 	for(var i = 0; i < member_check_ids.length; i++){
@@ -1324,10 +1856,16 @@ function getMembersSelectedEvents(){
 	var members_selected = getMembersSelected();
 	var retArray = [];
 	for(var i = 0; i < members_selected.length; i++){
-		for(var j = 0; j < member_events_all.length; j++){
-			if(member_events_all[j].event_creator_alias == members_selected[i]){
-				retArray.push(member_events_all[j]);
+		var curr_firebase_id = aliasToFirebaseID(members_selected[i]);
+		var curr_events = []
+		for(var j = 0; j < _calendar_struct.calendar_data.member_events.length; j++){
+			if(_calendar_struct.calendar_data.member_events[j].firebase_id == curr_firebase_id){
+				curr_events = _calendar_struct.calendar_data.member_events[j].participating_events;
+				break;
 			}
+		}
+		for(var j = 0; j < curr_events.length; j++){
+			retArray.push(curr_events[j]);
 		}
 	}
 	return retArray;
@@ -1399,10 +1937,10 @@ function select(select_id){
 		return;
 	}
 	_select_id = select_id;
-	console.log("select_new:" + select_id);
+	// console.log("select_new:" + select_id);
 }
 function dayClickM(click_id){
-	console.log("dayClick:" + click_id);
+	// console.log("dayClick:" + click_id);
 	_prev_scroll_y = window.scrollY;
 	var temp_div = document.getElementById(click_id);
 	if(temp_div.className.includes(_curr_month_not)){
@@ -1414,7 +1952,7 @@ function dayClickM(click_id){
 	switchCalendarView(_cont_id, _switchType);
 	addEvents();
 	if(pre_check == false){
-		console.log(temp_div.style.backgroundColor);
+		// console.log(temp_div.style.backgroundColor);
 		temp_div = document.getElementById(click_id);
 		temp_div.style.backgroundColor = select_color;
 	}
@@ -1614,7 +2152,6 @@ function drawEventUnsafe_w_color(start, day_width, start_time, length, event_obj
 function drawEventUnsafe_m(start, day_width, flags, event_object){
 	drawEventUnsafe_m_color(start, day_width, flags, event_object, user_color);
 }
-
 function drawEventUnsafe_m_color(start, day_width, flags, event_object, color){
 	var coords = getRowCol(start);
 	// console.log("drawEventUnsafe_m:");
@@ -1674,66 +2211,77 @@ function populateEventStructure_m(curr_event, color){
 	var day_pos_end = getDayPosition(temp_end.getDate(), temp_end.getFullYear(), temp_end.getMonth());
 	drawEventSafe_m_color(day_pos_start, day_pos_end, curr_event, color);
 }
-function populateEventStructure_w(curr_event, color){
-	// console.log(curr_event);
-	var temp_start = new Date(Number(curr_event.start_date));
-	var temp_end = new Date(Number(curr_event.end_date));
-	// Get length of event
-	var end_time_day = temp_end.getHours()*60 + temp_end.getMinutes();
-	var start_time_day = temp_start.getHours()*60 + temp_start.getMinutes();
-	var duration = Math.abs((end_time_day - start_time_day)/60);
-	var daywidth = Math.abs(curr_event.end_date - curr_event.start_date)/(1000*60*60*24);
-	// console.log(daywidth);
-	if(daywidth < 1){
-		daywidth = 1;
+function splitEventStructure(curr_event){
+	// Split into multiple weeks affected.
+	var day_event_starts = new Date((new Date(Number(curr_event.start_date))).setHours(0,0,0));
+	var day_event_ends =  new Date((new Date(Number(curr_event.end_date))).setHours(23,59,59));
+	if(day_event_starts.getTime() == day_event_ends.getTime()){
+		return [curr_event];
+		console.log("SAME TIME");
 	}
-	drawEventSafe_w_color(temp_start.getDay(), temp_start.getDay()+ Math.ceil(daywidth) - 1, start_time_day / 60, duration, curr_event, color);
+	var day_affected_start = new Date(new Date(curr_event.start_date).setHours(0,0,0));
+	var day_affected_end = new Date(new Date(curr_event.end_date).setHours(0,0,0));
+	if(day_affected_start.getTime() == day_affected_end.getTime()){
+		return [curr_event];
+		console.log("IN SAME DAY");
+	}
+	var retArray = [];
+	var initDate = {};
+	initDate.start_date = curr_event.start_date;
+	initDate.end_date =  (new Date(day_event_starts.getTime())).setHours(23,59,59);
+	retArray.push(initDate);
+	// Start Next Day
+	for(var currDate =  new Date(new Date(day_event_starts.getTime()).setDate(day_event_starts.getDate() + 1));
+		currDate.getTime() < new Date(day_event_ends.getTime()).setDate(day_event_ends.getDate() - 1);
+		currDate =  new Date(new Date(currDate.getTime()).setDate(currDate.getDate() + 1))){
+		var currStruct = {};
+		currStruct.start_date = currDate.getTime();
+		currStruct.end_date =  new Date(currDate.getTime()).setHours(23,59,59);
+		retArray.push(currStruct);
+	}
+	var finalDate = {};
+	finalDate.start_date = new Date(day_event_ends.getTime()).setHours(0,0,0);
+	finalDate.end_date = curr_event.end_date;
+	retArray.push(finalDate);
+	return retArray;
+}
+function populateEventStructure_w(passed_event, color){
+	// console.log(curr_event);
+	var split_array = splitEventStructure(passed_event);
+	for(var i = 0; i < split_array.length; i++){
+		var curr_event = split_array[i];
+		curr_event.event_id = passed_event.event_id;
+		var temp_start = new Date(Number(curr_event.start_date));
+		var temp_end = new Date(Number(curr_event.end_date));
+		// Get length of event
+		var end_time_day = temp_end.getHours()*60 + temp_end.getMinutes();
+		var start_time_day = temp_start.getHours()*60 + temp_start.getMinutes();
+		var duration = Math.abs((end_time_day - start_time_day)/60);
+		var daywidth = Math.abs(curr_event.end_date - curr_event.start_date)/(1000*60*60*24);
+		// console.log(daywidth);
+		if(daywidth < 1){
+			daywidth = 1;
+		}
+		//drawEventUnsafe_w_color(2,1,6,3,{event_id:-1},user_color)
+		drawEventSafe_w_color(temp_start.getDay(), temp_start.getDay()+ Math.ceil(daywidth) - 1, start_time_day / 60, duration, curr_event, color);
+	}
+	
 }
 
-function populateEventStructure_d(curr_event, color){
-	var temp_start = new Date(Number(curr_event.start_date));
-	var temp_end = new Date(Number(curr_event.end_date));
-	var end_time_day = temp_end.getHours()*60 + temp_end.getMinutes();
-	var start_time_day = temp_start.getHours()*60 + temp_start.getMinutes();
-	var duration = Math.abs((end_time_day - start_time_day)/60);
-	//drawEventSafe_d(time_start, length, event_object)
-	drawEventSafe_d_color(start_time_day/60, duration, curr_event, color);
+function populateEventStructure_d(passed_event, color){
+	var split_array = splitEventStructure(passed_event);
+	for(var i = 0; i < split_array.length; i++){
+		var curr_event = split_array[i];
+		curr_event.event_id = passed_event.event_id;
+		var temp_start = new Date(Number(curr_event.start_date));
+		var temp_end = new Date(Number(curr_event.end_date));
+		var end_time_day = temp_end.getHours()*60 + temp_end.getMinutes();
+		var start_time_day = temp_start.getHours()*60 + temp_start.getMinutes();
+		var duration = Math.abs((end_time_day - start_time_day)/60);
+		//drawEventSafe_d(time_start, length, event_object)
+		drawEventSafe_d_color(start_time_day/60, duration, curr_event, color);
+	}
 
-}
-
-
-function drawUserEvents_m(){
-	// Draw events in blue on calendar
-
-}
-
-function drawMemberEvents_m(){
-	// Different color
-	// Members to draw
-	// Draw the events of those members
-	// If event is hidden, draw grey.
-
-}
-function drawUserEvents_w(){
-	// Draw events in blue on calendar
-}
-
-function drawMemberEvents_w(){
-	// Different color
-	// Members to draw
-	// Draw the events of those members
-	// If event is hidden, draw grey.
-}
-
-function drawUserEvents_d(){
-	// Draw events in blue on calendar
-}
-
-function drawMemberEvents_d(){
-	// Different color
-	// Members to draw
-	// Draw the events of those members
-	// If event is hidden, draw grey.
 }
 
 function eventClicked(event_id){
@@ -1790,9 +2338,9 @@ function containsStruct(curr_struct){
 function containsStruct_w(curr_struct){
 	var contains = false;
 	for(var i = 0; i < populatedEvents_w.length; i++){
-		if(populatedEvents_w[i].event_object.event_id == curr_struct.event_object.event_id && 
-			populatedEvents_w[i].start == curr_struct.start && 
-			populatedEvents_w[i].day_width == curr_struct.day_width){
+		if(populatedEvents_w[i].event_object.start_date == curr_struct.event_object.start_date
+			&& populatedEvents_w[i].event_object.start_date == curr_struct.event_object.start_date &&
+			populatedEvents_w[i].event_object.event_id == curr_struct.event_object.event_id){
 			contains = true;
 			break;
 		}
@@ -1802,9 +2350,9 @@ function containsStruct_w(curr_struct){
 function containsStruct_d(curr_struct){
 	var contains = false;
 	for(var i = 0; i < populatedEvents_d.length; i++){
-		if(populatedEvents_d[i].event_object.event_id == curr_struct.event_object.event_id && 
-			populatedEvents_d[i].start_time == curr_struct.start_time && 
-			populatedEvents_d[i].length == curr_struct.length){
+		if(populatedEvents_d[i].event_object.start_date == curr_struct.event_object.start_date
+			&& populatedEvents_d[i].event_object.end_date == curr_struct.event_object.end_date &&
+			populatedEvents_d[i].event_object.event_id == curr_struct.event_object.event_id){
 			contains = true;
 			break;
 		}
@@ -1897,14 +2445,6 @@ function loadMemberEvents(){
 	addEvents();
 }
 
-function loadProfileDummyData(event_data, profile_data, contact_data, user, contact_list){
-	_dummy_events_json = parseQuotesJson(event_data);
-	_dummy_profiles_json = parseQuotesJson(profile_data);
-	_dummy_contacts_json = parseQuotesJson(contact_data);
-	_dummy_user_json = parseQuotesJson(user)[0];
-	user_contact_list = parseQuotesJson(contact_list);
-	console.log(_dummy_events_json, _dummy_profiles_json, _dummy_contacts_json, _dummy_user_json);
-}
 function getDayPosition(day_num, year, month){
 	var count = 0;
 	var temp_cal = new Calendar("tempCal");
@@ -1920,51 +2460,22 @@ function getDayPosition(day_num, year, month){
 		}
 	}
 }
-function getContactListRow(){
-	console.log(_dummy_user_json);
-	var contact_list_id = user_contact_list.contact_list_id;
-	for(var i = 0; i < _dummy_contacts_json.length; i++){
-		var curr_contact = _dummy_contacts_json[i];
-		if(contact_list_id == curr_contact.contact_list_id){
-			return curr_contact;
-		}
-	}
-	return null;
-}
-function getFriendsUserData(){
-	var contact_list = getContactListRow();
-	var contact_names = contact_list.contact_names.split(", ");
-	var retArr = [];
-	for(var c_index = 0; c_index < contact_names.length; c_index++){
-		for(var i = 0; i < _dummy_profiles_json.length; i++){
-			var curr_profile = _dummy_profiles_json[i];
-			if(curr_profile.alias == contact_names[c_index]){
-				retArr.push(curr_profile);
-			}
-		}
-	}
-	return retArr;
-}
-function getFriendsProfilePictures(){
-	// stubbed
-}
-
-function loadCalendarDataProfile(user_events_data, friend_events_data){
-	var user_events_json = parseQuotesJson(user_events_data);
-	var friend_events_json = parseQuotesJson(friend_events_data);
-	for(var i = 0; i < user_events_json.length; i++){
-		user_events_all.push(user_events_json[i]);
-	}
-	for(var j = 0; j < friend_events_json.length; j++){
-		member_events_all.push(friend_events_json[j]);
-	}
-}
-
 
 // -----------------------------------------------------------------
 
 
-function mainProf(calendar_mode, name_selected){
+function main_renderCalendar(calendar_struct){
+	_calendar_struct = calendar_struct;
+	user_events_all = _calendar_struct.calendar_data.user_events;
+	member_event_dict = _calendar_struct.calendar_data.member_events;
+	for(var i =0; i < member_event_dict.length; i++){
+		var curr_dict = member_event_dict[i];
+		console.log("curr_dict", curr_dict);
+		for(var j=0; j < curr_dict.participating_events.length; j++){
+			member_events_all.push(curr_dict.participating_events[j]);
+		}
+	}
+	console.log("main_renderCalendar", _calendar_struct);
 	window.addEventListener("resize", windowResized);
 	document.body.addEventListener('click', clickAnywhere, true); 
 	switchCalendarView(_cont_id, "month");	
@@ -1974,11 +2485,22 @@ function mainProf(calendar_mode, name_selected){
 	populateDay();
 	setCurrTime();
 	dayWeekUpdate();
-	_calendar_mode = calendar_mode;
-	_name_selected = name_selected;
+	_calendar_mode = calendar_struct.mode;
 	console.log("CALENDAR MODE", _calendar_mode);
 	populateFriendsSelectDropdown();
 	windowResized();
+	console.log("member_events_all", member_events_all);
+	console.log("calendar_data.member_events",  _calendar_struct.calendar_data.member_events);
+	if(_calendar_mode == "FRIEND"){
+		var friend_alias = _calendar_struct.calendar_data.member_info[0].alias;
+		var temp_id = friend_alias + "_check";
+		var invis_div = document.createElement('div');
+		invis_div.id = temp_id;
+		invis_div.style = "display:none;";
+		document.body.appendChild(invis_div);
+		member_check_ids.push({"check_id" : temp_id, "alias" : friend_alias});
+		checkFriendSelect(temp_id);
+	}
 }
 
 
