@@ -81,6 +81,15 @@ class GroupInvite(Invite):
 		managed = False
 		db_table = 'Group_Invite'
 
+class GroupRequest(models.Model):
+    time_sent = models.BigIntegerField()
+    invite_id = models.SmallIntegerField()
+    sender = models.ForeignKey('Profile', models.CASCADE)
+    group_name = models.ForeignKey(Group, models.CASCADE)
+
+    class Meta:
+        managed = False
+        db_table = 'Group_Request'
 
 class Profile(models.Model):
 	alias = models.CharField(unique=True, max_length=20)
