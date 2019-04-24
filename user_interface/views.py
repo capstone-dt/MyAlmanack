@@ -14,6 +14,9 @@ import json
 from authentication.firebase import get_session_claims
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
+import authorization.api
+from authentication.firebase import get_session_claims
+from django.contrib.auth import get_user_model
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
@@ -58,6 +61,7 @@ def saveProfilePictueBase64(file_name, image_64_encode):
 def getCalendarForms():
 	retDict = {}
 	retDict["event_form"] = EventForm()
+	retDict["edit_event_form"] = EditEventForm()
 	return retDict
 
 def getCalendarDict(user_firebase_id, selected_id, mode):
@@ -244,6 +248,7 @@ def getHeaderDict(firebase_id):
 		for g_name in group_invite_names:
 			request_data = getGroupInviteData(g_name)
 			curr_group_data = getGroupData(request_data["group_name"])
+			curr_group_data["invite_id"] = g_name
 			retHeader["group_requests"]["invites"].append(curr_group_data)
 
 	database_contact_ids = contact_list["contact_names"]
@@ -306,6 +311,42 @@ def redirFirebase(request, firebase_id_requested):
 	alias_requested = firebaseIdToAlias(firebase_id_requested)
 	return HttpResponseRedirect("/profile/" + alias_requested)
 
+def getFriendsInfo(user_firebase_id):
+	retArray = []
+	# Get contact list
+	data_contact_list = getContactListData(user_firebase_id)
+	# Get contact names
+	database_contact_names = data_contact_list["contact_names"]
+	if(database_contact_names == None):
+		database_contact_names = []
+	# Get contact data per contact name
+	for f_id in database_contact_names:
+		curr_struct = {}
+		curr_prof_data = getProfileData(f_id)
+		curr_struct["first_name"] = curr_prof_data["first_name"]
+		curr_struct["last_name"] = curr_prof_data["last_name"]
+		curr_struct["alias"] = curr_prof_data["alias"]
+		curr_struct["firebase_id"] = curr_prof_data["firebase_id"]
+		curr_struct["profile_picture"] = getProfilePictureFirebaseId(curr_prof_data["firebase_id"])
+		retArray.append(curr_struct)
+	return retArray
+
+def getGroupsInfo(user_firebase_id):
+	retArray = []
+	# Get contact list
+	data_contact_list = getContactListData(user_firebase_id)
+	# Get memberships
+	database_group_names = data_contact_list["memberships"]
+	if(database_group_names == None):
+		database_group_names = []
+	# Get group data per membership
+	for g_name in database_group_names:
+		curr_struct = {}
+		curr_group_data = getGroupData(g_name)
+		curr_struct["group_name"] = curr_group_data["group_name"]
+		retArray.append(curr_struct)
+	return retArray
+
 class ProfileView(TemplateView):
 	template_name = 'user_interface/profile.html'
 
@@ -333,6 +374,8 @@ class ProfileView(TemplateView):
 			firebase_id_selected = aliasToFirebaseId(name_selected)
 			selected_user_data = getProfileData(firebase_id_selected)
 			selected_user_data["profile_picture"] = getProfilePictureFirebaseId(firebase_id_selected)
+			selected_user_data["friends_info"] = getFriendsInfo(firebase_id_selected)
+			selected_user_data["groups_info"] = getGroupsInfo(firebase_id_selected)
 			print("firebase_id_selected", firebase_id_selected)
 		else:
 			return redir404(request)
@@ -370,7 +413,22 @@ class ProfileView(TemplateView):
 
 		# HAO PUT AUTHORIZATION HERE
 		# if can view calendar:
+		user = None
+		try:
+			user = get_user_model().objects.get(username=firebase_id_selected)
+		except get_user_model().DoesNotExist:
+			return redir404(request)
+
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.user.profile.ViewUserProfile,
+			resource=user,
+			redirect_403=False
+		)
+
 		calendarFrame = "sub_templates/calendarFrame.html"
+		if(auth_result == False):
+			calendarFrame = "sub_templates/blankFrame.html"
 		# else:
 		# calendarFrame = "sub_templates/blankFrame.html"
 
@@ -473,10 +531,7 @@ class EditProfileView(TemplateView):
 # GROUP
 
 def nullGroup(request):
-	g = GroupView()
-	if(request.method == "POST"):
-		return g.post(request, "")
-	return g.get(request, "")
+	return redir404(request)
 
 def redirGroupname(request, group_name_requested):
 	if(validGroupName(group_name_requested) == True):
@@ -533,11 +588,25 @@ class GroupView(TemplateView):
 		group_status = "USER"
 		group_dict = getGroupDict(user_firebase_id, group_name)
 
+		group = Group.objects.get(group_name=group_name)
+
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.group.calendar.ViewGroupCalendar,
+			resource=group,
+			redirect_403=False
+		)
+
+		calendarFrame = "sub_templates/calendarFrame.html"
+		if(auth_result == False):
+			calendarFrame = "sub_templates/blankFrame.html"
+
+
 		return render(
 			request=request,
 			template_name=self.template_name,
 			context={
-				"calendarFrame" : "sub_templates/calendarFrame.html",
+				"calendarFrame" : calendarFrame,
 				"calendar_mode" : "group",
 				"name_requested" : name_requested,
 				"group_dict" : str(json.dumps(group_dict)),
@@ -585,7 +654,6 @@ def validate_group_name(request):
 	}
 	return JsonResponse(data)
 
-
 class DefaultView(TemplateView):
 	template_name = 'user_interface/default.html'
 
@@ -624,7 +692,9 @@ def getSearchDict(search_term, user_firebase_id):
 	temp_event_ids = searchEvents(search_term)
 	temp_events = []
 	for temp_id in temp_event_ids:
-		temp_events.append(getEventData(temp_id))
+		temp_event_data = getEventData(temp_id)
+		temp_event_data["event_creator_alias"] = firebaseIdToAlias(temp_event_data["event_creator_firebase_id"])
+		temp_events.append(temp_event_data)
 	user_contact_list = getContactListData(user_firebase_id)
 	temp_contacts = []
 	if(user_contact_list["contact_names"] != None):
@@ -726,6 +796,7 @@ def formController(request):
 		return HttpResponseRedirect("/profile/")
 	elif(switchType == "SubmitEvent"):
 		submitEvent(request)
+		return HttpResponseRedirect("/profile/")
 	elif(switchType == "FriendRequest"):
 		friend_form = FriendRequestForm(request.POST)
 		print(friend_form)
@@ -761,14 +832,22 @@ def formController(request):
 		actionGroupInvite(new_invite_id, user_firebase_id, True)
 		return HttpResponseRedirect("/group/" + group_name)
 	elif(switchType == "LeaveGroup"):
-		group_form = GroupJoinForm(request.POST)
-		group_name = group_form["GIreqname"].value()
+		group_form = GroupLeaveForm(request.POST)
+		group_name = group_form["GIremname"].value()
+		print(group_form)
 		if isAdminOfGroup(user_firebase_id, group_name) == False:
 			leaveGroup(user_firebase_id, group_name)
+			return HttpResponseRedirect("/profile/")
 		return HttpResponseRedirect("/group/" + group_name)
 	elif(switchType == "EventResponse"):
 		respondEvent(request)
 		return HttpResponseRedirect("/profile/");
+	elif(switchType == "GroupResponse"):
+		respondGroup(request)
+	elif(switchType == "SubmitEditEvent"):
+		submitEditEvent(request)
+		return HttpResponseRedirect("/profile/")
+
 
 
 
@@ -820,6 +899,25 @@ def submitEvent(request):
 		print("sendEventInvites(", user_firebase_id, invite_ids, event_id)
 		sendEventInvites(user_firebase_id, invite_ids, event_id)
 
+def submitEditEvent(request):
+	edit_event_form = EditEventForm(request.POST)
+	print("edit_event_form", edit_event_form)
+	event_id = edit_event_form["EIediteventid"].value()
+	event_name = edit_event_form["EIeditname"].value()
+	event_desc = edit_event_form["EIeditdescription"].value()
+	event_start = edit_event_form["EIeditstart"].value()
+	event_end = edit_event_form["EIeditend"].value()
+	# def editEventData(event_id, event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
+	# end_date):
+	# Get current event data
+	curr_event_data = getEventData(event_id)
+	participating_users = curr_event_data["participating_users"]
+	event_admins = curr_event_data["event_admins"]
+	whitelist = curr_event_data["whitelist"]
+	blacklist = curr_event_data["blacklist"]
+	editEventData(event_id, event_name, event_desc, participating_users, event_admins, whitelist, blacklist, event_start, event_end)
+
+
 def respondEvent(request):
 	event_form = EventRespondRequest(request.POST)
 	print(event_form)
@@ -832,6 +930,20 @@ def respondEvent(request):
 		action = False
 	user_firebase_id = getCurrentFirebaseId(request)
 	actionEventInvite(int(invite_id), user_firebase_id, action)
+
+def respondGroup(request):
+	group_form = GroupRespondRequest(request.POST)
+	print(group_form)
+	invite_id = group_form["GIinvite_id"].value()
+	action_s = group_form["GIaction"].value()
+	action = False
+	if(action_s == "accept"):
+		action = True
+	else:
+		action = False
+	user_firebase_id = getCurrentFirebaseId(request)
+	# def actionGroupInvite(invite_id, receiver_firebase_id, accept):
+	actionGroupInvite(invite_id, user_firebase_id, action)
 
 
 

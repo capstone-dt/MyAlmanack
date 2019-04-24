@@ -14,6 +14,19 @@ class EventForm(forms.Form):
 	EIrepeat = forms.CharField(widget=forms.HiddenInput(), required=False)
 	EIrepeat_pattern = forms.CharField(widget=forms.HiddenInput(), required=False)
 
+class EditEventForm(forms.Form):
+	EIediteventid = forms.CharField(widget=forms.HiddenInput())
+	EIeditname = forms.CharField(widget=forms.HiddenInput())
+	EIeditdescription = forms.CharField(widget=forms.HiddenInput(), required=False)
+	EIeditstart = forms.CharField(widget=forms.HiddenInput())
+	EIeditend = forms.CharField(widget=forms.HiddenInput())
+	# Split manually
+	# EIeditinvite = forms.CharField(widget=forms.HiddenInput(), required=False)
+	EIeditwhitelist = forms.CharField(widget=forms.HiddenInput(), required=False)
+	EIeditblacklist = forms.CharField(widget=forms.HiddenInput(), required=False)
+	# EIeditrepeat = forms.CharField(widget=forms.HiddenInput(), required=False)
+	# EIeditrepeat_pattern = forms.CharField(widget=forms.HiddenInput(), required=False)
+
 class EventRespondRequest(forms.Form):
 	EIinvite_id = forms.CharField(widget=forms.HiddenInput())
 	EIaction = forms.CharField(widget=forms.HiddenInput())

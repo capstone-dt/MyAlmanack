@@ -3,6 +3,23 @@ from authorization.attributes.contexts import GroupContext
 from authorization import policies
 
 
+class ViewGroupInvite(UserToGroupAction):
+    policies = [
+        # A user can view an invite he or she had previously sent.
+        policies.user.invite.UserSentInvite,
+        
+        # A user can view an invite sent to him or her.
+        policies.user.invite.UserReceivedInvite
+    ]
+
+
+class EditGroupInvite(UserToGroupAction):
+    policies = [
+        # A user can edit an invite he or she had previously sent.
+        policies.user.invite.UserSentInvite
+    ]
+
+
 class SendGroupInvite(UserToUserAction):
     # Special case: subject = user1, resource = user2, context = group
     _context_class = GroupContext
