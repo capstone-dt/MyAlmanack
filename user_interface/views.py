@@ -14,6 +14,9 @@ import json
 from authentication.firebase import get_session_claims
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
+import authorization.api
+from authentication.firebase import get_session_claims
+from django.contrib.auth import get_user_model
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
@@ -410,7 +413,22 @@ class ProfileView(TemplateView):
 
 		# HAO PUT AUTHORIZATION HERE
 		# if can view calendar:
+		user = None
+		try:
+			user = get_user_model().objects.get(username=firebase_id_selected)
+		except get_user_model().DoesNotExist:
+			return redir404(request)
+
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.user.profile.ViewUserProfile,
+			resource=user,
+			redirect_403=False
+		)
+
 		calendarFrame = "sub_templates/calendarFrame.html"
+		if(auth_result == False):
+			calendarFrame = "sub_templates/blankFrame.html"
 		# else:
 		# calendarFrame = "sub_templates/blankFrame.html"
 
