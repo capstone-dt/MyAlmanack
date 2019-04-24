@@ -531,10 +531,7 @@ class EditProfileView(TemplateView):
 # GROUP
 
 def nullGroup(request):
-	g = GroupView()
-	if(request.method == "POST"):
-		return g.post(request, "")
-	return g.get(request, "")
+	return redir404(request)
 
 def redirGroupname(request, group_name_requested):
 	if(validGroupName(group_name_requested) == True):
@@ -591,11 +588,25 @@ class GroupView(TemplateView):
 		group_status = "USER"
 		group_dict = getGroupDict(user_firebase_id, group_name)
 
+		group = Group.objects.get(group_name=group_name)
+
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.group.calendar.ViewGroupCalendar,
+			resource=group,
+			redirect_403=False
+		)
+
+		calendarFrame = "sub_templates/calendarFrame.html"
+		if(auth_result == False):
+			calendarFrame = "sub_templates/blankFrame.html"
+
+
 		return render(
 			request=request,
 			template_name=self.template_name,
 			context={
-				"calendarFrame" : "sub_templates/calendarFrame.html",
+				"calendarFrame" : calendarFrame,
 				"calendar_mode" : "group",
 				"name_requested" : name_requested,
 				"group_dict" : str(json.dumps(group_dict)),
@@ -642,7 +653,6 @@ def validate_group_name(request):
 		"is_taken" : is_taken
 	}
 	return JsonResponse(data)
-
 
 class DefaultView(TemplateView):
 	template_name = 'user_interface/default.html'
@@ -822,10 +832,12 @@ def formController(request):
 		actionGroupInvite(new_invite_id, user_firebase_id, True)
 		return HttpResponseRedirect("/group/" + group_name)
 	elif(switchType == "LeaveGroup"):
-		group_form = GroupJoinForm(request.POST)
-		group_name = group_form["GIreqname"].value()
+		group_form = GroupLeaveForm(request.POST)
+		group_name = group_form["GIremname"].value()
+		print(group_form)
 		if isAdminOfGroup(user_firebase_id, group_name) == False:
 			leaveGroup(user_firebase_id, group_name)
+			return HttpResponseRedirect("/profile/")
 		return HttpResponseRedirect("/group/" + group_name)
 	elif(switchType == "EventResponse"):
 		respondEvent(request)

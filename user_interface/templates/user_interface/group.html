@@ -9,14 +9,14 @@
 	    		</div>
 	    		<div class="col-4">
 	    			<button class="joinGroupButton" style="display: none;" onclick="joinGroupClicked();" id="joinGroupButton"> Join Group </button>
-	    			<form action="/group/" method="post">
+	    			<form action="/profile/" method="post">
 						{% csrf_token %}
 						{{ group_forms.join_group.as_ul }}
 						<input type="hidden" name="formType" value="JoinGroup">
 						<input type="submit" style="display: none;" id="submitJoinGroup">
 			    	</form>
 			    	<button class="leaveGroupButton" style="display: none;"  onclick="leaveGroupClicked();" id="leaveGroupButton"> Leave Group </button>
-	    			<form action="/group/" method="post">
+	    			<form action="/profile/" method="post">
 						{% csrf_token %}
 						{{ group_forms.leave_group.as_ul }}
 						<input type="hidden" name="formType" value="LeaveGroup">
