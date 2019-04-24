@@ -1,6 +1,23 @@
-from ..bounded_actions import UserToUserAction, UserToGroupAction
+from ..bounded_actions import UserToUserAction, UserToGroupInviteAction
 from authorization.attributes.contexts import GroupContext
 from authorization import policies
+
+
+class ViewGroupInvite(UserToGroupInviteAction):
+    policies = [
+        # A user can view a group invite he or she had previously sent.
+        policies.user.invite.UserSentInvite,
+        
+        # A user can view a group invite sent to him or her.
+        policies.user.invite.UserReceivedInvite
+    ]
+
+
+class EditGroupInvite(UserToGroupInviteAction):
+    policies = [
+        # A user can edit a group invite he or she had previously sent.
+        policies.user.invite.UserSentInvite
+    ]
 
 
 class SendGroupInvite(UserToUserAction):
@@ -8,30 +25,38 @@ class SendGroupInvite(UserToUserAction):
     _context_class = GroupContext
     
     policies = [
-        # A user cannot send an invite to himself or herself.
+        # A user cannot send a group invite to himself or herself.
         ~policies.miscellaneous.SubjectIsResource
         
-        # A user cannot send an invite to someone who's already in the group.
+        # A user must be a group administrator.
+        & policies.user.group.UserResourceIsGroupContextAdministrator
+        
+        # A user cannot send a group invite to someone who's already in the
+        #     group.
         & ~policies.user.group.UserResourceIsGroupContextMember
+        
+        # A user cannot send a group invite to someone who has already been
+        #     invited to the group.
+        & ~policies.user.group.UserResourceIsInvitedToGroupContext
     ]
 
 
-class RevokeGroupInvite(UserToGroupAction):
+class RevokeGroupInvite(UserToGroupInviteAction):
     policies = [
-        # A user can revoke an invite he or she had previously sent.
+        # A user can revoke a group invite he or she had previously sent.
         policies.user.invite.UserSentInvite
     ]
 
 
-class AcceptGroupInvite(UserToGroupAction):
+class AcceptGroupInvite(UserToGroupInviteAction):
     policies = [
-        # A user can accept an invite sent to him or her.
+        # A user can accept a group invite sent to him or her.
         policies.user.invite.UserReceivedInvite
     ]
 
 
-class RejectGroupInvite(UserToGroupAction):
+class RejectGroupInvite(UserToGroupInviteAction):
     policies = [
-        # A user can reject an invite sent to him or her.
+        # A user can reject a group invite sent to him or her.
         policies.user.invite.UserReceivedInvite
     ]

@@ -70,3 +70,12 @@ class Group(ModelWrapper):
     @property
     def participants(self):
         return User.from_uids(self.participant_uids)
+    
+    # This returns a set of groups requests that this group has received.
+    @property
+    def received_group_requests(self):
+        from .requests.group_request import GroupRequest
+        return frozenset(
+            request for request in GroupRequest.all_requests
+            if self.uid in request.receiver_uids
+        )

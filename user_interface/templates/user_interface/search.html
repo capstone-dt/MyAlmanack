@@ -279,16 +279,20 @@
 
 				var list_elem = document.createElement('li');
 				list_elem.className = "nav-item";
-				list_elem.style = "width:100%;"
+				list_elem.style = "width:100%; "
 
 				var row_elem = document.createElement('div');
 				row_elem.className = "row";
-				row_elem.style = "padding-left:20px;"
+				row_elem.style = "padding-left:20px; "
 
 				var event_text_div = document.createElement('div');
-				event_text_div.innerHTML = struct.event_title;
+				event_text_div.innerHTML = struct.event_title + "<br>";
+				var alias_div = document.createElement('a');
+				alias_div.innerText = "@" + struct.event_creator_alias;
+				alias_div.href = "javascript:redir('redirfb/" + struct.event_creator_firebase_id + "');";
+				event_text_div.appendChild(alias_div);
 				event_text_div.innerHTML += "<br>" + struct.description;
-				event_text_div.style ="display:inline; font-size:15px;";
+				event_text_div.style ="display:inline; font-size:20px;";
 				event_text_div.className = "float-left";
 
 				row_elem.appendChild(event_text_div);

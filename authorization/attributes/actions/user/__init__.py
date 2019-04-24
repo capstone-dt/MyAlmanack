@@ -1,5 +1,7 @@
 from .profile import ViewUserProfile, EditUserProfile, DeleteUserProfile
 from .calendar import ViewUserCalendar, EditUserCalendar
-from .invite import (
-    SendUserInvite, RevokeUserInvite, AcceptUserInvite, RejectUserInvite
+from .request import (
+    ViewUserRequest, EditUserRequest,
+    SendUserRequest, RevokeUserRequest,
+    AcceptUserRequest, RejectUserRequest
 )
