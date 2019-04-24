@@ -187,9 +187,10 @@
 				uploadProfilePicture();
 				var entered_alais = document.getElementById("inputAlias");
 				if(valid_alias || entered_alais.value == profile_struct.alias){
+					exchangeValues("inputAlias", "id_PIalias");
+					remainderEdit();
 					var submit_button = document.getElementById("submitChangesButton");
 					submit_button.click();
-					remainderEdit();
 				}
 			}
 		</script>
