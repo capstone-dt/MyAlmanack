@@ -3,10 +3,7 @@ from .reflection import get_class_name, is_subclass, assert_subclass
 
 class Wrapper:
     def __init__(self, object):
-        if hasattr(self, "_root"):
-            # Make sure that the object is an instance of the root class.
-            assert_subclass(object, self._root)
-        elif hasattr(self, "wrap"):
+        if hasattr(self, "wrap"):
             # Make sure that the is_wrappable() method has been overridden.
             if self.is_wrappable is Wrapper.is_wrappable:
                 raise NotImplementedError(
@@ -21,6 +18,9 @@ class Wrapper:
                     "%s is not wrappable with %s!" %
                     (get_class_name(object), get_class_name(self))
                 )
+        elif hasattr(self, "_root"):
+            # Make sure that the object is an instance of the root class.
+            assert_subclass(object, self._root)
         else:
             # No valid wrapping method was set for the class.
             raise NotImplementedError(
