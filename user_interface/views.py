@@ -664,7 +664,9 @@ def getSearchDict(search_term, user_firebase_id):
 	temp_event_ids = searchEvents(search_term)
 	temp_events = []
 	for temp_id in temp_event_ids:
-		temp_events.append(getEventData(temp_id))
+		temp_event_data = getEventData(temp_id)
+		temp_event_data["event_creator_alias"] = firebaseIdToAlias(temp_event_data["event_creator_firebase_id"])
+		temp_events.append(temp_event_data)
 	user_contact_list = getContactListData(user_firebase_id)
 	temp_contacts = []
 	if(user_contact_list["contact_names"] != None):

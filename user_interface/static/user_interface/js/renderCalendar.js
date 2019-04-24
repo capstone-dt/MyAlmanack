@@ -165,12 +165,15 @@ function getEventById(event_id){
 }
 
 function populateViewSelect(event_id){
+	var displayEventCreator = document.getElementById("displayEventCreator");
 	var displayEventName = document.getElementById("displayEventName");
 	var displayEventDescription = document.getElementById("displayEventDescription");
 	var displayEventStart = document.getElementById("displayEventStart");
 	var displayEventEnd = document.getElementById("displayEventEnd");
 	var view_event = getEventById(event_id);
 	// console.log("populate", view_event);
+	displayEventCreator.innerText = "@" + firebaseIDtoAlias(view_event.event_creator_firebase_id);
+	displayEventCreator.setAttribute("href", "javascript:redir('redirfb/" + view_event.event_creator_firebase_id + "');");
 	displayEventName.innerText = view_event.event_title;
 	displayEventDescription.innerText = view_event.description;
 	if(view_event.description == ""){
@@ -826,7 +829,7 @@ function drawColorGrid(isRainbow) {
 				// console.log(eventsHours[k]);
 				if(temp_date == hours_temp[k].date.getTime()){
 					// console.log("FOUND");
-					console.log("temp_date", temp_date, "hours_temp[k]", hours_temp[k]);
+					// console.log("temp_date", temp_date, "hours_temp[k]", hours_temp[k]);
 					hoursFree = hours_temp[k].hours;
 					if(hoursFree > 23){
 						for(var L = 0; L < unioned_split.length; L++){
@@ -892,7 +895,10 @@ function makeList(cont_id){
 		a_elem.className = "navbar-text";
 		a_elem.innerHTML = arr[i].event_title  + "<br>";
 		var event_creator_alias = firebaseIDtoAlias(arr[i].event_creator_firebase_id);
-		a_elem.innerHTML += "@" + event_creator_alias;
+		var alias_elem = document.createElement('a');
+		alias_elem.innerText = "@" + event_creator_alias;
+		alias_elem.href = "javascript:redir('redirfb/" + arr[i].event_creator_firebase_id + "');";
+		a_elem.appendChild(alias_elem);
 		var temp_date_time = new Date(Number(arr[i].start_date));
 		var date_string_start = customDateString(temp_date_time);
 		var time_string_start = customTimeString(temp_date_time);
