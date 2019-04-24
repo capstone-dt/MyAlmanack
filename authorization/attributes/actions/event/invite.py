@@ -3,6 +3,23 @@ from authorization.attributes.contexts import EventContext
 from authorization import policies
 
 
+class ViewEventInvite(UserToEventAction):
+    policies = [
+        # A user can view an invite he or she had previously sent.
+        policies.user.invite.UserSentInvite,
+        
+        # A user can view an invite sent to him or her.
+        policies.user.invite.UserReceivedInvite
+    ]
+
+
+class EditEventInvite(UserToEventAction):
+    policies = [
+        # A user can edit an invite he or she had previously sent.
+        policies.user.invite.UserSentInvite
+    ]
+
+
 class SendEventInvite(UserToUserAction):
     # Special case: subject = user1, resource = user2, context = event
     _context_class = EventContext

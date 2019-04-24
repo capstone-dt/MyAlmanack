@@ -2,6 +2,23 @@ from ..bounded_actions import UserToUserAction, UserToUserInviteAction
 from authorization import policies
 
 
+class ViewUserInvite(UserToUserInviteAction):
+    policies = [
+        # A user can view an invite he or she had previously sent.
+        policies.user.invite.UserSentInvite,
+        
+        # A user can view an invite sent to him or her.
+        policies.user.invite.UserReceivedInvite
+    ]
+
+
+class EditUserInvite(UserToUserInviteAction):
+    policies = [
+        # A user can edit an invite he or she had previously sent.
+        policies.user.invite.UserSentInvite
+    ]
+
+
 class SendUserInvite(UserToUserAction):
     policies = [
         # A user cannot send an invite to himself or herself.
