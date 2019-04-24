@@ -81,3 +81,11 @@ function customTimeString(date){
 	var time_string = hr + ":" + min + ampm;
 	return time_string;
 }
+
+function closeAllModals(){
+	var all_close_buttons = document.getElementsByClassName("close");
+	for(var i = 0; i < all_close_buttons.length; i++){
+		var curr_close = all_close_buttons[i];
+		curr_close.click();
+	}
+}

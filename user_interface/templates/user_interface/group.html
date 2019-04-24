@@ -194,6 +194,7 @@
 				col_div.appendChild(card_div);
 				admin_cont_div.appendChild(col_div);
 				card_div.style = "width:" + (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px; height:100px;";
+				row_div.setAttribute("width", Math.max(300, (user_text_div.getBoundingClientRect().width + card_picture_dim + 20)));
 			}
 		}
 		function updateMemberCards(){

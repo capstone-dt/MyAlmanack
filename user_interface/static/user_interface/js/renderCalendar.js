@@ -115,10 +115,14 @@ function clickAnywhere(event){
 	}
 
 	if(clicked_structs.length > 0 && allModalsClosed() && allDropdownsClosed()){
-		clearShowEvents();
-		populateShowEvents(clicked_structs);
-		showEventsModal();
-		console.log(clicked_structs);
+		if(clicked_structs.length == 1){
+			var temp_event_struct = clicked_structs[0];
+			clickedViewSelect(temp_event_struct.event_id);
+		}else{
+			clearShowEvents();
+			populateShowEvents(clicked_structs);
+			showEventsModal();
+		}
 	}
 }
 function clearShowEvents(){
@@ -127,6 +131,119 @@ function clearShowEvents(){
 		view_events_div.removeChild(view_events_div.firstChild);
 	}
 }
+
+function getEventCreatorFirebaseID(event_id){
+	for(var i = 0; i < member_events_all.length; i++){
+		var curr_event = member_events_all[i];
+		if(curr_event.event_id == event_id){
+			return curr_event.event_creator_firebase_id;
+		}
+	}
+	for(var i = 0; i < user_events_all.length; i++){
+		var curr_event = user_events_all[i];
+		if(curr_event.event_id == event_id){
+			return curr_event.event_creator_firebase_id;
+		}
+	}
+	return null;
+}
+
+function getEventById(event_id){
+	for(var i = 0; i < member_events_all.length; i++){
+		var curr_event = member_events_all[i];
+		if(curr_event.event_id == event_id){
+			return curr_event;
+		}
+	}
+	for(var i = 0; i < user_events_all.length; i++){
+		var curr_event = user_events_all[i];
+		if(curr_event.event_id == event_id){
+			return curr_event;
+		}
+	}
+	return null;
+}
+
+function populateViewSelect(event_id){
+	var displayEventName = document.getElementById("displayEventName");
+	var displayEventDescription = document.getElementById("displayEventDescription");
+	var displayEventStart = document.getElementById("displayEventStart");
+	var displayEventEnd = document.getElementById("displayEventEnd");
+	var view_event = getEventById(event_id);
+	// console.log("populate", view_event);
+	displayEventName.innerText = view_event.event_title;
+	displayEventDescription.innerText = view_event.description;
+	if(view_event.description == ""){
+		displayEventDescription.innerText = "No description has been provided.";
+		displayEventDescription.style.color = "grey";
+	}
+	var start_str = customDateString(new Date(view_event.start_date)) + " " + customTimeString(new Date(view_event.start_date));
+	displayEventStart.innerText = start_str;
+	var end_str = customDateString(new Date(view_event.end_date)) + " " + customTimeString(new Date(view_event.end_date));
+	displayEventEnd.innerText = end_str;
+}
+
+function formatDateHTML(dateObj){
+	return dateObj.getFullYear() + "-" + ('0' + (dateObj.getMonth() + 1)).slice(-2) + "-" + ('0' + dateObj.getDate()).slice(-2);
+}
+
+function formatTimeHTML(dateObj){
+	var h = dateObj.getHours();
+	var m = dateObj.getMinutes();
+	if(h < 10){
+		h = "0" + h;
+	}
+	if(m < 10){
+		m = "0" + m;
+	}
+	return h + ":" + m;
+}
+
+
+function populateEditSelect(event_id){
+	var edit_event_id = document.getElementById("id_EIediteventid");
+	edit_event_id.value = event_id;
+	var inputEditEventName = document.getElementById("inputEditEventName");
+	var inputEditEventDesc = document.getElementById("inputEditEventDesc");
+	var inputEditStartDate = document.getElementById("inputEditStartDate");
+	var inputEditEndDate = document.getElementById("inputEditEndDate");
+	var inputEditStartTime = document.getElementById("inputEditStartTime");
+	var inputEditEndTime = document.getElementById("inputEditEndTime");
+	var edit_event = getEventById(event_id);
+	inputEditEventName.value = edit_event.event_title;
+	inputEditEventDesc.value = edit_event.description;
+	var startDateObj = new Date(edit_event.start_date);
+	var startDateStr = formatDateHTML(startDateObj);
+	inputEditStartDate.value = startDateStr;
+	var endDateObj = new Date(edit_event.end_date);
+	var endDateStr = formatDateHTML(endDateObj);
+	inputEditEndDate.value = endDateStr;
+	inputEditStartTime.value = formatTimeHTML(startDateObj);
+	inputEditEndTime.value = formatTimeHTML(endDateObj);
+}
+
+function clickedViewSelect(event_id_clicked){
+	console.log("clickedViewSelect:", event_id_clicked);
+	closeAllModals();
+	var fb_clicked = getEventCreatorFirebaseID(event_id_clicked);
+	if(fb_clicked == _calendar_struct.calendar_data.user_info.firebase_id){
+		// Edit event window
+		//viewEditEventButton
+		console.log("own clicked");
+		populateEditSelect(event_id_clicked);
+		var editSelectButton = document.getElementById("viewEditEventButton");
+		editSelectButton.click();
+	}else{
+		// View event window
+		console.log("other clicked:", fb_clicked);
+		populateViewSelect(event_id_clicked);
+		var viewSelectButton = document.getElementById("viewSelectEventButton");
+		viewSelectButton.click();
+	}
+
+}
+
+
 function populateShowEvents(clicked_structs){
 	var view_events_div = document.getElementById("viewEventsScrollCont");
 	console.log("populateShowEvents");
@@ -136,6 +253,7 @@ function populateShowEvents(clicked_structs){
 		curr_elem.className = "dropdown-item";
 		curr_elem.id = "ve_" + curr_struct.event_id;
 		curr_elem.href = "#";
+		curr_elem.setAttribute("onclick", "clickedViewSelect('" + curr_struct.event_id + "')"); 
 		var event_text_div = document.createElement("div");
 		event_text_div.innerHTML = curr_struct.event_title;
 		var event_creator_alias = firebaseIDtoAlias(curr_struct.event_creator_firebase_id);
@@ -701,14 +819,14 @@ function drawColorGrid(isRainbow) {
 			}
 			var month_day = Number(curr_elem.innerText);
 			var temp_date = new Date(_year_selected, _month_selected, month_day);
-			temp_date.setHours(0,0,0);
-			temp_date = temp_date.getTime();
+			temp_date = temp_date.setHours(0,0,0);
 			var hoursFree = 24;
 			// console.log(temp_date);
 			for(var k = 0; k < hours_temp.length; k++){
 				// console.log(eventsHours[k]);
-				if(Number(temp_date) == hours_temp[k].date.getTime()){
+				if(temp_date == hours_temp[k].date.getTime()){
 					// console.log("FOUND");
+					console.log("temp_date", temp_date, "hours_temp[k]", hours_temp[k]);
 					hoursFree = hours_temp[k].hours;
 					if(hoursFree > 23){
 						for(var L = 0; L < unioned_split.length; L++){
@@ -732,7 +850,7 @@ function drawColorGrid(isRainbow) {
 			}else{
 				alpha = (hoursFree - 8)/16;
 			}
-			if(getEventsCurrMonthUser().length == 0){
+			if(getEventsCurrMonthUser().length == 0 && getEventsCurrMonthSelected().length == 0){
 				alpha = 1;
 			}
 

@@ -58,6 +58,7 @@ def saveProfilePictueBase64(file_name, image_64_encode):
 def getCalendarForms():
 	retDict = {}
 	retDict["event_form"] = EventForm()
+	retDict["edit_event_form"] = EditEventForm()
 	return retDict
 
 def getCalendarDict(user_firebase_id, selected_id, mode):
@@ -765,6 +766,7 @@ def formController(request):
 		return HttpResponseRedirect("/profile/")
 	elif(switchType == "SubmitEvent"):
 		submitEvent(request)
+		return HttpResponseRedirect("/profile/")
 	elif(switchType == "FriendRequest"):
 		friend_form = FriendRequestForm(request.POST)
 		print(friend_form)
@@ -810,6 +812,9 @@ def formController(request):
 		return HttpResponseRedirect("/profile/");
 	elif(switchType == "GroupResponse"):
 		respondGroup(request)
+	elif(switchType == "SubmitEditEvent"):
+		submitEditEvent(request)
+		return HttpResponseRedirect("/profile/")
 
 
 
@@ -861,6 +866,25 @@ def submitEvent(request):
 	if(len(invite_ids) > 0 and event_form['EIinvite'].value() != None):
 		print("sendEventInvites(", user_firebase_id, invite_ids, event_id)
 		sendEventInvites(user_firebase_id, invite_ids, event_id)
+
+def submitEditEvent(request):
+	edit_event_form = EditEventForm(request.POST)
+	print("edit_event_form", edit_event_form)
+	event_id = edit_event_form["EIediteventid"].value()
+	event_name = edit_event_form["EIeditname"].value()
+	event_desc = edit_event_form["EIeditdescription"].value()
+	event_start = edit_event_form["EIeditstart"].value()
+	event_end = edit_event_form["EIeditend"].value()
+	# def editEventData(event_id, event_title, description, participating_users, event_admins, whitelist, blacklist, start_date,
+	# end_date):
+	# Get current event data
+	curr_event_data = getEventData(event_id)
+	participating_users = curr_event_data["participating_users"]
+	event_admins = curr_event_data["event_admins"]
+	whitelist = curr_event_data["whitelist"]
+	blacklist = curr_event_data["blacklist"]
+	editEventData(event_id, event_name, event_desc, participating_users, event_admins, whitelist, blacklist, event_start, event_end)
+
 
 def respondEvent(request):
 	event_form = EventRespondRequest(request.POST)
