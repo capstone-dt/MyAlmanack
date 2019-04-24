@@ -1,4 +1,4 @@
-from .invite import Invite
+from .base import Invite
 from ..user import User
 from ..group import Group
 from authorization.utilities.decorators import classproperty
@@ -7,6 +7,7 @@ from authorization.utilities.decorators import classproperty
 from database.models import GroupInvite as _GroupInvite
 
 
+# Many-to-many
 class GroupInvite(Invite):
     """
     Wrapper-related
@@ -18,15 +19,25 @@ class GroupInvite(Invite):
     Instance properties and methods
     """
     
-    # This returns the UID of the sender of this group invite.
+    # This returns the UID of the group of this group invite.
     @property
-    def sender_uid(self):
+    def group_uid(self):
         return self._object.group_name
     
-    # This returns the sender of this group invite.
+    # This returns the group of this group invite.
     @property
-    def sender(self):
-        return Group.from_uid(self.sender_uid)
+    def group(self):
+        return Group.from_uid(self.group_uid)
+    
+    # This returns the UIDs of the senders of this group invite.
+    @property
+    def sender_uids(self):
+        return self.group.administrator_uids
+    
+    # This returns the senders of this group invite.
+    @property
+    def senders(self):
+        return self.group.administrators
     
     # This returns the UIDs of the receivers of this group invite.
     @property
