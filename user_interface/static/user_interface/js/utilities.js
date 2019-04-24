@@ -4,7 +4,7 @@ var _days_of_week_abv = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 var _days_of_week_abv_abv = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 var _months_of_year = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 var _times_of_day_12 = ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"];
-
+var _redirecting = false;
 
 function base64ToImage(base64DataString){
 	var image = new Image();
@@ -19,6 +19,7 @@ function parseQuotesJson(json_string){
 	return JSON.parse(json_string.replace(/&quot;/g,'\"').replace(/&#39;/g,"\'"));
 }
 function redirHome(){
+	_redirecting = true;
 	var curr_loc = window.location.href;
 	var curr_array = [...curr_loc];
 	var new_loc = "";
@@ -33,6 +34,7 @@ function redirHome(){
 	window.location.replace(new_loc);
 }
 function redir(passed){
+	_redirecting = true;
 	var curr_loc = window.location.href;
 	var curr_array = [...curr_loc];
 	var slash_count = 0;

@@ -137,7 +137,9 @@
 						card_div.appendChild(row_div);
 						col_div.appendChild(card_div);
 						groups_cont_div.appendChild(col_div);
-						card_div.setAttribute("width", (group_text_div.getBoundingClientRect().width + 20) + "px");
+						card_div.setAttribute("width", (groups_cont_div.getBoundingClientRect().width + card_picture_dim + 20) + "px");
+						card_div.setAttribute("height", "120px");
+						col_div.setAttribute("height", "120px");
 						// card_div.style = "width:" + (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px; height:100px;";
 						// col_div.style = "width:" + (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px; height:100px;";
 					}

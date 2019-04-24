@@ -27,8 +27,8 @@
 
 	  <div class="collapse navbar-collapse" id="collapsableNav">
 		<ul class="navbar-nav mr-auto">
-		  <li class="nav-item dropdown">
-			<a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">notification_important</i></a>
+		  <li class="nav-item dropdown" id="eventInviteBackgroundId">
+			<a class="nav-link" href="http://example.com" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="eventsDropdownClicked();"><i class="material-icons left">notification_important</i></a>
 			<div class="dropdown-menu  dropdown-menu-left overAll" aria-labelledby="dropdown03">
 				<form>
 				<div class="dropHeader" id="e_drop_label" style="">Event Invites</div>
@@ -83,19 +83,19 @@
 		  </script>
 		</div>
 		<ul class= "navbar-nav ml-auto">
-		  <li class="nav-item dropdown overAll">
-			<a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">person</i></a>
+		  <li class="nav-item dropdown overAll" id="friendReqBackgroundId">
+			<a class="nav-link" href="http://example.com" id="dropdown04" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="friendDropdownClicked();"><i class="material-icons left">person</i></a>
 			<div class="dropdown-menu dropdown-menu-right overAll" aria-labelledby="dropdown04">
 				<form>
-				<div class="dropHeader" id="f_drop_label" style="">Friend Requests</div>
+				<div class="dropHeader" id="f_drop_label">Friend Requests</div>
 				<div class="dropdown-divider"></div>
 				<div class="navbarDropdownClass" id="f_drop">
 				</div>
 				</form>
 			</div>
 		  </li>
-		  <li class="nav-item dropdown overAll">
-			<a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="material-icons left">group</i></a>
+		  <li class="nav-item dropdown overAll" id="groupsReqBackgroundId">
+			<a class="nav-link" href="http://example.com" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="groupDropdownClicked();"><i class="material-icons left">group</i></a>
 			<div class="dropdown-menu  dropdown-menu-right overAll" aria-labelledby="dropdown05">
 				<form>
 				<div class="dropHeader" id="g_drop_label" style="">Group Invites</div>
@@ -478,7 +478,180 @@
 				group_div.removeChild(group_div.firstChild);
 			}
 		}
+		var _change_notif = false;
+		var _change_interval = null;
+		var _notif_toggle = false;
+		var _change_affected = [];
 
+		function friendDropdownClicked(){
+			if(_change_affected.includes("friends")){
+				_change_affected.splice(_change_affected.indexOf("friends"), 1);
+			}
+		}
+
+
+		function eventsDropdownClicked(){
+			if(_change_affected.includes("events")){
+				_change_affected.splice(_change_affected.indexOf("events"), 1);
+			}
+		}
+
+		function groupDropdownClicked(){
+			if(_change_affected.includes("groups")){
+				_change_affected.splice(_change_affected.indexOf("groups"), 1);
+			}
+		}
+
+		function goFlash(){
+			document.title = "MyAlmanack - !";
+			var friendReqBackground = document.getElementById("friendReqBackgroundId");
+			var eventInviteBackground = document.getElementById("eventInviteBackgroundId");
+			var groupsReqBackground = document.getElementById("groupsReqBackgroundId");
+			var new_back_color = "#7F7F7F";
+			if(_change_affected.includes("friends")){
+				friendReqBackground.style = "background-color:" + new_back_color + ";";
+			}
+			if(_change_affected.includes("events")){
+				eventInviteBackground.style = "background-color:" + new_back_color + ";";
+			}
+			if(_change_affected.includes("groups")){
+				groupsReqBackground.style = "background-color:" + new_back_color + ";";
+			}
+			if(_change_affected.length == 0){
+				disableChangeNotif();
+			}
+		}
+
+		function stopFlash(){
+			document.title = "MyAlmanack";
+			var friendReqBackground = document.getElementById("friendReqBackgroundId");
+			var eventInviteBackground = document.getElementById("eventInviteBackgroundId");
+			var groupsReqBackground = document.getElementById("groupsReqBackgroundId");
+			friendReqBackground.style = "";
+			eventInviteBackground.style = "";
+			groupsReqBackground.style = "";
+		}
+
+		function flashHandle(){
+			_notif_toggle = (_notif_toggle == false);
+			if(_notif_toggle){
+				goFlash();
+			}else{
+				stopFlash();
+			}
+		}
+
+		function enableChangeNotif(){
+			_change_interval = setInterval(flashHandle, 1000);
+		}
+		function disableChangeNotif(){
+			clearInterval(_change_interval);
+			_notif_toggle = false;
+			stopFlash();
+		}
+
+		function initiateChangeCurrent(){
+			var doInitiateFlash = false;
+			if(database_header_info.event_invites.length > 0){
+				_change_affected.push("events");
+				doInitiateFlash = true;
+			}
+			if(database_header_info.friend_requests.length > 0){
+				_change_affected.push("friends");
+				doInitiateFlash = true;
+			}
+			if(database_header_info.group_requests.invites.length > 0){
+				_change_affected.push("groups");
+				doInitiateFlash = true;
+			}
+			if(doInitiateFlash){
+				enableChangeNotif();
+			}
+		}
+
+		function detectChange(new_header_info){
+			var change_arr = [];
+			// Detect change in event invites
+			var old_event_invites = [];
+			for (var i = 0; i < database_header_info.event_invites.length; i++) {
+				var curr_old_event = database_header_info.event_invites[i];
+				old_event_invites.push(Number(curr_old_event.invite_id));
+			}
+			var new_event_invites = [];
+			for (var i = 0; i < new_header_info.event_invites.length; i++) {
+				var curr_new_event = new_header_info.event_invites[i];
+				new_event_invites.push(Number(curr_new_event.invite_id));
+			}
+			if(old_event_invites.length != new_event_invites.length){
+				change_arr.push("events");
+			}else{
+				old_event_invites.sort(function(a, b){return a-b});
+				new_event_invites.sort(function(a, b){return a-b});
+				for (var i = 0; i < old_event_invites.length; i++) {
+					var oi = old_event_invites[i];
+					var ni = new_event_invites[i];
+					if(oi != ni){
+						change_arr.push("events");
+						break;
+					}
+				}
+			}
+
+
+			// Detect change in friend invites
+			var old_friend_invites =[];
+			for(var i = 0; i < database_header_info.friend_requests.length; i++){
+				var curr_old_friend = database_header_info.friend_requests[i];
+				old_friend_invites.push(Number(curr_old_friend.invite_id));
+			}
+			var new_friend_invites = [];
+			for(var i = 0; i < new_header_info.friend_requests.length; i++){
+				var curr_new_friend = new_header_info.friend_requests[i];
+				new_friend_invites.push(Number(curr_new_friend.invite_id));
+			}
+			if(old_friend_invites.length != new_friend_invites.length){
+				change_arr.push("friends");
+			}else{
+				old_friend_invites.sort(function(a, b){return a-b});
+				new_friend_invites.sort(function(a, b){return a-b});
+				for (var i = 0; i < old_friend_invites.length; i++) {
+					var oi = old_friend_invites[i];
+					var ni = new_friend_invites[i];
+					if(oi != ni){
+						change_arr.push("friends");
+						break;
+					}
+				}
+			}
+
+			// Detect change in group invites
+			var old_group_invites = [];
+			for (var i = 0; i < database_header_info.group_requests.invites.length; i++) {
+				var curr_old_group = database_header_info.group_requests.invites[i];
+				old_group_invites.push(Number(curr_old_group.invite_id));
+			}
+			var new_group_invites = [];
+			for (var i = 0; i < new_header_info.group_requests.invites.length; i++) {
+				var curr_new_group = new_header_info.group_requests.invites[i];
+				new_group_invites.push(Number(curr_new_group.invite_id));
+			}
+			if(old_group_invites.length != new_group_invites.length){
+				change_arr.push("groups");
+			}else{
+				old_group_invites.sort(function(a, b){return a-b});
+				new_group_invites.sort(function(a, b){return a-b});
+				for (var i = 0; i < old_group_invites.length; i++) {
+					var oi = old_group_invites[i];
+					var ni = new_group_invites[i];
+					if(oi != ni){
+						change_arr.push("groups");
+						break;
+					}
+				}
+			}
+
+			return change_arr;
+		}
 		function updateDropdownData(){
 			// console.log("update");
 			$.ajax({
@@ -486,6 +659,16 @@
 					data: {},
 					dataType: 'json',
 					success: function (data) {
+						var resChange = detectChange(data);
+						if (resChange.length > 0) {
+							for (var i = 0; i < resChange.length; i++) {
+								if(_change_affected.includes(resChange[i]) == false){
+									_change_affected.push(resChange[i]);
+								}
+							}
+							console.log("changed!");
+							enableChangeNotif();
+						}
 						database_header_info = data;
 						clearDropdowns();
 						populateDropdowns();
@@ -500,6 +683,7 @@
 				  },
 				  5 * 1000
 				);
+			  	initiateChangeCurrent();
 			});
 
 	</script>

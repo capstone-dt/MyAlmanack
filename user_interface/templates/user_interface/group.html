@@ -164,7 +164,7 @@
 				var col_div = document.createElement("div");
 				col_div.className = "col card-col";
 				var card_div = document.createElement("div");
-				card_div.className = "card card-block";
+				card_div.className = "card pr-0";
 
 				var row_div = document.createElement("div");
 				row_div.className = "row";
@@ -193,8 +193,9 @@
 				card_div.appendChild(row_div);
 				col_div.appendChild(card_div);
 				admin_cont_div.appendChild(col_div);
-				card_div.style = "width:" + (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px; height:100px;";
-				row_div.setAttribute("width", Math.max(300, (user_text_div.getBoundingClientRect().width + card_picture_dim + 20)));
+				card_div.setAttribute("width", (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px");
+				card_div.setAttribute("height", "120px");
+				col_div.setAttribute("height", "120px");
 			}
 		}
 		function updateMemberCards(){
@@ -215,7 +216,7 @@
 				var col_div = document.createElement("div");
 				col_div.className = "col card-col";
 				var card_div = document.createElement("div");
-				card_div.className = "card card-block";
+				card_div.className = "card pr-0";
 
 				var row_div = document.createElement("div");
 				row_div.className = "row";
@@ -244,7 +245,9 @@
 				card_div.appendChild(row_div);
 				col_div.appendChild(card_div);
 				member_cont_div.appendChild(col_div);
-				card_div.style = "width:" + (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px; height:100px;";
+				card_div.setAttribute("width", (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px");
+				card_div.setAttribute("height", "120px");
+				col_div.setAttribute("height", "120px");
 			}
 		}
 
