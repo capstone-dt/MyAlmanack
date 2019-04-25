@@ -30,6 +30,7 @@ class Invite(models.Model):
 	time_sent = models.BigIntegerField()
 
 	class Meta:
+		abstract = True
 		managed = False
 		db_table = 'Invite'
 
@@ -74,7 +75,7 @@ class Group(models.Model):
 
 
 class GroupInvite(Invite):
-	group_name = models.ForeignKey(Group, models.CASCADE)
+	group_name = models.ForeignKey(Group, models.CASCADE, db_column='group_name')
 	invitee_list = ArrayField(models.CharField(max_length=128, blank=True, null=True))
 
 	class Meta:
@@ -83,7 +84,7 @@ class GroupInvite(Invite):
 
 class GroupRequest(Invite):
     sender = models.ForeignKey('Profile', models.CASCADE)
-    group_name = models.ForeignKey(Group, models.CASCADE)
+    group_name = models.ForeignKey(Group, models.CASCADE, db_column='group_name')
 
     class Meta:
         managed = False

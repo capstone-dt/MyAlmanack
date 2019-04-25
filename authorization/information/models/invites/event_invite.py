@@ -1,4 +1,4 @@
-from .invite import Invite
+from .base import Invite
 from ..user import User
 from authorization.utilities.decorators import classproperty
 
@@ -10,6 +10,7 @@ from database.models import (
 )
 
 
+# One-to-many
 class EventInvite(Invite):
     """
     Wrapper-related
@@ -21,12 +22,21 @@ class EventInvite(Invite):
     Instance properties and methods
     """
     
+    # This returns the UID of the event of this event invite.
+    @property
+    def event_uid(self):
+        return self._object.event_id
+    
+    # This returns the event of this event invite.
+    @property
+    def event(self):
+        return Event.from_uid(self.event_uid)
+    
     # This returns the UID of the sender of this event invite.
     @property
     def sender_uid(self):
-        event_id = self.uid
         for contact_list in _ContactList.objects.all():
-            if event_id in contact_list.sent_event_invites:
+            if self.uid in contact_list.sent_event_invites:
                 return _Profile.objects.get(
                     contact_list=contact_list.contact_list_id
                 ).firebase_id
