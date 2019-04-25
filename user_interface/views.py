@@ -6,8 +6,8 @@ from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.urls import resolve
-from database.views import *
 from database.models import *
+from database.views import *
 from user_interface.forms import *
 import base64
 import os
@@ -857,7 +857,9 @@ def formController(request):
 			return HttpResponseRedirect("/profile/")
 		return HttpResponseRedirect("/group/" + group_name)
 	elif(switchType == "EventResponse"):
-		respondEvent(request)
+		res = respondEvent(request)
+		if(res != None):
+			return res
 		return HttpResponseRedirect("/profile/");
 	elif(switchType == "GroupResponse"):
 		respondGroup(request)
@@ -876,33 +878,33 @@ def respondFriend(request):
 	else:
 		action = False
 
-	# req_data = getFriendRequestData(invite_id)
-	# sender_id = req_data["sender_id"]
-	# receiver_id = req_data["receiver_id"]
+	req_data = getFriendRequestData(invite_id)
+	sender_id = req_data["sender_id"]
+	receiver_id = req_data["receiver_id"]
 
-	# user_request = None
-	# user_request = UserRequest.objects.get(invite_id=invite_id)
+	user_request = None
+	user_request = UserRequest.objects.get(invite_id=invite_id)
 
-	# if(action == True):
-	# 	# user.invite.AcceptUserInvite(subject=User|Profile, resource=UserRequest)
-	# 	auth_result = authorization.api.authorize(
-	# 		request,
-	# 		action=authorization.api.actions.user.invite.AcceptUserInvite,
-	# 		resource=user_request,
-	# 		redirect_403=False
-	# 	)
-	# 	if(auth_result == False):
-	# 		return redir403(request)
-	# else:
-	# 	# user.invite.RejectUserInvite(subject=User|Profile, resource=UserRequest)
-	# 	auth_result = authorization.api.authorize(
-	# 		request,
-	# 		action=authorization.api.actions.user.invite.RejectUserInvite,
-	# 		resource=user_request,
-	# 		redirect_403=False
-	# 	)
-	# 	if(auth_result == False):
-	# 		return redir403(request)
+	if(action == True):
+		# user.invite.AcceptUserInvite(subject=User|Profile, resource=UserRequest)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.user.request.AcceptUserRequest,
+			resource=user_request,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			return redir403(request)
+	else:
+		# user.invite.RejectUserInvite(subject=User|Profile, resource=UserRequest)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.user.request.RejectUserRequest,
+			resource=user_request,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			return redir403(request)
 
 	actionFriendRequest(invite_id, action)
 
@@ -958,6 +960,26 @@ def submitEditEvent(request):
 	event_admins = curr_event_data["event_admins"]
 	whitelist = curr_event_data["whitelist"]
 	blacklist = curr_event_data["blacklist"]
+
+	# event.EditEvent(subject=User|Profile, resource=Event)
+	event = None
+	try:
+		event = Event.objects.get(event_id=event_id)
+	except:
+		return redir404(request)
+
+	auth_result = authorization.api.authorize(
+		request,
+		action=authorization.api.actions.event.EditEvent,
+		resource=event,
+		redirect_403=False
+	)
+
+	if(auth_result == False):
+		return redir403(request)
+
+
+
 	editEventData(event_id, event_name, event_desc, participating_users, event_admins, whitelist, blacklist, event_start, event_end)
 
 
@@ -972,6 +994,34 @@ def respondEvent(request):
 	else:
 		action = False
 	user_firebase_id = getCurrentFirebaseId(request)
+
+	event_invite = None
+	try:
+		event_invite = EventInvite.objects.get(invite_id=invite_id)
+	except:
+		return redir404(request)
+
+	if(action):
+		# event.invite.AcceptEventInvite(subject=User|Profile, resource=EventInvite)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.event.invite.AcceptEventInvite,
+			resource= event_invite,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			return redir403(request)
+	else:
+		# event.invite.RejectEventInvite(subject=User|Profile, resource=EventInvite)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.event.invite.RejectEventInvite,
+			resource= event_invite,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			return redir403(request)
+
 	actionEventInvite(int(invite_id), user_firebase_id, action)
 
 def respondGroup(request):
@@ -1001,7 +1051,7 @@ def sendFriendRequestUI(request, sender_firebase_id, reciever_alias):
 	# user.invite.SendUserInvite(subject=User|Profile, resource=User|Profile)
 	auth_result = authorization.api.authorize(
 			request,
-			action=authorization.api.actions.user.invite.SendUserInvite,
+			action=authorization.api.actions.user.request.SendUserRequest,
 			resource=user,
 			redirect_403=False
 		)
@@ -1061,20 +1111,20 @@ def createGroupLocal(request):
 		return redir404(request)
 	
 	for inv in group_invites:
-		# user = None
-		# try:
-		# 	user = get_user_model().objects.get(username=inv)
-		# except get_user_model().DoesNotExist:
-		# 	return redir404(request)
-		# auth_result = authorization.api.authorize(
-		# 	request,
-		# 	action=authorization.api.actions.group.invite.SendGroupInvite,
-		# 	resource= user,
-		# 	context=group,
-		# 	redirect_403=False
-		# )
-		# if(auth_result == False):
-		# 	return redir403(request)
+		user = None
+		try:
+			user = get_user_model().objects.get(username=inv)
+		except get_user_model().DoesNotExist:
+			return redir404(request)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.group.invite.SendGroupInvite,
+			resource= user,
+			context=group,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			return redir403(request)
 		sendGroupInvites(group_name, [inv])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
