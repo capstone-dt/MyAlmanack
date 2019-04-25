@@ -810,14 +810,18 @@ def formController(request):
 			return res
 		return HttpResponseRedirect("/profile/")
 	elif(switchType == "SubmitEvent"):
-		submitEvent(request)
+		res = submitEvent(request)
+		if(res != None):
+			return res
 		return HttpResponseRedirect("/profile/")
 	elif(switchType == "FriendRequest"):
 		friend_form = FriendRequestForm(request.POST)
 		print(friend_form)
 		add_alias = friend_form["FIreqalias"].value()
 		print(add_alias)
-		sendFriendRequestUI(request, user_firebase_id, add_alias)
+		res = sendFriendRequestUI(request, user_firebase_id, add_alias)
+		if(res != None):
+			return res
 		return HttpResponseRedirect("/profile/" + add_alias)
 	elif(switchType == "FriendRemove"):
 		removeFriend(request)
@@ -844,7 +848,7 @@ def formController(request):
 	elif(switchType == "JoinGroup"):
 		group_form = GroupJoinForm(request.POST)
 		group_name = group_form["GIreqname"].value()
-		new_invite_id = generateInviteId()
+		new_invite_id = generateInviteId(GroupInvite)
 		sendGroupInvites(group_name, [user_firebase_id])
 		actionGroupInvite(new_invite_id, user_firebase_id, True)
 		return HttpResponseRedirect("/group/" + group_name)
@@ -862,7 +866,9 @@ def formController(request):
 			return res
 		return HttpResponseRedirect("/profile/");
 	elif(switchType == "GroupResponse"):
-		respondGroup(request)
+		res = respondGroup(request)
+		if(res != None):
+			return res
 	elif(switchType == "SubmitEditEvent"):
 		submitEditEvent(request)
 		return HttpResponseRedirect("/profile/")
@@ -1036,7 +1042,43 @@ def respondGroup(request):
 		action = False
 	user_firebase_id = getCurrentFirebaseId(request)
 	# def actionGroupInvite(invite_id, receiver_firebase_id, accept):
+
+	group_invite_data = getGroupInviteData(invite_id)
+
+	group_name = group_invite_data["group_name"]
+
+	group_invite = None
+	try:
+		group_invite = GroupInvite.objects.get(group_name=group_name)
+	except:
+		return redir404(request)
+
+	if(action):
+		# group.invite.AcceptGroupInvite(subject=User|Profile, resource=GroupInvite)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.group.invite.AcceptGroupInvite,
+			resource= group_invite,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			return redir403(request)
+	else:
+		# group.invite.RejectGroupInvite(subject=User|Profile, resource=GroupInvite)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.group.invite.RejectGroupInvite,
+			resource= group_invite,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			return redir403(request)
+
+
 	actionGroupInvite(invite_id, user_firebase_id, action)
+	if(action):
+		return HttpResponseRedirect("/group/" + group_name)
+	return HttpResponseRedirect("/profile/")
 
 
 def sendFriendRequestUI(request, sender_firebase_id, reciever_alias):
@@ -1076,6 +1118,20 @@ def editProfile(request):
 	saveProfilePictueBase64(firebase_id, new_prof)
 	if(isValid == False):
 		# Modify current user
+		# user.profile.EditUserProfile(subject=User|Profile, resource=User|Profile)
+		user = None
+		try:
+			user = get_user_model().objects.get(username=firebase_id)
+		except get_user_model().DoesNotExist:
+			return redir404(request)
+
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.user.profile.EditUserProfile,
+			resource=user,
+			redirect_403=False
+		)
+
 		editProfileData(firebase_id, alias, phone_num, last_name, first_name,
 		email, birth_date, organization, user_desc)
 	else:
