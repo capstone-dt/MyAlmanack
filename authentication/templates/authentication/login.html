@@ -21,7 +21,11 @@
             messagingSenderId: "616767068315"
         });
         var auth = firebase.auth(); auth.useDeviceLanguage();
-        new firebaseui.auth.AuthUI(auth).start("#firebase_dialog", {
+        var ui = new firebaseui.auth.AuthUI(auth);
+        if (ui.isPendingRedirect()) {
+            window.openLoginModal();
+        }
+        ui.start("#firebase_dialog", {
             signInOptions: [
                 firebase.auth.GoogleAuthProvider.PROVIDER_ID,
                 {
@@ -38,7 +42,6 @@
             ],
             callbacks: {
                 signInSuccessWithAuthResult: function () {
-                    window.openLoginModal(); // Mike's function
                     auth.currentUser.getIdToken(true).then(function (idToken) {
                         document.querySelector("#firebase_idtoken").value = idToken;
                         document.querySelector("#firebase_form").submit();
