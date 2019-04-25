@@ -221,6 +221,10 @@
 		document.getElementById("inputBirthday").setAttribute("max", today);
 	console.log("Profile Info:\n", parseQuotesJson("{{profile_info}}"));
 	var profile_struct = parseQuotesJson("{{profile_info}}");
+
+	function formatDateHTML(dateObj){
+		return dateObj.getFullYear() + "-" + ('0' + (dateObj.getMonth() + 1)).slice(-2) + "-" + ('0' + dateObj.getDate()).slice(-2);
+	}
 	function populateFields(){
 		if(profile_struct.alias != undefined){
 			var first_div = document.getElementById("inputFirstname");
@@ -232,14 +236,9 @@
 			var email_div = document.getElementById("inputEmail");
 			email_div.value = profile_struct.email[0];
 			var birthday_div = document.getElementById("inputBirthday");
-			var birth_date = new Date(Number(profile_struct.birth_date));
-			var date_string = birth_date.getFullYear() + "-";
-			var month_str = (birth_date.getMonth() + 1) + "";
-			if(month_str.length == 1){
-				month_str = "0" + month_str;
-			}
-			date_string += month_str + "-" + birth_date.getDate();
-			birthday_div.value = date_string;
+			var jank_date = new Date(Number(profile_struct.birth_date));
+			jank_date = new Date(jank_date.setDate(jank_date.getDate() + 1));
+			birthday_div.value = formatDateHTML(jank_date);
 			var phone_div = document.getElementById("inputPhone");
 			phone_div.value = profile_struct.phone_num[0];
 			var org_div = document.getElementById("inputOrganization");
