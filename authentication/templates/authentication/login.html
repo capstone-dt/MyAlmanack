@@ -1,7 +1,6 @@
 {% extends "user_interface/out_header.html"%}
 
 {% block login_buttons %}
-
 <!DOCTYPE html>
 <html>
 
@@ -39,6 +38,7 @@
             ],
             callbacks: {
                 signInSuccessWithAuthResult: function () {
+                    window.openLoginModal(); // Mike's function
                     auth.currentUser.getIdToken(true).then(function (idToken) {
                         document.querySelector("#firebase_idtoken").value = idToken;
                         document.querySelector("#firebase_form").submit();
