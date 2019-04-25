@@ -30,4 +30,6 @@ urlpatterns = [
 	path("default/", views.DefaultView.as_view(), name="default"),
 	path("search", views.SearchView.as_view(), name="search"),
 	path("search/", views.SearchView.as_view(), name="search"),
+	# All other patterns goto 404 page.
+	re_path(r'^([\s\S]+)/$', views.redir404Arg, name="redir404Arg"),
 ]
