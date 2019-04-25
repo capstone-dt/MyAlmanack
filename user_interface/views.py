@@ -280,6 +280,9 @@ def get_invite_data(request):
 
 # Error Pages
 
+def redir404Arg(request, arg):
+	return redir404(request)
+
 def redir404(request):
 	user_firebase_id = getCurrentFirebaseId(request)
 	return render(
@@ -828,7 +831,9 @@ def formController(request):
 		editProfile(request)
 		return HttpResponseRedirect("/profile/")
 	elif(switchType == "CreateGroup"):
-		createGroupLocal(request)
+		res = createGroupLocal(request)
+		if(res != None):
+			return res
 		group_form = GroupForm(request.POST)
 		group_name = group_form["GIname"].value()
 		return HttpResponseRedirect("/group/" + group_name)
@@ -860,9 +865,6 @@ def formController(request):
 		submitEditEvent(request)
 		return HttpResponseRedirect("/profile/")
 
-
-
-
 def respondFriend(request):
 	friend_response_form = FriendRespondRequest(request.POST)
 	print(friend_response_form)
@@ -874,33 +876,33 @@ def respondFriend(request):
 	else:
 		action = False
 
-	req_data = getFriendRequestData(invite_id)
-	sender_id = req_data["sender_id"]
-	receiver_id = req_data["receiver_id"]
+	# req_data = getFriendRequestData(invite_id)
+	# sender_id = req_data["sender_id"]
+	# receiver_id = req_data["receiver_id"]
 
-	user_request = None
-	user_request = UserRequest.objects.get(invite_id=invite_id)
+	# user_request = None
+	# user_request = UserRequest.objects.get(invite_id=invite_id)
 
-	if(action == True):
-		# user.invite.AcceptUserInvite(subject=User|Profile, resource=UserRequest)
-		auth_result = authorization.api.authorize(
-			request,
-			action=authorization.api.actions.user.invite.AcceptUserInvite,
-			resource=user_request,
-			redirect_403=False
-		)
-		if(auth_result == False):
-			return redir403(request)
-	else:
-		# user.invite.RejectUserInvite(subject=User|Profile, resource=UserRequest)
-		auth_result = authorization.api.authorize(
-			request,
-			action=authorization.api.actions.user.invite.RejectUserInvite,
-			resource=user_request,
-			redirect_403=False
-		)
-		if(auth_result == False):
-			return redir403(request)
+	# if(action == True):
+	# 	# user.invite.AcceptUserInvite(subject=User|Profile, resource=UserRequest)
+	# 	auth_result = authorization.api.authorize(
+	# 		request,
+	# 		action=authorization.api.actions.user.invite.AcceptUserInvite,
+	# 		resource=user_request,
+	# 		redirect_403=False
+	# 	)
+	# 	if(auth_result == False):
+	# 		return redir403(request)
+	# else:
+	# 	# user.invite.RejectUserInvite(subject=User|Profile, resource=UserRequest)
+	# 	auth_result = authorization.api.authorize(
+	# 		request,
+	# 		action=authorization.api.actions.user.invite.RejectUserInvite,
+	# 		resource=user_request,
+	# 		redirect_403=False
+	# 	)
+	# 	if(auth_result == False):
+	# 		return redir403(request)
 
 	actionFriendRequest(invite_id, action)
 
@@ -1048,10 +1050,32 @@ def createGroupLocal(request):
 		group_invites = group_form["GIinvite"].value().split(",")
 	# def createGroup(firebase_id, group_name, group_admin, group_members, group_desc)
 	createGroup(firebase_id, group_name, [], [], group_desc)
-	print("GROUP INVITES", group_invites)
-	if(len(group_invites) > 0):
-		for inv in group_invites:
-			sendGroupInvites(group_name, [inv])
+
+
+	# group.invite.SendGroupInvite(subject=User|Profile, resource=Group)
+
+	group = None
+	try:
+		group = Group.objects.get(group_name=group_name)
+	except:
+		return redir404(request)
+	
+	for inv in group_invites:
+		# user = None
+		# try:
+		# 	user = get_user_model().objects.get(username=inv)
+		# except get_user_model().DoesNotExist:
+		# 	return redir404(request)
+		# auth_result = authorization.api.authorize(
+		# 	request,
+		# 	action=authorization.api.actions.group.invite.SendGroupInvite,
+		# 	resource= user,
+		# 	context=group,
+		# 	redirect_403=False
+		# )
+		# if(auth_result == False):
+		# 	return redir403(request)
+		sendGroupInvites(group_name, [inv])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
