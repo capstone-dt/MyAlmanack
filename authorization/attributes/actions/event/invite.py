@@ -30,8 +30,8 @@ class SendEventInvite(UserToUserAction):
         
         # A user must be an event creator or administrator.
         & (
-            policies.user.event.UserResourceIsEventContextCreator
-            | policies.user.event.UserResourceIsEventContextAdministrator
+            policies.user.event.UserIsEventContextCreator
+            | policies.user.event.UserIsEventContextAdministrator
         )
         
         # A user cannot send an event invite to someone who's already in the

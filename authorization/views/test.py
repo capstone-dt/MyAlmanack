@@ -11,12 +11,11 @@ from django.utils.html import escape
 def test(request):
     hao_uncg = Profile.objects.get(firebase_id="k8L2m8QQWMfc7zPwSzJr25AwdVB2")
     mike_capstonetest = Profile.objects.get(firebase_id="XJWoEcF4qsToA0NHnKnaIlqBnfO2")
-    user = hao_uncg
+    user = mike_capstonetest
     
     temp_group = Group.objects.get(group_name="tempgroup")
     group = temp_group
     
-    print("Constructing requests")
     authorization_requests = [
         # user.profile.ViewUserProfile
         authorization.api.AuthorizationRequest(request.user,
@@ -100,7 +99,6 @@ def test(request):
         # event.ViewEvent
     ]
     
-    print("Authorizing")
     return HttpResponse("<br><br>".join(escape(
         "%s -> %s" %
         (authorization_request, authorization_request.authorize())
