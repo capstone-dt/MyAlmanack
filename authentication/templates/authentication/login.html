@@ -42,6 +42,7 @@
             ],
             callbacks: {
                 signInSuccessWithAuthResult: function () {
+                    document.querySelector("#loginModalButton").click();
                     auth.currentUser.getIdToken(true).then(function (idToken) {
                         document.querySelector("#firebase_idtoken").value = idToken;
                         document.querySelector("#firebase_form").submit();
