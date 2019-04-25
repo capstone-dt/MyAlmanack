@@ -23,7 +23,7 @@
         var auth = firebase.auth(); auth.useDeviceLanguage();
         var ui = new firebaseui.auth.AuthUI(auth);
         if (ui.isPendingRedirect()) {
-            window.openLoginModal();
+            document.querySelector("#loginModalButton").click();
         }
         ui.start("#firebase_dialog", {
             signInOptions: [
