@@ -22,11 +22,11 @@ class UserIsGroupAdministrator(Policy):
         return request.subject.uid in request.resource.administrator_uids
 
 
-# This checks whether a user resource is an administrator of a group context.
-class UserResourceIsGroupContextAdministrator(Policy):
+# This checks whether a user subject is an administrator of a group context.
+class UserIsGroupContextAdministrator(Policy):
     @classmethod
     def evaluate(cls, request):
-        return request.resource.uid in request.context.administrator_uids
+        return request.subject.uid in request.context.administrator_uids
 
 
 # This checks whether a user subject is a member of but not an administrator of
