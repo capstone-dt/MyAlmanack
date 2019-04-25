@@ -114,9 +114,12 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 			friend_events = getUserEvents(selected_id)
 		if(friend_events == None):
 			friend_events = []
+		filteredEvents = filterAccessFriendEvents(friend_events, user_firebase_id)
+		for ev in filteredEvents:
+			ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
 		curr_dict_f = {}
 		curr_dict_f["firebase_id"] = selected_id
-		curr_dict_f["participating_events"] = friend_events
+		curr_dict_f["participating_events"] = filteredEvents
 		retDict["calendar_data"]["member_events"] = [curr_dict_f]
 		retDict["calendar_data"]["member_info"] = [getProfileData(selected_id)]
 	elif(mode == "GROUP"):
