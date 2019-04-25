@@ -1067,12 +1067,8 @@ def respondGroup(request):
 
 	group_name = group_invite_data["group_name"]
 
-	group_invite = None
-	try:
-		group_invite = GroupInvite.objects.get(group_name=group_name)
-	except:
-		return redir404(request)
-
+	group_invite = GroupInvite.objects.get(invite_id=invite_id)
+	
 	if(action):
 		# group.invite.AcceptGroupInvite(subject=User|Profile, resource=GroupInvite)
 		auth_result = authorization.api.authorize(
