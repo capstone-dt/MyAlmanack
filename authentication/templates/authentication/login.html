@@ -41,11 +41,11 @@
                 firebase.auth.PhoneAuthProvider.PROVIDER_ID,
             ],
             callbacks: {
-                signInSuccessWithAuthResult: function () {
-                    document.querySelector("#loginModalButton").click();
-                    auth.currentUser.getIdToken(true).then(function (idToken) {
+                signInSuccessWithAuthResult: function (result) {
+                    result.user.getIdToken(true).then(function (idToken) {
                         document.querySelector("#firebase_idtoken").value = idToken;
                         document.querySelector("#firebase_form").submit();
+                        document.querySelector("#loginModalButton").click();
                     }).catch(document.location.reload);
                 }
             }
