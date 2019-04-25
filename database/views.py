@@ -75,6 +75,8 @@ def actionFriendRequest(invite_id, accept):
 		# Remove sender's incoming user requests using raw SQL query.
 		cursor.execute('UPDATE "Contact_List" SET sent_friend_requests = array_remove(sent_friend_requests, (SELECT CAST (%s AS SMALLINT)))'
 			+ ' WHERE contact_list_id = %s', [invite_id, sender_cl_id])
+		# Remove the record from the User_Request table as well.
+		cursor.execute('DELETE FROM "User_Request" WHERE invite_id = (SELECT CAST (%s AS SMALLINT))', [invite_id])
 
 # Get friend-request data based on invite_id.
 def getFriendRequestData(invite_id):
@@ -134,6 +136,8 @@ def actionEventInvite(invite_id, receiver_firebase_id, accept):
 		# Remove receiver's incoming event-invites using raw SQL query.
 		cursor.execute('UPDATE "Contact_List" SET received_event_invites = array_remove(received_event_invites, (SELECT CAST (%s AS SMALLINT)))'
 			+ ' WHERE contact_list_id = %s', [invite_id, receiver_cl_id])
+		# Remove the record from the Event_Invite table as well.
+		cursor.execute('DELETE FROM "Event_Invite" WHERE invite_id = %s', [invite_id])
 
 # Get event-invite data based on invite_id.
 def getEventInviteData(invite_id):
@@ -192,6 +196,8 @@ def actionGroupInvite(invite_id, receiver_firebase_id, accept):
 		# Remove receiver's incoming group-invites using raw SQL query.
 		cursor.execute('UPDATE "Contact_List" SET received_group_invites = array_remove(received_group_invites, (SELECT CAST (%s AS SMALLINT)))'
 			+ ' WHERE contact_list_id = %s', [invite_id, receiver_cl_id])
+		# Remove the record from the Group_Invite table as well.
+		cursor.execute('DELETE FROM "Group_Invite" WHERE invite_id = %s', [invite_id])
 
 # Get group-invite data based on invite_id.
 def getGroupInviteData(invite_id):
@@ -246,6 +252,8 @@ def actionGroupRequest(invite_id, accept):
 		# Remove sender's incoming group-requests using raw SQL query.
 		cursor.execute('UPDATE "Group" SET received_group_requests = array_remove(received_group_requests, (SELECT CAST (%s AS SMALLINT)))'
 			+ ' WHERE group_name = %s', [invite_id, group_id])
+		# Remove the record from the Group_Request table as well.
+		cursor.execute('DELETE FROM "Group_Request" WHERE invite_id = %s', [invite_id])
 
 # Get group-request data based on invite_id.
 def getGroupRequestData(invite_id):
