@@ -1,20 +1,40 @@
-from .authorization_result import AuthorizationResult
+from ..attributes.action import Action
+from ..enforcement.authorization_result import AuthorizationResult
+from ..utilities.reflection import assert_subclass
+
+# Python
+import traceback
 
 
 class DecisionAuthority:
     @classmethod
     def authorize(cls, request):
-        result = request.action.authorize(request)
+        # Make sure that the authorization request's action is an Action class.
+        assert_subclass(request.action, Action)
         
-        # Make sure that the authorization result is one of enumeration values.
-        if not isinstance(result, AuthorizationResult):
-            raise ValueError(
-                "The authorization request returned an invalid result: %s" %
-                result
-            )
+        print("Action:", request.action)
+        print("Policies:", request.action.policies)
         
-        return result
-    
-    @classmethod
-    def is_permitted(cls, request):
-        return cls.authorize(request) == AuthorizationResult.PERMIT
+        # Evaluate all the policies of this action.
+        all_inapplicable = True
+        for policy in request.action.policies:
+            print("Evaluating policy:", policy)
+            try:
+                if policy.evaluate(request):
+                    return AuthorizationResult.PERMIT
+                else:
+                    all_inapplicable = False
+            except Exception as error:
+                print(
+                    "Inapplicable policy: %s %s" % (type(error), error)
+                )
+                traceback.print_tb(error.__traceback__)
+        
+        # If we get to this point, then none of the policies evaluated to true.
+        if all_inapplicable:
+            # If every policy threw an error, then the authorization request is
+            #     inapplicable.
+            return AuthorizationResult.NOT_APPLICABLE
+        else:
+            # Otherwise, at least one policy evaluated to false.
+            return AuthorizationResult.DENY

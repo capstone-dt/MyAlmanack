@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>{{ name }}'s Profile</title>
+</head>
+
+<body>
+	<div>Congratulations, you have permission to view {{ name }}'s profile!</div>
+	<div><a href="{% url 'logout' %}?next={% url 'index' %}">Click here to logout.</a></div>
+</body>
+
+</html>

@@ -1,4 +1,4 @@
-from authorization import AuthorizationRequest, actions
+import authorization.api
 
 # Django
 from django.shortcuts import render
@@ -6,10 +6,10 @@ from django.utils.html import escape
 
 
 def index(request):
-    authorization_request = AuthorizationRequest(
+    authorization_request = authorization.api.AuthorizationRequest(
         subject=request.user,
-        action=actions.user.profile.ViewProfile,
-        object=request.user,
+        action=authorization.api.actions.user.profile.EditUserProfile,
+        resource=request.user,
         context=request
     )
     

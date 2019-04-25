@@ -1,0 +1,73 @@
+<head>
+	{% load static %}
+	 <!-- Comes from open-source https://materializecss.com/getting-started.html-->
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
+	<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+	rel="stylesheet">
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	{% load static %}
+	<script src="{% static 'user_interface/js/utilities.js' %}"> </script>
+	<link rel="stylesheet" href="{% static 'user_interface/css/buttons.css' %}">
+	<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/js/bootstrap4-toggle.min.js"></script>
+	<link rel="shortcut icon" type="image/png" href="{% static 'compass_PSN_icon.ico' %}"/>
+</head>
+
+<body>
+	<nav class="navbar navbar-expand navbar-dark bg-dark" style="z-index: 10;">
+		<a class="navbar-brand" href="#">MyAlmanack</a>
+		<button type="button" class="btn btn-raised btn-primary ml-auto" href="#" id="loginModalButton" data-toggle="modal" data-target="#loginModal" style="display:block;" value="Login">
+					Log In
+		</button>
+	</nav>
+
+	<div class="container">
+		<h1 class="row">
+			<div class="col-8">
+				MyAlmanack
+			</div>
+		</h1>
+		<h4>
+			Justin Oakley, Hao Zhang, Pooya Motee, Mark Bures,Michael Resnik
+		</h4>
+		<hr>
+		<h3>
+			Mission Statement
+		</h3>
+		<div class="row">
+			<div class="col-8" id="missionStatementText">
+				Finding the time that people can meet is a constant struggle, especially for those with busy work lives. Our solution to this problem is MyAlmanack, a productivity focused social media website where users can manage their schedules and compare them with others. Users can achieve this by inputting their schedule into our online calendar and comparing their schedule with users that they are friends with or groups that they are a member of. A user can maintain their schedule in their profile, where they are the only person capable of creating, updating, and deleting any information on their calendar. Only people who have been given permission by a user can view that user’s schedule, and users can only modify another user’s schedule after sending a request. Some events won’t be shown if the user trying to view the event isn’t allowed on event creation. These Hidden Events are still used in free time calculations but provides no information to the user.
+			</div>
+			<div class="col-4">
+				{% load static %}
+				<img src="{% static 'uncg_400.jpg' %}" style="width:300px; height: 300px;">
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered" role="document">
+			<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="loginModalLongTitle">Login to MyAlmanack</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				{% block login_buttons %}
+				{% endblock %}
+			</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		function openLoginModal(){
+			var loginModalButton = document.getElementById("loginModalButton");
+			loginModalButton.click();
+		}
+
+	</script>
+</body>

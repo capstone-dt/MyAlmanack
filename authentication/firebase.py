@@ -20,21 +20,6 @@ Firebase = firebase_admin.initialize_app(
 )
 
 
-def validate_session(request, id_token):
-	expires_in = timedelta(seconds=settings.SESSION_COOKIE_AGE)
-	session_cookie = FirebaseAuth.create_session_cookie(id_token, expires_in)
-	request.session[SESSION_COOKIE] = session_cookie
-	request.session[SESSION_COOKIE_LASTCHECKED] = time()
-
-
-def invalidate_session(request):
-	try:
-		FirebaseAuth.revoke_refresh_tokens(get_session_claims(request)["sub"])
-	finally:
-		request.session.pop(SESSION_COOKIE, None)
-		request.session.pop(SESSION_COOKIE_LASTCHECKED, None)
-
-
 def get_session_claims(request, check_revoked=False):
 	session_cookie = request.session[SESSION_COOKIE]
 	return FirebaseAuth.verify_session_cookie(session_cookie, check_revoked)
@@ -55,3 +40,18 @@ def is_session_valid(request):
 		return True
 	except:
 		return False
+
+
+def validate_session(request, id_token):
+	expires_in = timedelta(seconds=settings.SESSION_COOKIE_AGE)
+	session_cookie = FirebaseAuth.create_session_cookie(id_token, expires_in)
+	request.session[SESSION_COOKIE] = session_cookie
+	request.session[SESSION_COOKIE_LASTCHECKED] = time()
+
+
+def invalidate_session(request):
+	try:
+		FirebaseAuth.revoke_refresh_tokens(get_session_claims(request)["sub"])
+	finally:
+		request.session.pop(SESSION_COOKIE, None)
+		request.session.pop(SESSION_COOKIE_LASTCHECKED, None)

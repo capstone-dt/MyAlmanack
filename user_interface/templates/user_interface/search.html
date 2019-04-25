@@ -2,44 +2,47 @@
 
 {% block content %}
 	<div class="container">
-	    <h1>Search Results:</h1>
+	    <h1>Search Results for: &ldquo;<div id="searchTermDisplay" style="display: inline; color:#4F4F4F;"></div>&rdquo;</h1>
 	    <hr>
+	    <form action="/profile/" method="post">
+				{% csrf_token %}
+				{{ search_forms.friend_req.as_ul }}
+				<input type="hidden" name="formType" value="FriendRequest">
+				<input type="submit" style="display: none;" id="submitAddFriend">
+    	</form>
+    	<form action="/profile/" method="post">
+			{% csrf_token %}
+			{{ search_forms.friend_rem.as_ul }}
+			<input type="hidden" name="formType" value="FriendRemove">
+			<input type="submit" style="display: none;" id="submitRemFriend">
+    	</form>
 		<section>
 			<div class="tabs tabs-style-tzoid">
 				<div class="row">
 				<div class="col left-block content-wrap">
 					<div class="notnav left" id="trap_cont">
-						<a href="#" class="selected" id="friends_tab" onclick="selectTab('friends_tab')">Friends</a>
+						<a href="#" id="users_tab" onclick="selectTab('users_tab')">Users</a>
 						<a href="#" id="group_tab" onclick="selectTab('group_tab')">Groups</a>
 						<a href="#" id="events_tab" onclick="selectTab('events_tab')">Events</a>
-						<a href="#" id="users_tab" onclick="selectTab('users_tab')">Users</a>
 					</div>
 				</div><!-- /content -->
 				</div>
 			</div>
 		</section>
-				<div class="row boxed" id="scroll_div_cont_row">
-					<div class="col" style="height:100%;">
-						<div class="anyclass" id="scroll_div_cont" style="height:100%;">
-							<div class=" col">
-							  <ul class="nav nav-pills nav-stacked" id="height_list">
-							</div>
+			<div class="row boxed" id="scroll_div_cont_row">
+				<div class="col" style="height:100%; border-style: solid; border-width: 0.5px;">
+					<div id="scroll_div_cont" style="height:100%; width: 100%; padding-top: 10px; overflow-y: scroll;">
+						<div class=" col">
+						  <ul class="nav nav-pills nav-stacked" id="height_list" style="width: 100%;">
 						</div>
 					</div>
 				</div>
+			</div>
 		<style type="text/css">
 			.w-fill{
 				width: 100%;
 				border-color: black; border-style: solid;
 				border-width: 0.5px; 
-			}
-			.boxed{
-				border-color: black; border-style: solid;
-				border-width: 0.5px; 
-			}
-			.anyClass {
-			  overflow-y: scroll;
-			  padding-top: 20px;
 			}
 			.notnav {
 				position: relative;
@@ -114,11 +117,25 @@
 		<script type="text/javascript">
 			var _tabSelect = "";
 			var _searchElements = {
-				friends : [],
+				users : [],
 				groups : [],
 				events : [],
-				users : []
+				search_term: ""
 			};
+			var search_data = parseQuotesJson("{{ search_data }}");
+			console.log("search_data", search_data);
+			for(var i = 0; i < search_data.friends.length; i++){
+				search_data.friends[i].isFriend = true;
+				_searchElements.users.push(search_data.friends[i]);
+			}
+			for(var i = 0; i < search_data.users.length; i++){
+				search_data.users[i].isFriend = false;
+				_searchElements.users.push(search_data.users[i]);
+			}
+			_searchElements.events = search_data.events;
+			_searchElements.groups = search_data.groups;
+			_searchElements.search_term = search_data.search_term;
+
 
 			function windowResized(){
 				console.log("window resized");
@@ -132,135 +149,159 @@
 				}
 			}
 
-			function generateDummyData(){
-				generateUserDummyData(0, 20);
-				generateFriendDummyData(0, 20);
-				generateGroupDummyData(0, 20);
-				generateEventDummyData(0, 20);
-			}
-
-			function generateUserDummyData(min, max){
-				for(var i = min; i < max; i++){
-					_searchElements.users.push(
-						userStruct(null, "User:" + i, i*i)
-					);
-				}
-			}
-
-			function generateFriendDummyData(min, max){
-				for(var i = min; i < max; i++){
-					_searchElements.friends.push(
-						userStruct(null, "Friend:" + i, i*i)
-					);
-				}
-			}
-
-			function generateGroupDummyData(min, max){
-				for(var i = min; i < max; i++){
-					_searchElements.groups.push(
-						groupStruct("Group:" + i, i*i, "tempDesc:" + i)
-					);
-				}
-			}
-
-			function generateEventDummyData(min, max){
-				for(var i = min; i < max; i++){
-					_searchElements.events.push(
-						eventStruct("Event:" + i)
-					);
-				}
-			}
-
-
-			function userStruct(image_url, name, alias){
-				var ret_struct = {};
-				ret_struct.image_url = image_url;
-				ret_struct.name = name;
-				ret_struct.alias = alias;
-				return ret_struct;
-			}
-
-			function groupStruct(name, alias, description){
-				var ret_struct = {};
-				ret_struct.description = description;
-				ret_struct.name = name;
-				ret_struct.alias = alias;
-				return ret_struct;
-			}
-			function eventStruct(name){
-				var ret_struct = {};
-				ret_struct.name = name;
-				return ret_struct;
-			}
-
-			function drawFriendElement(struct){
-				var image_url = struct.image_url;
-				var name = struct.name;
-				var alias = struct.alias;
-				if(image_url == null){
-					image_url = "https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg";
-				}
-				var list_elem = document.createElement('li');
-				list_elem.className = "nav-item w-fill";
-				var a_elem = document.createElement('a');
-				a_elem.className = "nav-link active";
-				a_elem.innerHTML = name;
-				var list_div = document.getElementById("height_list");
-				list_elem.appendChild(a_elem);
-				list_div.appendChild(list_elem);
-				return list_div;
-			}
-
 			function drawUserElement(struct){
-				var image_url = struct.image_url;
-				var name = struct.name;
-				var alias = struct.alias;
-				if(image_url == null){
-					image_url = "https://t4.ftcdn.net/jpg/02/15/84/43/240_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg";
-				}
-				var list_elem = document.createElement('li');
-				list_elem.className = "nav-item w-fill";
 				var a_elem = document.createElement('a');
-				a_elem.className = "nav-link active";
-				a_elem.innerHTML = name;
+				a_elem.className = "navbar-text";
+				a_elem.style = "width:100%; padding-right:30px;";
+				a_elem.style.borderBottom = "1px solid grey";
+
+				var def_image = base64ToImage(struct.profile_picture);
+				def_image.setAttribute("width", "80px");
+				def_image.setAttribute("height", "80px");
+				var list_elem = document.createElement('li');
+				list_elem.className = "nav-item";
+				list_elem.style = "width:100%; "
+
+				var row_elem = document.createElement('div');
+				row_elem.className = "row";
+
+				var image_div = document.createElement('div');
+				image_div.style = "display:inline; padding-right:20px; padding-left:20px;";
+				image_div.appendChild(def_image);
+				image_div.className = "float-left";
+				var user_text_div = document.createElement('div');
+				user_text_div.innerHTML = struct.first_name + " " + struct.last_name + "<br>";
+				var alias_div = document.createElement('a');
+				alias_div.href = "javascript:redir('redirfb/" + struct.firebase_id + "');";
+				alias_div.innerText = "@" + struct.alias;
+				user_text_div.appendChild(alias_div);
+				user_text_div.style ="display:inline; font-size:20px;";
+				user_text_div.className = "float-left";
+
+				row_elem.appendChild(image_div);
+				row_elem.appendChild(user_text_div);
+				if(struct.isSelf == false){
+					if(struct.isFriend == false){
+						if(struct.isRequested == true){
+							var button_cont = document.createElement('div');
+							button_cont.className = "ml-auto";
+							var temp_addButton = document.createElement('div');
+							temp_addButton.className="requestedButton";
+							temp_addButton.innerText="Friend Requested";
+							temp_addButton.style="width:200px;"
+							button_cont.appendChild(temp_addButton);
+							row_elem.appendChild(button_cont);
+						}else{
+							// Add friend Button
+							var button_cont = document.createElement('div');
+							button_cont.className = "ml-auto";
+							var temp_addButton = document.createElement('div');
+							temp_addButton.className="friendButton";
+							temp_addButton.innerText="Add Friend";
+							temp_addButton.setAttribute("onclick", "addFriendClicked('" + struct.alias + "');");
+							temp_addButton.style="width:200px;"
+							button_cont.appendChild(temp_addButton);
+							row_elem.appendChild(button_cont);
+						}
+					}else if(struct.isFriend == true){
+						// Remove Friend Button
+						var button_cont = document.createElement('div');
+						button_cont.className = "ml-auto";
+						var temp_remButton = document.createElement('div');
+						temp_remButton.className="removeFriendButton ml-auto";
+						temp_remButton.innerText="Remove Friend";
+						temp_remButton.setAttribute("onclick", "remFriendClicked('" + struct.alias + "');");
+						temp_remButton.style="width:200px;"
+						button_cont.appendChild(temp_remButton);
+						row_elem.appendChild(button_cont);
+					}
+				}
+
+				a_elem.appendChild(row_elem);
+
 				var list_div = document.getElementById("height_list");
 				list_elem.appendChild(a_elem);
 				list_div.appendChild(list_elem);
 				return list_div;
+			}
+			function addFriendClicked(_name_selected){
+				console.log("addFriendClicked");
+				console.log(_name_selected);
+				var addFormElem = document.getElementById("id_FIreqalias");
+				addFormElem.value = _name_selected;
+				console.log(addFormElem);
+				var submitAddFriend = document.getElementById("submitAddFriend");
+				submitAddFriend.click();
+			}
+			function remFriendClicked(_name_selected){
+				console.log("remFriendClicked");
+				console.log(_name_selected);
+				var remFormElem = document.getElementById("id_FIremalias");
+				remFormElem.value = _name_selected;
+				console.log(remFormElem);
+				var submitRemFriend = document.getElementById("submitRemFriend");
+				submitRemFriend.click();
 			}
 
 			function drawGroupElement(struct){
-				var name = struct.name;
-				var alias = struct.alias;
 				var description = struct.description;
 				var list_elem = document.createElement('li');
-				list_elem.className = "nav-item w-fill";
+				list_elem.className = "nav-item";
+				list_elem.style = "width:100%;"
+
+				var row_elem = document.createElement('div');
+				row_elem.className = "row";
+
 				var a_elem = document.createElement('a');
-				a_elem.className = "nav-link active";
-				a_elem.innerHTML = name;
+				a_elem.className = "navbar-text";
+				a_elem.innerHTML = struct.group_name;
+				a_elem.href = "javascript:redir('redirgn/" + struct.group_name + "');";
+				a_elem.style = "width:100%; font-size:20px;";
+				var desc_elem = document.createElement('a');
+				desc_elem.className = "navbar-text";
+				desc_elem.style = "width:100%; font-size:20px;";
 				var list_div = document.getElementById("height_list");
-				list_elem.appendChild(a_elem);
+				row_elem.appendChild(a_elem);
+				if(struct.group_desc != ""){
+					desc_elem.innerText = struct.group_desc;
+					row_elem.appendChild(desc_elem);
+				}
+				row_elem.style.borderBottom = "1px solid grey";
+				list_elem.appendChild(row_elem);
 				list_div.appendChild(list_elem);
 				return list_div;
 			}
 			function drawEventElement(struct){
-				var name = struct.name;
-				var list_elem = document.createElement('li');
-				list_elem.className = "nav-item w-fill";
 				var a_elem = document.createElement('a');
-				a_elem.className = "nav-link active";
-				a_elem.innerHTML = name;
+				a_elem.className = "navbar-text";
+				a_elem.style = "width:100%";
+				a_elem.style.borderBottom = "1px solid grey";
+
+				var list_elem = document.createElement('li');
+				list_elem.className = "nav-item";
+				list_elem.style = "width:100%; "
+
+				var row_elem = document.createElement('div');
+				row_elem.className = "row";
+				row_elem.style = "padding-left:20px; "
+
+				var event_text_div = document.createElement('div');
+				event_text_div.innerHTML = struct.event_title + "<br>";
+				var alias_div = document.createElement('a');
+				alias_div.innerText = "@" + struct.event_creator_alias;
+				alias_div.href = "javascript:redir('redirfb/" + struct.event_creator_firebase_id + "');";
+				event_text_div.appendChild(alias_div);
+				event_text_div.innerHTML += "<br>" + struct.description;
+				event_text_div.style ="display:inline; font-size:20px;";
+				event_text_div.className = "float-left";
+
+				row_elem.appendChild(event_text_div);
+				a_elem.appendChild(row_elem);
+
 				var list_div = document.getElementById("height_list");
 				list_elem.appendChild(a_elem);
 				list_div.appendChild(list_elem);
 				return list_div;
-			}
-
-			function populateFriends(){
-				for(var i = 0; i < _searchElements.friends.length; i++){
-					var curr_struct = _searchElements.friends[i];
-					drawFriendElement(curr_struct);
-				}
 			}
 
 			function populateUsers(){
@@ -291,19 +332,17 @@
 				var cont_id = "scroll_div_cont_row";
 				var cont_div = document.getElementById(cont_id);
 				var rect = cont_div.getBoundingClientRect();
-				var friends_tab_div = document.getElementById("friends_tab");
-				var friend_rect = friends_tab_div.getBoundingClientRect();
-				var def_left = friend_rect.left +15;
+				var users_tab_div = document.getElementById("users_tab");
+				var users_rect = users_tab_div.getBoundingClientRect();
+				var def_left = users_rect.left + 15;
 				var def_width = window.innerWidth - 2*def_left;
 				def_width = Math.max(def_width, 370);
 				cont_div.style = "position:absolute; border-color: black;"
-				+ "border-style: solid; border-width: 0.5px; padding-bottom: 20px; top:" 
-				+ (friend_rect.bottom - 7) + "px;"
+				+ " top:" 
+				+ (users_rect.bottom - 7) + "px;"
 				+ "height:" + (50) + "%;"
 				+ "width:" + (def_width) + "px;"
 				+ "left:" + (def_left) + "px;";
-				console.log(rect);
-				console.log(cont_div);
 			}
 
 			function selectTab(sel_id){
@@ -315,6 +354,7 @@
 				updateSearch();
 				var scroll_div_cont = document.getElementById("scroll_div_cont");
 				scroll_div_cont.scrollTop = 0;
+				scroll_div_cont.style.width ="100%";
 				var trap_cont = document.getElementById("trap_cont");
 				var children = trap_cont.children;
 				console.log("selected:" + sel_id);
@@ -327,9 +367,6 @@
 					children[i].className = "";
 				}
 				switch(sel_id){
-					case "friends_tab":
-						selectFriends();
-						break;
 					case "events_tab":
 						selectEvents();
 						break;
@@ -343,10 +380,6 @@
 						return;
 				}
 			}
-			function selectFriends(){
-				console.log("select:friends");
-				populateFriends();
-			}
 			function selectUsers(){
 				console.log("select:users");
 				populateUsers();
@@ -359,14 +392,14 @@
 				console.log("select:groups");
 				populateGroups();
 			}
-			function main(){
+			function mainSearch(){
 				window.addEventListener("resize", windowResized);
-				generateDummyData();
-				selectTab("friends_tab");
+				var searchTermDisplay = document.getElementById("searchTermDisplay");
+				searchTermDisplay.innerText = _searchElements.search_term;
+				selectTab("users_tab");
 				windowResized();
 			}
-			main();
-
+			mainSearch();
 		</script>
 	</div>
 

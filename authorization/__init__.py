@@ -1,6 +1,3 @@
-from .api import *
-
-# Django
 from django.apps import AppConfig
 
 

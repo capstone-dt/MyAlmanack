@@ -1,6 +1,8 @@
-django
-gunicorn
-django-heroku
-requests
-dj-database-url
+Django
+psycopg2
 firebase_admin
+fuzzywuzzy
+python-Levenshtein
+gunicorn
+dj-database-url
+whitenoise

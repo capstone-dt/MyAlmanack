@@ -1,8 +1,6 @@
-from .. import Subject
-
-# Django
-from django.contrib.auth import get_user_model
+from ..subject import Subject
+from authorization.information.models import User as WrappedUser
 
 
-class User(Subject):
-    _root = get_user_model()
+class User(Subject, WrappedUser):
+    pass

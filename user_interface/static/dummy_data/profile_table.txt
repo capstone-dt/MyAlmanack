@@ -1,0 +1,10 @@
+alias	contact_list_id	email_address	first_name	last_name	birth_date	phone_num	firebase_id	organization	user_events	user_desc
+janedoe1	1	janedoe1@gmail.com	Jane	Doe	852094800000    		0	Job		A simple person who acts as a test in everything ever.
+mark	55	mark@gmail.com	Mark	Bures	733982400000    		QOt1SQRzqdhFIOjmjuQQyOdnE8E2	Capstone		A dude who likes fortnite and epic W's.
+hadisoufi	28	hadisoufi@gmail.com	Hadi	Soufi	852094800000    		69	Tutoring		Lovable dude who is a great programmer and fun to hang out with.
+mike	95	mike.capstonetest@gmail.com	Michael	Resnik	864446400000    		XJWoEcF4qsToA0NHnKnaIlqBnfO2	Capstone		A dummy whos making dummy data
+jaccard	66	jaccard@gmail.com	Jaccard	Algorithm	852094800000    		666	Comp Sci		A famous programmer I guess
+nancyG	78	nancyG@gmail.com	Nancy	Green	315550800000    		77	UNCG		A professor at UNCG who teaches AI
+justin	77	justin.capstonetest@gmail.com	Justin	Oakley	852094800000    		aAJZUXy90gVVCOldBxIWLemSRS83	Capstone		Smart dude who makes pop culture references.
+pooya	52	pooya@gmail.com	Pooya	Motee	852094800000    		CzAtp4bgwpP4Aeoi3b8uGfB1DCD2	Capstone		The CALENDAR GUY who also gets EPIC W's
+hao	36	hao@gmail.com	Hao	Zhang	852094800000    		JrmjoHUyLqXgDZXsnwoqjFG3d8w1	Capstone		Dreamteam Programmer who is acting as a test user for this dummy data.
