@@ -2,6 +2,9 @@ from ..attributes.action import Action
 from ..enforcement.authorization_result import AuthorizationResult
 from ..utilities.reflection import assert_subclass
 
+# Python
+import traceback
+
 
 class DecisionAuthority:
     @classmethod
@@ -22,7 +25,10 @@ class DecisionAuthority:
                 else:
                     all_inapplicable = False
             except Exception as error:
-                print("Inapplicable policy:", error)
+                print(
+                    "Inapplicable policy: %s %s" % (type(error), error)
+                )
+                traceback.print_tb(error.__traceback__)
         
         # If we get to this point, then none of the policies evaluated to true.
         if all_inapplicable:

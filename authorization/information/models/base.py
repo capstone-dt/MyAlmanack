@@ -1,4 +1,5 @@
 from authorization.utilities.wrapper import Wrapper
+from authorization.utilities.reflection import get_class_name
 
 
 class ModelWrapper(Wrapper):
@@ -30,6 +31,27 @@ class ModelWrapper(Wrapper):
             # Caching is not possible. Simply create and return a new instance.
             return super().__new__(cls)
     """
+    
+    # This returns the UID of this wrapper instance.
+    @property
+    def uid(self):
+        raise NotImplementedError(
+            "The uid field has not been implemented for %s!" %
+            get_class_name(self)
+        )
+    
+    # This returns a wrapper instance in the database given their UID.
+    @classmethod
+    def from_uid(cls, uid):
+        raise NotImplementedError(
+            "The from_uid() method has not been implemented for %s!" %
+            get_class_name(cls)
+        )
+    
+    # This returns a set of wrapper instances in the database given their UIDs.
+    @classmethod
+    def from_uids(cls, uids):
+        return frozenset(cls.from_uid(uid) for uid in uids)
     
     def __eq__(self, other):
         return isinstance(other, ModelWrapper) and self.uid == other.uid
