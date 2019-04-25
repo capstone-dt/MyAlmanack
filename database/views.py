@@ -20,11 +20,11 @@ def firebaseIdToAlias(firebase_id):
 
 # INVITES
 # Generate invite_id based off the max id-value in the invite_id column.
-def generateInviteId():
-	if Invite.objects.all().count() == 0:
+def generateInviteId(Model):
+	if Model.objects.all().count() == 0:
 		return 0
 	else:
-		max_id_val = Invite.objects.aggregate(Max('invite_id'))
+		max_id_val = Model.objects.aggregate(Max('invite_id'))
 		return max_id_val['invite_id__max'] + 1
 
 
@@ -33,7 +33,7 @@ def generateInviteId():
 def sendFriendRequest(sender_firebase_id, receiver_firebase_id):
 	with connection.cursor() as cursor:
 		current_time = time.time()
-		i_id = generateInviteId()
+		i_id = generateInviteId(UserRequest)
 		# Get contact_list_ids for receiver and sender from Django models.
 		receiver_cl_id = Profile.objects.get(firebase_id = receiver_firebase_id).contact_list_id
 		sender_cl_id = Profile.objects.get(firebase_id = sender_firebase_id).contact_list_id
@@ -92,7 +92,7 @@ def getFriendRequestData(invite_id):
 def sendEventInvites(sender_firebase_id, receiver_firebase_ids, event_id):
 	with connection.cursor() as cursor:
 		current_time = time.time()
-		i_id = generateInviteId()
+		i_id = generateInviteId(EventInvite)
 		# Get contact_list_ids for receiver and sender from Django models.
 		receiver_cl_ids = [Profile.objects.get(firebase_id=fid).contact_list_id for fid in receiver_firebase_ids]
 		sender_cl_id = Profile.objects.get(firebase_id=sender_firebase_id).contact_list_id
@@ -151,7 +151,7 @@ def getEventInviteData(invite_id):
 def sendGroupInvites(group_id, receiver_firebase_ids):
 	with connection.cursor() as cursor:
 		current_time = time.time()
-		i_id = generateInviteId()
+		i_id = generateInviteId(GroupInvite)
 		# Get contact_list_id for receiver from Django models.
 		receiver_cl_ids = [Profile.objects.get(firebase_id = fid).contact_list_id for fid in receiver_firebase_ids]
 		# Create new event-invite using raw SQL query.
@@ -209,7 +209,7 @@ def getGroupInviteData(invite_id):
 def sendGroupRequest(group_id, sender_firebase_id):
 	with connection.cursor() as cursor:
 		current_time = time.time()
-		i_id = generateInviteId()
+		i_id = generateInviteId(GroupRequest)
 		# Get contact_list_id for sender from Django models.
 		sender_cl_id = Profile.objects.get(firebase_id=sender_firebase_id).contact_list_id
 		# Create new group-request using raw SQL query.
