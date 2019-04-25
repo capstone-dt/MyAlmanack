@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.urls import resolve
 from database.views import *
+from database.models import *
 from user_interface.forms import *
 import base64
 import os
@@ -277,13 +278,22 @@ def get_invite_data(request):
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
-# 404 View
+# Error Pages
 
 def redir404(request):
 	user_firebase_id = getCurrentFirebaseId(request)
 	return render(
 		request=request,
 		template_name='user_interface/404.html',
+		context={"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
+			"header_forms" : getHeaderForms(),}
+	)
+
+def redir403(request):
+	user_firebase_id = getCurrentFirebaseId(request)
+	return render(
+		request=request,
+		template_name='user_interface/403.html',
 		context={"user_header_database" : str(json.dumps(getHeaderDict(user_firebase_id))),
 			"header_forms" : getHeaderForms(),}
 	)
@@ -421,7 +431,7 @@ class ProfileView(TemplateView):
 
 		auth_result = authorization.api.authorize(
 			request,
-			action=authorization.api.actions.user.profile.ViewUserProfile,
+			action=authorization.api.actions.user.calendar.ViewUserCalendar,
 			resource=user,
 			redirect_403=False
 		)
@@ -792,7 +802,9 @@ def formController(request):
 	print(switchType)
 	#SearchTerm
 	if(switchType == "FriendResponse"):
-		respondFriend(request)
+		res = respondFriend(request)
+		if(res != None):
+			return res
 		return HttpResponseRedirect("/profile/")
 	elif(switchType == "SubmitEvent"):
 		submitEvent(request)
@@ -802,7 +814,7 @@ def formController(request):
 		print(friend_form)
 		add_alias = friend_form["FIreqalias"].value()
 		print(add_alias)
-		sendFriendRequestUI(user_firebase_id, add_alias)
+		sendFriendRequestUI(request, user_firebase_id, add_alias)
 		return HttpResponseRedirect("/profile/" + add_alias)
 	elif(switchType == "FriendRemove"):
 		removeFriend(request)
@@ -861,6 +873,35 @@ def respondFriend(request):
 		action = True
 	else:
 		action = False
+
+	req_data = getFriendRequestData(invite_id)
+	sender_id = req_data["sender_id"]
+	receiver_id = req_data["receiver_id"]
+
+	user_request = None
+	user_request = UserRequest.objects.get(invite_id=invite_id)
+
+	if(action == True):
+		# user.invite.AcceptUserInvite(subject=User|Profile, resource=UserRequest)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.user.invite.AcceptUserInvite,
+			resource=user_request,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			return redir403(request)
+	else:
+		# user.invite.RejectUserInvite(subject=User|Profile, resource=UserRequest)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.user.invite.RejectUserInvite,
+			resource=user_request,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			return redir403(request)
+
 	actionFriendRequest(invite_id, action)
 
 def submitEvent(request):
@@ -946,9 +987,25 @@ def respondGroup(request):
 	actionGroupInvite(invite_id, user_firebase_id, action)
 
 
-
-def sendFriendRequestUI(sender_firebase_id, reciever_alias):
+def sendFriendRequestUI(request, sender_firebase_id, reciever_alias):
 	reciever_firebase_id = aliasToFirebaseId(reciever_alias)
+
+	user = None
+	try:
+		user = get_user_model().objects.get(username=reciever_firebase_id)
+	except get_user_model().DoesNotExist:
+		return redir404(request)
+
+	# user.invite.SendUserInvite(subject=User|Profile, resource=User|Profile)
+	auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.user.invite.SendUserInvite,
+			resource=user,
+			redirect_403=False
+		)
+	if(auth_result == False):
+		return redir403(request)
+
 	sendFriendRequest(sender_firebase_id, reciever_firebase_id)
 
 def editProfile(request):
