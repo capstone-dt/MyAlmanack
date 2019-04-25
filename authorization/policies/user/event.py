@@ -22,11 +22,11 @@ class UserIsEventCreator(Policy):
         return request.subject.uid == request.resource.creator_uid
 
 
-# This checks whether a user resource is the creator of an event context.
-class UserResourceIsEventContextCreator(Policy):
+# This checks whether a user subject is the creator of an event context.
+class UserIsEventContextCreator(Policy):
     @classmethod
     def evaluate(cls, request):
-        return request.resource.uid == request.context.creator_uid
+        return request.subject.uid == request.context.creator_uid
 
 
 # This checks whether a user subject is an administrator of an event resource.
@@ -36,11 +36,11 @@ class UserIsEventAdministrator(Policy):
         return request.subject.uid in request.resource.administrator_uids
 
 
-# This checks whether a user resource is an administrator of an event context.
-class UserResourceIsEventContextAdministrator(Policy):
+# This checks whether a user subject is an administrator of an event context.
+class UserIsEventContextAdministrator(Policy):
     @classmethod
     def evaluate(cls, request):
-        return request.resource.uid in request.context.administrator_uids
+        return request.subject.uid in request.context.administrator_uids
 
 
 # This checks whether a user subject is a participant of an event resource.

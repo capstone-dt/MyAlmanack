@@ -29,7 +29,7 @@ class SendGroupInvite(UserToUserAction):
         ~policies.miscellaneous.SubjectIsResource
         
         # A user must be a group administrator.
-        & policies.user.group.UserResourceIsGroupContextAdministrator
+        & policies.user.group.UserIsGroupContextAdministrator
         
         # A user cannot send a group invite to someone who's already in the
         #     group.

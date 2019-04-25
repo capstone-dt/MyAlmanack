@@ -53,7 +53,7 @@ class Event(models.Model):
 
 
 class EventInvite(Invite):
-	event_id = models.ForeignKey('Event', models.CASCADE)
+	event_id = models.ForeignKey('Event', models.CASCADE, db_column='event_id')
 	invited_users = ArrayField(models.CharField(max_length=128, blank=True, null=True))
 
 	class Meta:
