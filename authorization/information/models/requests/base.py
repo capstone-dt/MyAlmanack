@@ -1,36 +1,38 @@
-from ..invites.base import Invite
+from ..base import ModelWrapper
 from authorization.utilities.decorators import classproperty
-from authorization.utilities.reflection import get_class_name
+
+# MyAlmanack database (Justin's subsystem)
+from database.models import Invite as _Invite
 
 
-# A request is actually just a sub-type of invite.
-class Request(Invite):
+class Request(ModelWrapper):
+    """
+    Wrapper-related
+    """
+    
+    # A request is actually just a sub-type of invite.
+    _root = _Invite
+    
+    # This returns the UID of this invite.
+    @property
+    def uid(self):
+        return self._object.invite_id
+    
+    # This returns an invite in the database given its UID.
+    @classmethod
+    def from_uid(cls, uid):
+        return cls(cls._root.objects.get(invite_id=uid))
+    
     """
     Class properties and methods
     """
     
-    # This returns the UIDs of all the requests in the database.
+    # This returns the UIDs of all the invites in the database.
     @classproperty
     def all_request_uids(cls):
-        return super().all_invite_uids(cls)
+        return frozenset(invite.invite_id for invite in cls._root.objects.all())
     
-    # This returns all the requests in the database.
+    # This returns all the invites in the database.
     @classproperty
     def all_requests(cls):
-        return super().all_invites(cls)
-    
-    # Disable the all_invite_uids field from the Invite wrapper.
-    @classproperty
-    def all_invite_uids(cls):
-        raise NotImplementedError(
-            "The all_invite_uids field has been disabled for %s!" %
-            get_class_name(cls)
-        )
-    
-    # Disable the all_invites field from the Invite wrapper.
-    @classproperty
-    def all_invites(cls):
-        raise NotImplementedError(
-            "The all_invites field has been disabled for %s!" %
-            get_class_name(cls)
-        )
+        return frozenset(cls(invite) for invite in cls._root.objects.all())
