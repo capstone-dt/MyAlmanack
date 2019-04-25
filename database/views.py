@@ -75,6 +75,8 @@ def actionFriendRequest(invite_id, accept):
 		# Remove sender's incoming user requests using raw SQL query.
 		cursor.execute('UPDATE "Contact_List" SET sent_friend_requests = array_remove(sent_friend_requests, (SELECT CAST (%s AS SMALLINT)))'
 			+ ' WHERE contact_list_id = %s', [invite_id, sender_cl_id])
+		# Remove the record from the User_Request table as well.
+		cursor.execute('DELETE FROM "User_Request" WHERE invite_id = (SELECT CAST (%s AS SMALLINT))', [invite_id])
 
 # Get friend-request data based on invite_id.
 def getFriendRequestData(invite_id):
