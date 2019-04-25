@@ -81,6 +81,8 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 	user_events = []
 	if(profile_data['user_events'] != None):
 		user_events = getUserEvents(user_firebase_id)
+	for ev in user_events:
+		ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
 	retDict["calendar_data"]["user_events"] = user_events
 	if(mode == "USER"):
 		data_contact_list = getContactListData(user_firebase_id)
@@ -97,7 +99,9 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 			curr_events_friend = []
 			if(member_profile_data["user_events"] != None):
 				curr_events_friend = getUserEvents(f_id)
-			for ev in curr_events_friend:
+			filteredEvents = filterAccessFriendEvents(curr_events_friend, user_firebase_id)
+			for ev in filteredEvents:
+				ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
 				curr_dict_f["participating_events"].append(ev)
 			member_events.append(curr_dict_f)
 			member_info.append(member_profile_data)
@@ -134,7 +138,20 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 			curr_dict_m = {}
 			curr_dict_m["firebase_id"] = member
 			curr_dict_m["participating_events"] = []
+			is_friend = False
+			data_contact_list = getContactListData(user_firebase_id)
+			database_contact_ids = data_contact_list["contact_names"]
+			if(database_contact_ids == None):
+				database_contact_ids = []
+			for friend_id in database_contact_ids:
+				if(friend_id == member):
+					is_friend = True
+			if(is_friend == False):
+				temp_events = genAllHiddenEvents(temp_events)
+			else:
+				temp_events = filterAccessFriendEvents(temp_events, user_firebase_id)
 			for ev in temp_events:
+				ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
 				curr_dict_m["participating_events"].append(ev)
 			retDict["calendar_data"]["member_events"].append(curr_dict_m)
 	return retDict
@@ -153,24 +170,27 @@ def genHiddenEvent(passed_event):
 	hiddenstruct["isHidden"] = "true"
 	return hiddenstruct
 
-def filterAccessFriendEvents(friend_events, user_alias):
-	print("FILTER FRIEND EVENTS", user_alias)
+def genAllHiddenEvents(passed_events):
+	retArray = []
+	for ev in passed_events:
+		retArray.append(genHiddenEvent(ev))
+	return retArray
+
+def filterAccessFriendEvents(friend_events, user_firebase_id):
 	ret_filtered = []
 	for temp_event in friend_events:
-		whitelist_str = temp_event["whitelist"].replace(" ", "")
-		blacklist_str = temp_event["blacklist"].replace(" ", "")
-		whitelist = whitelist_str.split(",");
-		blacklist = blacklist_str.split(",");
+		whitelist = temp_event["whitelist"];
+		blacklist = temp_event["blacklist"];
 		whitelist_empty = False
 		blacklist_empty = False
-		if len(whitelist_str) == 0:
+		if len(whitelist) == 0:
 			whitelist_empty = True
-		if len(blacklist_str) == 0:
+		if len(blacklist) == 0:
 			blacklist_empty = True
 		if whitelist_empty and blacklist_empty == False:
 			isblacklisted = False
 			for blacklisted in blacklist:
-				if blacklisted == user_alias:
+				if blacklisted == user_firebase_id:
 					isblacklisted = True
 					break
 			if isblacklisted:
@@ -180,7 +200,7 @@ def filterAccessFriendEvents(friend_events, user_alias):
 		if whitelist_empty == False and blacklist_empty:
 			iswhitelisted = False
 			for whitelisted in whitelist:
-				if whitelisted == user_alias:
+				if whitelisted == user_firebase_id:
 					iswhitelisted = True
 					break
 			if iswhitelisted == False:
@@ -1087,7 +1107,7 @@ def sendFriendRequestUI(request, sender_firebase_id, reciever_alias):
 	user = None
 	try:
 		user = get_user_model().objects.get(username=reciever_firebase_id)
-	except get_user_model().DoesNotExist:
+	except:
 		return redir404(request)
 
 	# user.invite.SendUserInvite(subject=User|Profile, resource=User|Profile)
