@@ -172,7 +172,7 @@ function populateViewSelect(event_id){
 	var displayEventEnd = document.getElementById("displayEventEnd");
 	var view_event = getEventById(event_id);
 	// console.log("populate", view_event);
-	displayEventCreator.innerText = "@" + firebaseIDtoAlias(view_event.event_creator_firebase_id);
+	displayEventCreator.innerText = "@" + view_event.event_creator_alias;
 	displayEventCreator.setAttribute("href", "javascript:redir('redirfb/" + view_event.event_creator_firebase_id + "');");
 	displayEventName.innerText = view_event.event_title;
 	displayEventDescription.innerText = view_event.description;
