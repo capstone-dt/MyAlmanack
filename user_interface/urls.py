@@ -26,8 +26,6 @@ urlpatterns = [
 	path("ajax/validate_alias/", views.validate_alias, name="validate_alias"),
 	path("ajax/validate_group_name/", views.validate_group_name, name="validate_group_name"),
 	path("ajax/get_invite_data/", views.get_invite_data, name="get_invite_data"),
-	path("default", views.DefaultView.as_view(), name="default"),
-	path("default/", views.DefaultView.as_view(), name="default"),
 	path("search", views.SearchView.as_view(), name="search"),
 	path("search/", views.SearchView.as_view(), name="search"),
 	# All other patterns goto 404 page.

@@ -1,4 +1,4 @@
-//Adds numbers based on the dimensions passed
+// GLOBALS
 var _cont_id = "cal_grid_cont";
 var _switchType = "month";
 var _select_class = "calSelect";
@@ -35,11 +35,12 @@ var timeout_mil = 20;
 var _calendar_mode = "";
 var _name_selected = "";
 var _calendar_struct = {};
-// Friends enabled test
+
 
 /*
 JS OUTLINE:
 RESIZING
+MODALS
 CALENDAR
 EVENTS
 MAIN
@@ -125,6 +126,46 @@ function clickAnywhere(event){
 		}
 	}
 }
+
+function ensureBoxSize(){
+	// console.log(calArray);
+	switch(_switchType){
+		case "month":
+			// change height of each row to be the width of one column
+			var curr_width;
+			var dayBound = calArray[0][0].getBoundingClientRect();
+			var rows = document.getElementsByClassName("calWeek");
+			for(var i = 0; i < rows.length; i++){
+				rows[i].style.height = dayBound.width 
+				+ "px";
+			}
+			break;
+		default:
+	}
+}
+function getResponsiveBreakpoint() {
+    var envs = ["xs", "sm", "md", "lg"];
+    var env = "";
+
+    var $el = $("<div>");
+    $el.appendTo($("body"));
+
+    for (var i = envs.length - 1; i >= 0; i--) {
+        env = envs[i];
+        $el.addClass("d-" + env + "-none");;
+        if ($el.is(":hidden")) {
+            break; // env detected
+        }
+    }
+    $el.remove();
+    return env;
+}
+
+
+// -----------------------------------------------------------------
+
+// MODALS
+
 function clearShowEvents(){
 	var view_events_div = document.getElementById("viewEventsScrollCont");
 	while(view_events_div.firstChild){
@@ -202,7 +243,6 @@ function formatTimeHTML(dateObj){
 	return h + ":" + m;
 }
 
-
 function populateEditSelect(event_id){
 	var edit_event_id = document.getElementById("id_EIediteventid");
 	edit_event_id.value = event_id;
@@ -246,7 +286,6 @@ function clickedViewSelect(event_id_clicked){
 
 }
 
-
 function populateShowEvents(clicked_structs){
 	var view_events_div = document.getElementById("viewEventsScrollCont");
 	console.log("populateShowEvents");
@@ -267,10 +306,12 @@ function populateShowEvents(clicked_structs){
 		view_events_div.appendChild(curr_elem);
 	}
 }
+
 function showEventsModal(){
 	var open_events = document.getElementById("viewEventsOpenButton");
 	open_events.click();
 }
+
 function allModalsClosed(){
 	var allModals = document.getElementsByClassName("modal");
 	for(var i = 0; i < allModals.length; i++){
@@ -281,6 +322,7 @@ function allModalsClosed(){
 	}
 	return true;
 }
+
 function allDropdownsClosed(){
 	var allDropdowns = document.getElementsByClassName("dropdown-menu");
 	for(var i = 0; i < allDropdowns.length; i++){
@@ -293,39 +335,7 @@ function allDropdownsClosed(){
 }
 
 
-function ensureBoxSize(){
-	// console.log(calArray);
-	switch(_switchType){
-		case "month":
-			// change height of each row to be the width of one column
-			var curr_width;
-			var dayBound = calArray[0][0].getBoundingClientRect();
-			var rows = document.getElementsByClassName("calWeek");
-			for(var i = 0; i < rows.length; i++){
-				rows[i].style.height = dayBound.width 
-				+ "px";
-			}
-			break;
-		default:
-	}
-}
-function getResponsiveBreakpoint() {
-    var envs = ["xs", "sm", "md", "lg"];
-    var env = "";
 
-    var $el = $("<div>");
-    $el.appendTo($("body"));
-
-    for (var i = envs.length - 1; i >= 0; i--) {
-        env = envs[i];
-        $el.addClass("d-" + env + "-none");;
-        if ($el.is(":hidden")) {
-            break; // env detected
-        }
-    }
-    $el.remove();
-    return env;
-}
 // -----------------------------------------------------------------
 
 // DRAW CALENDAR
@@ -1149,7 +1159,7 @@ function switchCalendarView(cont_id, switchType){
 	cont_div.innerHTML = "";
 	if(window.scrollY != 0){
 		_prev_scroll_y = window.scrollY;
-		console.log("scroll_y", _prev_scroll_y);
+		// console.log("scroll_y", _prev_scroll_y);
 	}
 	_switchType = switchType;
 	clearEvents();
@@ -1398,9 +1408,9 @@ function getEventsCurrMonthMembers(){
 }
 
 function getEventsCurrMonthSelected(){
-	console.log("getEventsCurrMonthSelected");
+	// console.log("getEventsCurrMonthSelected");
 	var selected_members = getMembersSelected();
-	console.log(selected_members);
+	// console.log(selected_members);
 	if(selected_members.length == 0){
 		return [];
 	}
@@ -2044,17 +2054,22 @@ function drawEventSafe_m(start, end, event_object){
 		var curr_start = curr_struct.range[0];
 		var width = curr_struct.range[1] - curr_start + 1;
 		// console.log(curr_struct);
+		event_object.split_tag = index;
 		drawEventUnsafe_m(curr_start, width, curr_struct.flags, event_object);
 	}
 }
 function drawEventSafe_m_color(start, end, event_object, color){
 	var event_id = event_object.event_id;
 	var event_split = splitEvent(start, end);
+	if(event_object.event_id == 24){
+		console.log(event_split);
+	}
 	for(var index = 0; index < event_split.length; index++){
 		var curr_struct = event_split[index];
 		var curr_start = curr_struct.range[0];
 		var width = curr_struct.range[1] - curr_start + 1;
 		// console.log(curr_struct);
+		event_object.split_tag = index;
 		drawEventUnsafe_m_color(curr_start, width, curr_struct.flags, event_object, color);
 	}
 }
@@ -2185,7 +2200,9 @@ function drawEventUnsafe_m_color(start, day_width, flags, event_object, color){
 	+ "left:" + (rect.left + x_offset_px_l) + "px;" 
 	+ "width:" + width + "px;";
 	divToAdd.setAttribute( "onClick", "javascript: eventClicked(" + event_object.event_id + ");" );
-	divToAdd.id = "m" + event_object.event_id + flags + "" + event_object.start_date + "-" + event_object.end_date;
+	divToAdd.id = "m" + event_object.event_id + flags + "" + event_object.start_date + "-" + event_object.end_date + "_" + event_object.split_tag
+	+ "_" + start + ":" + day_width;
+
 	if(document.getElementById(divToAdd.id) == null){
 		document.body.appendChild(divToAdd);
 		eventDivArray.push(divToAdd);
@@ -2201,6 +2218,7 @@ function drawEventUnsafe_m_color(start, day_width, flags, event_object, color){
 	if(contains == false){
 		populatedEvents.push(new_struct);
 		// console.log(populatedEvents);
+	}else{
 	}
 	// console.log(divToAdd);
 }
@@ -2328,7 +2346,9 @@ function containsStruct(curr_struct){
 	for(var i = 0; i < populatedEvents.length; i++){
 		if(populatedEvents[i].event_object.event_id == curr_struct.event_object.event_id && 
 			populatedEvents[i].start == curr_struct.start && 
-			populatedEvents[i].day_width == curr_struct.day_width){
+			populatedEvents[i].day_width == curr_struct.day_width && 
+			populatedEvents[i].event_object.tag_id == curr_struct.event_object.tag_id && 
+			populatedEvents[i].event_object.split_tag == curr_struct.event_object.split_tag){
 			contains = true;
 			break;
 		}
@@ -2340,7 +2360,8 @@ function containsStruct_w(curr_struct){
 	for(var i = 0; i < populatedEvents_w.length; i++){
 		if(populatedEvents_w[i].event_object.start_date == curr_struct.event_object.start_date
 			&& populatedEvents_w[i].event_object.start_date == curr_struct.event_object.start_date &&
-			populatedEvents_w[i].event_object.event_id == curr_struct.event_object.event_id){
+			populatedEvents_w[i].event_object.event_id == curr_struct.event_object.event_id &&
+			populatedEvents_w[i].event_object.tag_id == curr_struct.event_object.tag_id){
 			contains = true;
 			break;
 		}
@@ -2352,7 +2373,8 @@ function containsStruct_d(curr_struct){
 	for(var i = 0; i < populatedEvents_d.length; i++){
 		if(populatedEvents_d[i].event_object.start_date == curr_struct.event_object.start_date
 			&& populatedEvents_d[i].event_object.end_date == curr_struct.event_object.end_date &&
-			populatedEvents_d[i].event_object.event_id == curr_struct.event_object.event_id){
+			populatedEvents_d[i].event_object.event_id == curr_struct.event_object.event_id && 
+			populatedEvents_d[i].event_object.tag_id == curr_struct.event_object.tag_id){
 			contains = true;
 			break;
 		}
@@ -2398,7 +2420,7 @@ function addEventsM(){
 }
 // -----------------------------------------------------------------
 
-// DUMMY DATA
+// EVENT HANDLING
 
 function getEventStruct(_event_id){
 	console.log("getEventStruct", _event_id);
@@ -2416,9 +2438,96 @@ function getEventStruct(_event_id){
 	}
 }
 
+function testMultiMonthSplit(){
+	var e1 = {};
+	e1.start_date = new Date("April 1 2019").getTime();
+	e1.end_date = new Date("July 20 2019").getTime();
+	e1.event_id = 20;
+	var res1 = multiMonthSplit(e1);
+	for(var i = 0;  i < res1.length; i++){
+		console.log(new Date(res1[i].start_date), new Date(res1[i].end_date));
+	}
+	console.log(res1);
+
+}
+
+// Deep cloning functions don't work for multi month split
+function noviceEventClone(event_passed){
+	var retClone = {};
+	retClone.start_date = event_passed.start_date;
+	retClone.end_date = event_passed.end_date;
+	retClone.event_id = event_passed.event_id;
+	return retClone;
+}
+
+function getTotalMonths(event_passed){
+	var startDateObj = new Date(event_passed.start_date);
+	var endDateObj = new Date(event_passed.end_date);
+	console.log(startDateObj, endDateObj);
+	var d_m = endDateObj.getMonth() - startDateObj.getMonth();
+	var d_y = parseInt(endDateObj.getFullYear()) - parseInt(startDateObj.getFullYear());
+	var totalMonths = d_m + d_y*12;
+	return totalMonths;
+}
+
+function multiMonthSplit(event_passed){
+	var startDateObj = new Date(event_passed.start_date);
+	var endDateObj = new Date(event_passed.end_date);
+	if(startDateObj.getMonth() == endDateObj.getMonth() &&
+		startDateObj.getFullYear() == endDateObj.getFullYear()){
+		event_passed.tag_id = "0";
+		return [event_passed];
+	}
+	var d_m = endDateObj.getMonth() - startDateObj.getMonth();
+	var d_y = parseInt(endDateObj.getFullYear()) - parseInt(startDateObj.getFullYear());
+	var totalMonths = d_m + d_y*12;
+	var retArray = [];
+	var initDate = noviceEventClone(event_passed);
+	initDate.start_date = event_passed.start_date;
+	var start_curr_month_affected = new Date(new Date(event_passed.start_date).setHours(23, 59, 59));
+	start_curr_month_affected = new Date(start_curr_month_affected.setMonth(start_curr_month_affected.getMonth() + 1));
+	start_curr_month_affected = new Date(start_curr_month_affected.setDate(0));
+	initDate.end_date = start_curr_month_affected.getTime();
+	initDate.tag_id = "0";
+	retArray.push(initDate);
+	for (var i = 1; i < totalMonths; i++) {
+		var deep_clone = noviceEventClone(event_passed);
+		var curr_month_affected_s = new Date(event_passed.start_date);
+		curr_month_affected_s = new Date(curr_month_affected_s.setHours(0,0,0));
+		curr_month_affected_s = new Date(curr_month_affected_s.setMonth(curr_month_affected_s.getMonth() + i));
+		curr_month_affected_s = new Date(curr_month_affected_s.setDate(1));
+		deep_clone.start_date = curr_month_affected_s.getTime();
+		var curr_month_affected_e = new Date(curr_month_affected_s.getTime());
+		curr_month_affected_e = new Date(curr_month_affected_e.setHours(23,59,59));
+		curr_month_affected_e = new Date(curr_month_affected_e.setMonth(curr_month_affected_e.getMonth() + 1));
+		curr_month_affected_e = new Date(curr_month_affected_e.setDate(0));
+		deep_clone.end_date = curr_month_affected_e.getTime();
+		deep_clone.tag_id = "" + i;
+		retArray.push(deep_clone);
+	}
+	var postDate = noviceEventClone(event_passed);
+	postDate.end_date = event_passed.end_date;
+	var end_curr_month_affected = new Date(new Date(event_passed.end_date).setHours(0, 0, 0));
+	end_curr_month_affected = new Date(end_curr_month_affected.setMonth(end_curr_month_affected.getMonth()));
+	end_curr_month_affected = new Date(end_curr_month_affected.setDate(1));
+	postDate.start_date = end_curr_month_affected.getTime();
+	postDate.tag_id = "" + totalMonths;
+	retArray.push(postDate);
+
+	return retArray;
+}
+
 function loadUserEvents(){
+	var split_all = [];
 	for(var i = 0; i < user_events_all.length; i++){
 		var curr_event = user_events_all[i];
+		var res1 = multiMonthSplit(curr_event);
+		for(var j = 0;  j < res1.length; j++){
+			split_all.push(res1[j]);
+		}
+	}
+	for(var i = 0; i < split_all.length; i++){
+		var curr_event = split_all[i];
 		populateEventStructure_m(curr_event, user_color);
 		populateEventStructure_w(curr_event, user_color);
 		populateEventStructure_d(curr_event, user_color);
@@ -2428,8 +2537,16 @@ function loadUserEvents(){
 	addEvents();
 }
 function loadMemberEvents(){
+	var split_all = [];
 	for(var i = 0; i < member_events_all.length; i++){
 		var curr_event = member_events_all[i];
+		var res1 = multiMonthSplit(curr_event);
+		for(var j = 0;  j < res1.length; j++){
+			split_all.push(res1[j]);
+		}
+	}
+	for(var i = 0; i < split_all.length; i++){
+		var curr_event = split_all[i];
 		if(curr_event.isHidden != undefined && curr_event.isHidden){
 			populateEventStructure_m(curr_event, hidden_color);
 			populateEventStructure_w(curr_event, hidden_color);
