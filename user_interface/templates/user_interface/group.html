@@ -46,9 +46,20 @@
 		</div>
 		</div>
 	</div>
+
+
+<form action="/profile/" method="post">
+	{% csrf_token %}
+	{{ group_forms.inviteMembers.as_ul }}
+	<script type="text/javascript">
+		console.log("group_forms", "{{ group_forms}}");
+	</script>
+	<input type="hidden" name="formType" value="GroupInvite">
+	<input type="submit" style="display: none;" id="submitInviteMembers">
+</form>
 	<div class="row">
 		<div class="container">
-		<h3>Members</h3>
+		<h3>Members <i class="addMember material-icons right" id="addMemberID" style="display:none;" href="#" data-toggle="modal" data-target="#inviteMemberModal">add_circle_outline</i></h3>
 		<div class="container-fluid admin">
 			<div class="row flex-row flex-nowrap" id="member_cont_div">
 			</div>
@@ -57,6 +68,164 @@
 	</div>
 	<hr>
 </div>
+
+
+<div class="modal fade" id="inviteMemberModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	  <div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<h5 class="modal-title" id="inviteMemberModalLongTitle">Invite Members</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			  <span aria-hidden="true">&times;</span>
+			</button>
+		  </div>
+		  <div class="modal-body">
+				<div class="form-group">
+					<label for="groupMemberInvites_select_dropdown_button">Invites</label>
+					<div class="dropdown" >
+					  <button class="btn btn-secondary dropdown-toggle" type="button" id="groupMemberInvites_select_dropdown_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: black;">
+					    <div id="groupMemberInviteNameId" style="color:black;">
+					    	Select members to invite...
+					    </div>
+					  </button>
+					  <div class="dropdown-menu friendsSelectDropdown overAll" aria-labelledby="groupMemberInvites_select_dropdown_button"
+					  	style="position:absolute; z-index: 20;" id="groupMemberInvites_select_dropdown">
+					  </div>
+					</div>
+					<script type="text/javascript">
+						$(document).ready(function() {
+							populateGroupMemberInviteSelectDropdown();
+						});
+						var group_member_invite_ids = [];
+						function populateGroupMemberInviteSelectDropdown(){
+							var friends_to_pop = database_header_info.friend_info;
+							var groupMemberInvitesSelectDropdown = document.getElementById("groupMemberInvites_select_dropdown");
+
+							var filtered_friends = [];
+							for(var i = 0; i < friends_to_pop.length; i++){
+								var curr_friend = friends_to_pop[i];
+								var contains_member = false;
+								for(var j = 0; j < group_dict.members.length; j++){
+									var curr_member = group_dict.members[j];
+									if(curr_friend.firebase_id == curr_member.firebase_id){
+										contains_member = true;
+										break;
+									}
+								}
+								if(contains_member == false){
+									filtered_friends.push(curr_friend);
+								}
+							}
+
+
+							for(var i = 0; i < filtered_friends.length; i++){
+								var curr_friend = filtered_friends[i];
+								var curr_a = document.createElement("a");
+								curr_a.className = "dropdown-item";
+								var temp_id = curr_friend.alias + "_check_gi";
+								curr_a.href = "#";
+								curr_a.setAttribute("onclick", "checkMemberGroupInviteSelect('" + temp_id + "')");
+								var curr_label = document.createElement("label");
+								curr_label.className = "check_container";
+								curr_label.innerText = curr_friend.first_name + " " + curr_friend.last_name;
+								var curr_input = document.createElement("input");
+								curr_input.type = "checkbox";
+								curr_input.id = temp_id;
+								curr_input.setAttribute("alias", curr_friend.alias);
+								var curr_span = document.createElement("span");
+								curr_span.className = "checkmark";
+								curr_label.appendChild(curr_input);
+								curr_label.appendChild(curr_span);
+								curr_a.appendChild(curr_label);
+								var temp_form = document.createElement('form');
+								temp_form.appendChild(curr_a);
+								groupMemberInvitesSelectDropdown.appendChild(temp_form);
+								group_member_invite_ids.push({"check_id" : temp_id, "alias" : curr_friend.alias, "firebase_id" : curr_friend.firebase_id});
+							}
+						}
+						function checkMemberGroupInviteSelect(sel_id){
+							var check_input = document.getElementById(sel_id);
+							if(check_input.checked){
+								check_input.checked = false;
+								check_input.setAttribute("flag", "false");
+							}else{
+								check_input.checked = true;
+								check_input.setAttribute("flag", "true");
+							}
+							var groupInviteTitle = document.getElementById("groupMemberInviteNameId");
+							var str_place = "";
+							var groupMemberInvitesSelected = getGroupMemberInvitesSelected();
+							for(var i = 0; i < groupMemberInvitesSelected.length; i++){
+								str_place += "@" + groupMemberInvitesSelected[i];
+								if(i != groupMemberInvitesSelected.length - 1){
+									str_place += ", ";
+								}
+							}
+							groupInviteTitle.innerText = str_place;
+							if(str_place == ""){
+								groupInviteTitle.innerText = 'Select members to invite...'
+							}
+							remainderEditGroupMembers();
+						}
+						function getGroupMemberInvitesSelected(){
+							var valid = [];
+							for(var i = 0; i < group_member_invite_ids.length; i++){
+								var curr_div = document.getElementById(group_member_invite_ids[i].check_id);
+								if(curr_div.getAttribute("flag") == "true"){
+									valid.push(group_member_invite_ids[i].alias);
+								}
+							}
+							return valid;
+						}
+						function getGroupMemberInvitesSelectedFirebase(){
+							var valid = [];
+							for(var i = 0; i < group_member_invite_ids.length; i++){
+								var curr_div = document.getElementById(group_member_invite_ids[i].check_id);
+								if(curr_div.getAttribute("flag") == "true"){
+									valid.push(group_member_invite_ids[i].firebase_id);
+								}
+							}
+							return valid;
+						}
+					</script>
+				</div>
+				<script type="text/javascript">
+
+					function remainderEditGroupMembers(){
+
+						var form_group_name = document.getElementById("id_GIname");
+						form_group_name.value = group_dict.group_name;
+
+						var form_group_inv = document.getElementById("id_GIinvite_members");
+						var firebase_selected_group = getGroupMemberInvitesSelectedFirebase();
+						var temp_string = "";
+						for(var i = 0; i < firebase_selected_group.length; i++){
+							temp_string += firebase_selected_group[i];
+							if(i != firebase_selected_group.length - 1){
+								temp_string += ",";
+							}
+						}
+						console.log("remainderEditGroup invites:", temp_string);
+						form_group_inv.value = temp_string;
+					}
+
+
+					function updateAndClickGroupMembers(){
+						console.log("updateAndClickGroup");
+						remainderEditGroupMembers();
+						var submitButton = document.getElementById("submitInviteMembers");
+						submitButton.click();
+					}
+
+
+				</script>
+				<input type="button" class="confirmButton" style="width:100%; height:50px;" value="Send Invites" onclick="updateAndClickGroupMembers();">
+		  </div>
+		</div>
+	  </div>
+	</div>
+
+
 
 <div id="calendarLoc">
 	{% with calendarFrame as sub_template %}
@@ -118,6 +287,9 @@
 	.cust-card{
 		width: 300px;
 	}
+	.addMember{
+		cursor: pointer;
+	}
 </style>
 
 <script type="text/javascript">
@@ -142,6 +314,10 @@
 		leave_submit.click();
 	}
 
+	function addMemberClicked(){
+
+	}
+
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
 	// 						GROUP DISPLAY LOGIC
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - //
@@ -160,16 +336,22 @@
 			leaveGroupButton.style.display = "block";
 			var joinGroupButton = document.getElementById("joinGroupButton");
 			joinGroupButton.style.display = "none";
+			var addMemberButton = document.getElementById("addMemberID");
+			addMemberButton.style.display = "none";
 		}else if (group_dict.status == "ADMIN"){
 			var leaveGroupButton = document.getElementById("leaveGroupButton");
 			leaveGroupButton.style.display = "none";
 			var joinGroupButton = document.getElementById("joinGroupButton");
 			joinGroupButton.style.display = "none";
+			var addMemberButton = document.getElementById("addMemberID");
+			addMemberButton.style.display = "inline-block";
 		}else{
 			var joinGroupButton = document.getElementById("joinGroupButton");
 			joinGroupButton.style.display = "block";
 			var leaveGroupButton = document.getElementById("leaveGroupButton");
 			leaveGroupButton.style.display = "none";
+			var addMemberButton = document.getElementById("addMemberID");
+			addMemberButton.style.display = "none";
 		}
 	}
 
