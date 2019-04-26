@@ -41,45 +41,7 @@
 		<div class="form-inline justify-content-center" style="width:75%;" action="#">
 		  <input class="form-control searchStyle" type="text" placeholder="Search" style="width:100%;" onclick="searchBarUpdate();" onchange="searchBarUpdate();" onkeypress="searchBarUpdate();" onpaste="searchBarUpdate();" oninput="searchBarUpdate();" id="firstSearch">
 		  <script type="text/javascript">
-			$(document).ready(function(){
-				$("form").each(function(){
-					var curr = $(this);
-					var allowed = false;
-					for(var i = 0; i < curr.length; i++){
-						if(curr[i].className == "canEnter"){
-							allowed = true;
-							break;
-						}
-					}
-					if(allowed == false){
-						curr.keydown(function(event){
-							if(event.keyCode == 13) {
-							  event.preventDefault();
-							  return false;
-							}
-						  });
-					}
-				});
-				$('#firstSearch').keypress(function(e){
-				  if(e.keyCode==13){
-					console.log("enter pressed");
-					searchBarUpdate();
-					submitSearch();
-				  }
-				});
-			});
-			function searchBarUpdate(){
-				var search_form_param = document.getElementById("id_SIstring");
-				var firstSearch = document.getElementById("firstSearch");
-				search_form_param.value = firstSearch.value;
-				if(firstSearch.value == ""){
-					search_form_param.value = " ";
-				}
-			}
-			function submitSearch(){
-				var search_submit_button = document.getElementById("searchSubmitButton");
-				search_submit_button.click();
-			}
+			
 		  </script>
 		</div>
 		<ul class= "navbar-nav ml-auto">
@@ -234,6 +196,47 @@
 	<script type="text/javascript">
 		var database_header_info = parseQuotesJson("{{user_header_database}}");
 		console.log("database_header_info", database_header_info);
+
+
+		$(document).ready(function(){
+			$("form").each(function(){
+				var curr = $(this);
+				var allowed = false;
+				for(var i = 0; i < curr.length; i++){
+					if(curr[i].className == "canEnter"){
+						allowed = true;
+						break;
+					}
+				}
+				if(allowed == false){
+					curr.keydown(function(event){
+						if(event.keyCode == 13) {
+						  event.preventDefault();
+						  return false;
+						}
+					  });
+				}
+			});
+			$('#firstSearch').keypress(function(e){
+			  if(e.keyCode==13){
+				console.log("enter pressed");
+				searchBarUpdate();
+				submitSearch();
+			  }
+			});
+		});
+		function searchBarUpdate(){
+			var search_form_param = document.getElementById("id_SIstring");
+			var firstSearch = document.getElementById("firstSearch");
+			search_form_param.value = firstSearch.value;
+			if(firstSearch.value == ""){
+				search_form_param.value = " ";
+			}
+		}
+		function submitSearch(){
+			var search_submit_button = document.getElementById("searchSubmitButton");
+			search_submit_button.click();
+		}
 
 		function d_scrollTop(drop_id){
 			var drop = document.getElementById(drop_id);

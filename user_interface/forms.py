@@ -36,6 +36,10 @@ class GroupForm(forms.Form):
 	GIdescription = forms.CharField(widget=forms.HiddenInput(), required=False)
 	GIinvite = forms.CharField(widget=forms.HiddenInput(), required=False)
 
+class GroupInviteMembersForm(forms.Form):
+	GIname = forms.CharField(widget=forms.HiddenInput())
+	GIinvite_members = forms.CharField(widget=forms.HiddenInput())
+
 class GroupRespondRequest(forms.Form):
 	GIinvite_id = forms.CharField(widget=forms.HiddenInput())
 	GIaction = forms.CharField(widget=forms.HiddenInput())
