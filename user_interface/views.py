@@ -246,12 +246,18 @@ def getHeaderDict(firebase_id):
 		if(event_invite_ids == None):
 			event_invite_ids = []
 		for e_id in event_invite_ids:
-			curr_event_invite_data = getEventInviteData(e_id)
-			curr_event_data = getEventData(curr_event_invite_data["event_id"])
-			event_owner_data = getProfileData(curr_event_data["event_creator_firebase_id"])
-			curr_event_data["creator_data"] = event_owner_data
-			curr_event_data["invite_id"] = e_id
-			retHeader["event_invites"].append(curr_event_data)
+			curr_event_invite_data = None
+			curr_event_data = None
+			curr_owner_data = None
+			try:
+				curr_event_invite_data = getEventInviteData(e_id)
+				curr_event_data = getEventData(curr_event_invite_data["event_id"])
+				event_owner_data = getProfileData(curr_event_data["event_creator_firebase_id"])
+				curr_event_data["creator_data"] = event_owner_data
+				curr_event_data["invite_id"] = e_id
+				retHeader["event_invites"].append(curr_event_data)
+			except:
+				curr_event_invite_data = {}
 	if(contact_list["received_friend_requests"] == None):
 		retHeader["friend_requests"] = []
 	else:
@@ -608,6 +614,7 @@ def getGroupForms():
 	retDict = {}
 	retDict["join_group"] = GroupJoinForm()
 	retDict["leave_group"] = GroupLeaveForm()
+	retDict["inviteMembers"] = GroupInviteMembersForm()
 	return retDict
 
 class GroupView(TemplateView):
@@ -895,6 +902,14 @@ def formController(request):
 	elif(switchType == "SubmitEditEvent"):
 		submitEditEvent(request)
 		return HttpResponseRedirect("/profile/")
+	elif(switchType == "GroupInvite"):
+		group_invite_form = GroupInviteMembersForm(request.POST)
+		print(group_invite_form)
+		group_name = group_invite_form["GIname"].value()
+		res = submitInvitesGroup(request)
+		if(res != None):
+			return res
+		return HttpResponseRedirect("/group/" + group_name)
 
 def respondFriend(request):
 	friend_response_form = FriendRespondRequest(request.POST)
@@ -971,7 +986,8 @@ def submitEvent(request):
 
 	if(len(invite_ids) > 0 and event_form['EIinvite'].value() != None):
 		print("sendEventInvites(", user_firebase_id, invite_ids, event_id)
-		sendEventInvites(user_firebase_id, invite_ids, event_id)
+		for invite_id in invite_ids:
+			sendEventInvites(user_firebase_id, [invite_id], event_id)
 
 def submitEditEvent(request):
 	edit_event_form = EditEventForm(request.POST)
@@ -1006,8 +1022,6 @@ def submitEditEvent(request):
 
 	if(auth_result == False):
 		return redir403(request)
-
-
 
 	editEventData(event_id, event_name, event_desc, participating_users, event_admins, whitelist, blacklist, event_start, event_end)
 
@@ -1201,6 +1215,50 @@ def createGroupLocal(request):
 		if(auth_result == False):
 			return redir403(request)
 		sendGroupInvites(group_name, [inv])
+
+def submitInvitesGroup(request):
+	firebase_id = getCurrentFirebaseId(request)
+	group_invite_form = GroupInviteMembersForm(request.POST)
+	group_name = group_invite_form["GIname"].value()
+	group_invites = []
+	if(group_invite_form["GIinvite_members"].value() != "" and group_invite_form["GIinvite_members"].value() != None ):
+		group_invites = group_invite_form["GIinvite_members"].value().split(",")
+	group = None
+	try:
+		group = Group.objects.get(group_name=group_name)
+	except:
+		return redir404(request)
+
+
+
+	for inv in group_invites:
+		user = None
+		try:
+			user = get_user_model().objects.get(username=inv)
+		except get_user_model().DoesNotExist:
+			return redir404(request)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.group.invite.SendGroupInvite,
+			resource= user,
+			context=group,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			# Already in group
+			continue
+		contact_list = getContactListData(inv)
+		group_invite_names = contact_list["received_group_invites"]
+		if(group_invite_names == None):
+			group_invite_names = []
+		contains = False
+		for g_name in group_invite_names:
+			request_data = getGroupInviteData(g_name)
+			if(request_data["group_name"] == group_name):
+				contains = True
+				break
+		if (contains == False):
+			sendGroupInvites(group_name, [inv])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
