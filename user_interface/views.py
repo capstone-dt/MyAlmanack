@@ -21,6 +21,10 @@ from django.contrib.auth import get_user_model
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
+# @Author : Michael Resnik
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
 # PROFILE PICTURE I/O
 
 def getProfilePictureFirebaseId(firebase_id):
@@ -500,17 +504,6 @@ class ProfileView(TemplateView):
 			return response
 		return self.dummy(request, alias)
 
-def validate_alias(request):
-	alias = request.GET.get("alias", None)
-	is_taken = (validAlias(alias) == False)
-	if(alias.lower() == "edit"):
-		is_taken = True;
-	
-	data = {
-		"is_taken" : is_taken
-	}
-	return JsonResponse(data)
-
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
 # EDIT PROFILE
@@ -561,6 +554,17 @@ class EditProfileView(TemplateView):
 		if response != None:
 			return response
 		return self.dummy(request)
+
+def validate_alias(request):
+	alias = request.GET.get("alias", None)
+	is_taken = (validAlias(alias) == False)
+	if(alias.lower() == "edit"):
+		is_taken = True;
+	
+	data = {
+		"is_taken" : is_taken
+	}
+	return JsonResponse(data)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
@@ -690,16 +694,6 @@ def validate_group_name(request):
 	}
 	return JsonResponse(data)
 
-class DefaultView(TemplateView):
-	template_name = 'user_interface/default.html'
-
-	def get(self, request):
-		return render(
-			request=request,
-			template_name=self.template_name,
-			context={}
-		)
-
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
 # SEARCH
@@ -725,12 +719,19 @@ def getSearchDict(search_term, user_firebase_id):
 	isValid = validFirebaseId(user_firebase_id)
 	if(isValid == True):
 		return retDict
-	temp_event_ids = searchEvents(search_term)
-	temp_events = []
-	for temp_id in temp_event_ids:
+	pre_temp_events = searchEvents(search_term)
+	temp_events_s = []
+	for temp_id in pre_temp_events:
 		temp_event_data = getEventData(temp_id)
 		temp_event_data["event_creator_alias"] = firebaseIdToAlias(temp_event_data["event_creator_firebase_id"])
-		temp_events.append(temp_event_data)
+		temp_events_s.append(temp_event_data)
+	filtered_events = filterAccessFriendEvents(temp_events_s, user_firebase_id)
+	temp_events = []
+	for ev in filtered_events:
+		try:
+			isHidden = ev["isHidden"]
+		except:
+			temp_events.append(ev)
 	user_contact_list = getContactListData(user_firebase_id)
 	temp_contacts = []
 	if(user_contact_list["contact_names"] != None):
@@ -739,20 +740,23 @@ def getSearchDict(search_term, user_firebase_id):
 		temp_contact["isSelf"] = False
 	temp_users_pre_filter = searchUsers(search_term)
 	temp_users = []
-	for temp_user in temp_users_pre_filter:
-		if(temp_user["firebase_id"] == user_firebase_id):
-			temp_user["isSelf"] = True
-			temp_contacts = [temp_user] + temp_contacts
-			break
+	
+	contacts_top = []
 	for temp_user in temp_users_pre_filter:
 		contains = False
 		for temp_contact in temp_contacts:
 			if(temp_user["firebase_id"] == temp_contact["firebase_id"]):
 				contains = True
+				contacts_top.append(temp_contact)
 				break
 		if(contains == False and temp_user["firebase_id"] != user_firebase_id):
 			temp_user["isSelf"] = False
 			temp_users.append(temp_user)
+	for temp_user in temp_users_pre_filter:
+		if(temp_user["firebase_id"] == user_firebase_id):
+			temp_user["isSelf"] = True
+			contacts_top = [temp_user] + contacts_top
+			break
 	sent_friend_requests = user_contact_list["sent_friend_requests"]
 	if sent_friend_requests == None:
 		sent_friend_requests = []
@@ -760,23 +764,19 @@ def getSearchDict(search_term, user_firebase_id):
 		temp_user["profile_picture"] = getProfilePictureFirebaseId(temp_user["firebase_id"])
 		is_requested = False
 		for fq in sent_friend_requests:
-				curr_fq_data = getFriendRequestData(fq)
-				if curr_fq_data["receiver_id"] == temp_user["firebase_id"]:
-					is_requested = True
-					break
+			curr_fq_data = getFriendRequestData(fq)
+			if curr_fq_data["receiver_id"] == temp_user["firebase_id"]:
+				is_requested = True
+				break
 		temp_user["isRequested"] = is_requested
-	for temp_contact in temp_contacts:
+	for temp_contact in contacts_top:
 		temp_contact["profile_picture"] = getProfilePictureFirebaseId(str(temp_contact["firebase_id"]))
 	temp_group_names = searchGroups(search_term)
 	temp_groups = []
 	for group_name in temp_group_names:
 		temp_groups.append(getGroupData(group_name))
-	# print("temp_events", temp_events)
-	# print("temp_contacts", temp_contacts)
-	# print("temp_users", temp_users)
-	# print("temp_groups", temp_groups)
 	retDict["events"] = temp_events
-	retDict["friends"] = temp_contacts
+	retDict["friends"] = contacts_top
 	retDict["users"] = temp_users
 	retDict["groups"] = temp_groups
 	retDict["search_term"] = search_term
