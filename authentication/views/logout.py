@@ -1,6 +1,6 @@
 from ..decorators import login_notrequired
 from ..firebase import invalidate_session
-from ..utils import redirect_next
+from ..utilities import redirect_next
 
 # Django
 from django.contrib.auth import logout as _logout
