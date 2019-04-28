@@ -1,6 +1,6 @@
 from ..decorators import login_notrequired
 from ..firebase import FirebaseAuth, validate_session
-from ..utils import redirect_login, redirect_next
+from ..utilities import redirect_login, redirect_next
 
 # Django
 from django.conf import settings
