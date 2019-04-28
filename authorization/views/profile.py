@@ -1,4 +1,6 @@
 import authorization.api
+
+# MyAlmanack database (Justin's subsystem)
 from database.models import Profile
 
 # Django
@@ -13,7 +15,7 @@ def profile(request, uid):
     except Profile.DoesNotExist:
         raise Http404
     
-    # Check authorization.
+    # Check authorization using the short-hand HTTP request authorize() method.
     authorization.api.authorize(
         request,
         action=authorization.api.actions.user.profile.ViewUserProfile,

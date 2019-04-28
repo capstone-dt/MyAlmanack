@@ -7,10 +7,18 @@ from inspect import isclass, getmembers
 from os import listdir
 
 
+# The Attribute class simply provides an interface for AuthorizationRequest's
+#     attributes by wrapping specific classes of objects passed in by the
+#     subsystem's API users.
 class Attribute(Wrapper):
     pass
 
 
+# This attempts to wrap a given object using the correct wrapper class of the
+#     given attribute class located in the provided directory.
+# It is used to simplify passing in attributes for the AuthorizationRequest
+#     class so that users of the subsystem's APIs won't have to manually wrap
+#     them.
 def wrap_attribute(attribute_class, object, wrappers_directory):
     # Define a function for picking classes out of wrapper modules.
     picker = lambda member: (
