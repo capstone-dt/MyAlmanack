@@ -1,5 +1,15 @@
+# The Evaluable class' metaclass allows for unary and binary predicate
+#     constructions directly on subclasses of Evaluable. Their evaluation order
+#     depends on Python's operator precedence.
+# For example, given Evaluable classes A and B:
+#   * ~A (not)
+#   * A & B (and)
+#   * A | B (or)
+#   * A ^ B (xor)
+#   * ~(~A | B) & A (any logical predicate expression will work)
 class EvaluableMetaclass(type):
     def __new__(cls, name, bases, keywords):
+        # This is just boilerplate Python stuff for metaclass creation.
         _class = super().__new__(cls, name, bases, keywords)
         
         # Make all subclass instances inherit the magic methods as well.
@@ -31,5 +41,8 @@ class EvaluableMetaclass(type):
         return BinaryPolicyPredicate(BinaryOperator.XOR, self, other)
 
 
+# The Evaluable class provides a way to build and evaluate logical predicate
+#     expressions using subclasses and their instances, and evaluating them
+#     through their implemented evaluate() method.
 class Evaluable(metaclass=EvaluableMetaclass):
     pass

@@ -1,6 +1,8 @@
 from .reflection import get_class_name, is_subclass, assert_subclass
 
 
+# The Wrapper class provides a way to wrap or proxy objects.
+# For an example implementation, see information.models.base.ModelWrapper.
 class Wrapper:
     def __init__(self, object):
         if hasattr(self, "wrap"):
@@ -34,12 +36,15 @@ class Wrapper:
         #     information for the wrapper from the given object.
         self._object = self.wrap(object) if hasattr(self, "wrap") else object
     
-    def __str__(self):
-        return "Wrapper<%s>[%s]" % (get_class_name(self), self._object)
-    
+    # This checks whether a given object is wrappable with this wrapper class.
+    # This is to be overridden if a wrap() method is also defined.
     @classmethod
     def is_wrappable(cls, object):
         if hasattr(cls, "_root"):
             return is_subclass(object, cls._root)
         else:
             return False
+    
+    # This simply provides a default prettified printing of Wrapper instances.
+    def __str__(self):
+        return "Wrapper<%s>[%s]" % (get_class_name(self), self._object)

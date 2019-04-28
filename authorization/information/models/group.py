@@ -6,6 +6,7 @@ from authorization.utilities.decorators import classproperty
 from database.models import Group as _Group
 
 
+# The Group model wrapper class encapsulates the database model for Group.
 class Group(ModelWrapper):
     """
     Wrapper-related

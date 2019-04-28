@@ -1,1 +1,1 @@
-web: gunicorn myalmanack.wsgi --log-file -
+web: python /app/manage.py collectstatic --noinput; gunicorn myalmanack.wsgi --log-file -

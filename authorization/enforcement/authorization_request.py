@@ -4,6 +4,9 @@ from ..attributes import Subject, Action, Resource, Context, wrap_attribute
 from ..utilities.reflection import get_class_name, assert_subclass
 
 
+# The AuthorizationRequest class provides a way to create authorization requests
+#     using the given attributes, and automatically wraps them using appropriate
+#     attribute wrappers so users of the APIs won't have to do it manually.
 class AuthorizationRequest:
     def __init__(self, subject, action, resource, context={}):
         # Make sure that the given action is a subclass of Action.
@@ -22,9 +25,13 @@ class AuthorizationRequest:
             context=self.context
         )
     
+    # This calls the enforcement authority to authorize the authorization
+    #     request.
     def authorize(self):
         return EnforcementAuthority.authorize(self)
     
+    # This calls the authorize() method and checks if the authorization request
+    #     is permitted.
     @property
     def permitted(self):
         return self.authorize() == AuthorizationResult.PERMIT

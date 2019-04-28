@@ -9,6 +9,8 @@ from django.contrib.auth import get_user_model
 _User = get_user_model()
 
 
+# The User model wrapper class encapsulates the database models for User and
+#     Profile.
 class User(ModelWrapper):
     """
     Wrapper-related

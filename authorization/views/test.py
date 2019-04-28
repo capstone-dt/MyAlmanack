@@ -9,13 +9,16 @@ from django.utils.html import escape
 
 
 def test(request):
+    # Select a user for the resource attribute.
     hao_uncg = Profile.objects.get(firebase_id="k8L2m8QQWMfc7zPwSzJr25AwdVB2")
     mike_capstonetest = Profile.objects.get(firebase_id="XJWoEcF4qsToA0NHnKnaIlqBnfO2")
     user = mike_capstonetest
     
+    # Select a group for the resource attribute.
     temp_group = Group.objects.get(group_name="tempgroup")
     group = temp_group
     
+    # Just create a bunch of authorization requests at once to test.
     authorization_requests = [
         # user.profile.ViewUserProfile
         authorization.api.AuthorizationRequest(request.user,
@@ -97,6 +100,7 @@ def test(request):
         ),
         
         # event.ViewEvent
+        # Well... I'm too lazy to make one.
     ]
     
     return HttpResponse("<br><br>".join(escape(
