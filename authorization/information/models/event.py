@@ -6,6 +6,7 @@ from authorization.utilities.decorators import classproperty
 from database.models import Event as _Event
 
 
+# The Event model wrapper class encapsulates the database model for Event.
 class Event(ModelWrapper):
     """
     Wrapper-related
