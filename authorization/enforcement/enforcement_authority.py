@@ -10,8 +10,8 @@ from django.http.request import HttpRequest
 #     between the users and the decision authority.
 class EnforcementAuthority:
     # This calls the decision authority to authorize an authorization request.
-    @classmethod
-    def authorize(cls, request):
+    @staticmethod
+    def authorize(request):
         from ..decision.decision_authority import DecisionAuthority
         return DecisionAuthority.authorize(request)
     
@@ -21,9 +21,8 @@ class EnforcementAuthority:
     #     sets it as the subject of the authorization request.
     # This also encapsulates the return value of the authorization request and
     #     spits out a boolean value for simplified API usage.
-    @classmethod
+    @staticmethod
     def authorize_http(
-        cls,
         http_request,
         action,
         resource,
