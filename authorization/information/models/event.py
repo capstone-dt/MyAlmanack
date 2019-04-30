@@ -3,7 +3,7 @@ from .user import User
 from authorization.utilities.decorators import classproperty
 
 # MyAlmanack database (Justin's subsystem)
-from database.models import Event as _Event
+from database.models import Event as _Event, RepeatEvent as _RepeatEvent
 
 
 # The Event model wrapper class encapsulates the database model for Event.
@@ -11,8 +11,10 @@ class Event(ModelWrapper):
     """
     Wrapper-related
     """
-    
-    _root = _Event
+
+    @staticmethod
+    def is_wrappable(object):
+        return isinstance(object, (_Event, _RepeatEvent))
     
     # This returns the UID of this event.
     @property
