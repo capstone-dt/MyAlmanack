@@ -109,12 +109,23 @@ class Profile(models.Model):
 		unique_together = ('alias', 'firebase_id')
 
 
-class RepeatEvent(Event):
+class RepeatEvent(models.Model):
 	rep_event_id = models.SmallIntegerField(primary_key=True)
 	rep_type = models.CharField(max_length=7)
 	start_time = models.BigIntegerField()
 	end_time = models.BigIntegerField()
 	week_arr = models.CharField(max_length=7)
+	event_id = models.SmallIntegerField(primary_key=False)
+	event_title = models.CharField(max_length=300)
+	description = models.TextField(blank=True, null=True)
+	participating_users = ArrayField(models.CharField(max_length=128, blank=True, null=True))
+	event_admins = ArrayField(models.CharField(max_length=128))
+	whitelist = ArrayField(models.CharField(max_length=128, blank=True, null=True))
+	blacklist = ArrayField(models.CharField(max_length=128, blank=True, null=True))
+	start_date = models.BigIntegerField()
+	end_date = models.BigIntegerField()
+	event_creator_firebase = models.ForeignKey('Profile', models.CASCADE)
+
 
 	class Meta:
 		managed = False
