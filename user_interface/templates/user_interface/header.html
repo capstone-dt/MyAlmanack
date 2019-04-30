@@ -783,7 +783,7 @@
 							if(str_place == ""){
 								groupInviteTitle.innerText = 'Select members to invite...'
 							}
-							remainderEditGroup();
+							updateGroupForm();
 						}
 						function getGroupInvitesSelected(){
 							var valid = [];
@@ -887,7 +887,9 @@
 
 					function updateAndClickGroup(){
 						updateGroupForm();
-						if(valid_group == true){
+						var form_group_name = document.getElementById("id_GIname");
+
+						if(valid_group == true && form_group_name.value.length > 0){
 							var submitButton = document.getElementById("submitCreateGroup");
 							submitButton.click();
 						}
