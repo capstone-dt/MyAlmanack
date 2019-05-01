@@ -34,9 +34,10 @@ class ModelWrapper(Wrapper, metaclass=ModelWrapperMetaclass):
             # This was determined when everything suddenly began to work
             #     properly after I tried to print out the cached object.
             # This might be due to some weird initialization procedure that I am
-            #     unaware of.
+            #     unaware of (maybe Django's lazy model loading?).
             # Do NOT remove the str() call.
-            return str(cls._cache[object]) and cls._cache[object]
+            str(cls._cache[object])
+            return cls._cache[object]
         except:
             # Caching is not possible. Simply create and return a new instance.
             return super().__new__(cls)
