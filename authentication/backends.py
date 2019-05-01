@@ -14,25 +14,25 @@ User = get_user_model()
 class FirebaseAuthenticationBackend(ModelBackend):
     # This overrides Django's authentication behavior to take in an HttpRequest
     #     object with the Firebase session claims attached to it instead.
-	def authenticate(self, request):
-		try:
-			claims = get_session_claims(request, check_revoked=True)
-		except:
-			# The session is invalid. Force the user to login.
-			return None
-		
-		try:
-			# Return the user if they already exist.
-			user = User.objects.get(username=claims["uid"])
-		except User.DoesNotExist:
-			# If the user does not already exist, create them.
-			user = User(username=claims["uid"])
-			user.save()
-		return user
-	
-	# This is just boilerplate Django model backend stuff.
-	def get_user(self, id):
-		try:
-			return User.objects.get(pk=id)
-		except User.DoesNotExist:
-			return None
+    def authenticate(self, request):
+        try:
+            claims = get_session_claims(request, check_revoked=True)
+        except:
+            # The session is invalid. Force the user to login.
+            return None
+        
+        try:
+            # Return the user if they already exist.
+            user = User.objects.get(username=claims["uid"])
+        except User.DoesNotExist:
+            # If the user does not already exist, create them.
+            user = User(username=claims["uid"])
+            user.save()
+        return user
+    
+    # This is just boilerplate Django model backend stuff.
+    def get_user(self, id):
+        try:
+            return User.objects.get(pk=id)
+        except User.DoesNotExist:
+            return None
