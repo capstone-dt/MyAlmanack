@@ -10,8 +10,8 @@ from traceback import print_tb as print_traceback
 #     requests and their bound attributes, and ultimately decides whether to
 #     grant or deny them.
 class DecisionAuthority:
-    @classmethod
-    def authorize(cls, request):
+    @staticmethod
+    def authorize(request):
         # Make sure that the given request is correctly constructed.
         assert_subclass(request, AuthorizationRequest)
         assert_subclass(request.action, Action)

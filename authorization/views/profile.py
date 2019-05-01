@@ -16,11 +16,13 @@ def profile(request, uid):
         raise Http404
     
     # Check authorization using the short-hand HTTP request authorize() method.
-    authorization.api.authorize(
-        request,
+    authorization.api.authorize(request,
         action=authorization.api.actions.user.profile.ViewUserProfile,
-        resource=profile
+        resource=profile,
+        redirect_403=True
     )
+    # If the authorization request is denied, the user will be redirected to the
+    #     403 forbidden page.
     
     # Render the profile page.
     return render(request, "authorization/profile.html", context={
