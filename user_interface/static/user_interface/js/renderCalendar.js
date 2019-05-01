@@ -1030,6 +1030,15 @@ function clickUserEvent(event_id_clicked){
 	clickedViewSelect(event_id_clicked);
 }
 
+function clickUserRepeatEvent(event_id_clicked){
+	if(_redirecting){
+		// console.log("redirecting, no action");
+		return;
+	}
+	// console.log("all good!");
+	clickedViewRepeatSelect(event_id_clicked);
+}
+
 function clickFreetime(start_end_date){
 	console.log("clickFreetime");
 	var create_event_button = document.getElementById("createNewEventButton");
@@ -1081,7 +1090,11 @@ function makeList(cont_id){
 		list_elem.style.width = "100%";
 		var a_elem = document.createElement('a');
 		a_elem.className = "navbar-text calListDiv";
-		a_elem.setAttribute("onclick", "clickUserEvent('" + arr[i].event_id + "');");
+		if(arr[i].repeat == undefined){
+			a_elem.setAttribute("onclick", "clickUserEvent('" + arr[i].event_id + "');");
+		}else{
+			a_elem.setAttribute("onclick", "clickUserRepeatEvent('" + arr[i].event_id + "');");
+		}
 		a_elem.innerHTML = arr[i].event_title  + "<br>";
 		var event_creator_alias = firebaseIDtoAlias(arr[i].event_creator_firebase_id);
 		var alias_elem = document.createElement('a');
