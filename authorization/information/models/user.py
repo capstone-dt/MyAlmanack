@@ -9,6 +9,8 @@ from django.contrib.auth import get_user_model
 _User = get_user_model()
 
 
+# The User model wrapper class encapsulates the database models for User and
+#     Profile.
 class User(ModelWrapper):
     """
     Wrapper-related
@@ -24,8 +26,8 @@ class User(ModelWrapper):
             # Justin's Profile model - convert it to Django's User model
             return _User.objects.get(username=object.firebase_id)
     
-    @classmethod
-    def is_wrappable(cls, object):
+    @staticmethod
+    def is_wrappable(object):
         return isinstance(object, (_User, _Profile))
     
     # This returns the UID of this user.

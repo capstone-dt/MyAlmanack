@@ -21,6 +21,10 @@ from django.contrib.auth import get_user_model
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
+# @Author : Michael Resnik
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
+
 # PROFILE PICTURE I/O
 
 def getProfilePictureFirebaseId(firebase_id):
@@ -63,6 +67,7 @@ def getCalendarForms():
 	retDict = {}
 	retDict["event_form"] = EventForm()
 	retDict["edit_event_form"] = EditEventForm()
+	retDict["edit_repeat_event_form"] = EditRepeatEventForm()
 	return retDict
 
 def getCalendarDict(user_firebase_id, selected_id, mode):
@@ -70,6 +75,7 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 		"mode" : "",
 		"calendar_data" : {
 			"user_events" : [],
+			"user_rep" : [],
 			"member_events" : [],
 			"member_info" : [],
 			"user_info" : {},
@@ -78,12 +84,23 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 	retDict["mode"] = mode
 	profile_data = getProfileData(user_firebase_id)
 	retDict["calendar_data"]["user_info"] = profile_data
-	user_events = []
+	temp_user_part = []
 	if(profile_data['user_events'] != None):
-		user_events = getUserEvents(user_firebase_id)
+		temp_user_part = profile_data['user_events']
+
+	user_events = []
+	user_rep = []
+	for e_id in temp_user_part:
+		try:
+			curr_rep = RepeatEvent.objects.filter(event_id=e_id).values()[0]
+			curr_rep["event_creator_alias"] = firebaseIdToAlias(curr_rep["event_creator_firebase_id"])
+			user_rep.append(curr_rep)
+		except Exception as e:
+			user_events.append(getEventData(e_id))
 	for ev in user_events:
 		ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
 	retDict["calendar_data"]["user_events"] = user_events
+	retDict["calendar_data"]["user_rep"] = user_rep
 	if(mode == "USER"):
 		data_contact_list = getContactListData(user_firebase_id)
 		database_contact_ids = data_contact_list["contact_names"]
@@ -95,31 +112,65 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 			curr_dict_f = {}
 			curr_dict_f["firebase_id"] = f_id
 			curr_dict_f["participating_events"] = []
+			curr_dict_f["repeat_events"] = []
 			member_profile_data = getProfileData(f_id)
+			
 			curr_events_friend = []
+			curr_events_rep = []
+
+			curr_event_ids = []
 			if(member_profile_data["user_events"] != None):
-				curr_events_friend = getUserEvents(f_id)
+				curr_event_ids = member_profile_data["user_events"]
+			for e_id in curr_event_ids:
+				# Stuff
+				try:
+					curr_rep = RepeatEvent.objects.filter(event_id=e_id).values()[0]
+					curr_events_rep.append(curr_rep)
+				except:
+					curr_events_friend.append(getEventData(e_id))
+
 			filteredEvents = filterAccessFriendEvents(curr_events_friend, user_firebase_id)
 			for ev in filteredEvents:
 				ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
 				curr_dict_f["participating_events"].append(ev)
+
+			filteredRepeat = filterAccessFriendRepeatEvents(curr_events_rep, user_firebase_id)
+			for ev in filteredRepeat:
+				ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
+				curr_dict_f["repeat_events"].append(ev)
+
 			member_events.append(curr_dict_f)
 			member_info.append(member_profile_data)
 		retDict["calendar_data"]["member_events"] = member_events
 		retDict["calendar_data"]["member_info"] = member_info
 	elif(mode == "FRIEND"):
 		member_info = getProfileData(selected_id)
+
 		friend_events = []
+		friend_events_rep = []
+		friend_event_ids = []
+
 		if(member_info["user_events"] != None):
-			friend_events = getUserEvents(selected_id)
-		if(friend_events == None):
-			friend_events = []
+			friend_event_ids = member_info["user_events"]
+		for e_id in friend_event_ids:
+			try:
+				curr_rep = RepeatEvent.objects.filter(event_id=e_id).values()[0]
+				friend_events_rep.append(curr_rep)
+			except:
+				friend_events.append(getEventData(e_id))
+
 		filteredEvents = filterAccessFriendEvents(friend_events, user_firebase_id)
 		for ev in filteredEvents:
 			ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
+
+		filteredRepeat = filterAccessFriendRepeatEvents(friend_events_rep, user_firebase_id)
+		for ev in filteredRepeat:
+			ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
+
 		curr_dict_f = {}
 		curr_dict_f["firebase_id"] = selected_id
 		curr_dict_f["participating_events"] = filteredEvents
+		curr_dict_f["repeat_events"] = filteredRepeat
 		retDict["calendar_data"]["member_events"] = [curr_dict_f]
 		retDict["calendar_data"]["member_info"] = [getProfileData(selected_id)]
 	elif(mode == "GROUP"):
@@ -136,11 +187,21 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 			member_info = getProfileData(member)
 			retDict["calendar_data"]["member_info"].append(member_info)
 			temp_events = []
+			temp_repeat = []
+			temp_event_ids = []
 			if(member_info["user_events"] != None):
-				temp_events = getUserEvents(member)
+				temp_event_ids = member_info["user_events"]
+			for e_id in temp_event_ids:
+				try:
+					curr_rep = RepeatEvent.objects.filter(event_id=e_id).values()[0]
+					temp_repeat.append(curr_rep)
+				except:
+					temp_events.append(getEventData(e_id))
+
 			curr_dict_m = {}
 			curr_dict_m["firebase_id"] = member
 			curr_dict_m["participating_events"] = []
+			curr_dict_m["repeat_events"] = []
 			is_friend = False
 			data_contact_list = getContactListData(user_firebase_id)
 			database_contact_ids = data_contact_list["contact_names"]
@@ -151,11 +212,19 @@ def getCalendarDict(user_firebase_id, selected_id, mode):
 					is_friend = True
 			if(is_friend == False):
 				temp_events = genAllHiddenEvents(temp_events)
+				temp_repeat = genAllHiddenRepeatEvents(temp_repeat)
 			else:
 				temp_events = filterAccessFriendEvents(temp_events, user_firebase_id)
+				temp_repeat = filterAccessFriendRepeatEvents(temp_repeat, user_firebase_id)
 			for ev in temp_events:
 				ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
 				curr_dict_m["participating_events"].append(ev)
+
+			for ev in temp_repeat:
+				ev["event_creator_alias"] = firebaseIdToAlias(ev["event_creator_firebase_id"])
+				curr_dict_m["repeat_events"].append(ev)
+
+
 			retDict["calendar_data"]["member_events"].append(curr_dict_m)
 	return retDict
 
@@ -173,10 +242,35 @@ def genHiddenEvent(passed_event):
 	hiddenstruct["isHidden"] = "true"
 	return hiddenstruct
 
+def genHiddenRepeatEvent(passed_repeat):
+	hiddenstruct = {}
+	hiddenstruct["event_id"] = "-1"
+	hiddenstruct["description"] = "Hidden"
+	hiddenstruct["participating_users"] = ""
+	hiddenstruct["event_admins"] = ""
+	hiddenstruct["whitelist"] = ""
+	hiddenstruct["blacklist"] = ""
+	hiddenstruct["start_date"] = passed_repeat["start_date"]
+	hiddenstruct["start_time"] = passed_repeat["start_time"]
+	hiddenstruct["end_date"] = passed_repeat["end_date"]
+	hiddenstruct["end_time"] = passed_repeat["end_time"]
+	hiddenstruct["rep_type"] = passed_repeat["rep_type"]
+	hiddenstruct["week_arr"] = passed_repeat["week_arr"]
+	hiddenstruct["rep_event_id"] = passed_repeat["rep_event_id"]
+	hiddenstruct["event_creator_firebase_id"] = passed_repeat["event_creator_firebase_id"]
+	hiddenstruct["isHidden"] = "true"
+	return hiddenstruct
+
 def genAllHiddenEvents(passed_events):
 	retArray = []
 	for ev in passed_events:
 		retArray.append(genHiddenEvent(ev))
+	return retArray
+
+def genAllHiddenRepeatEvents(passed_events):
+	retArray = []
+	for ev in passed_events:
+		retArray.append(genHiddenRepeatEvent(ev))
 	return retArray
 
 def filterAccessFriendEvents(friend_events, user_firebase_id):
@@ -215,6 +309,42 @@ def filterAccessFriendEvents(friend_events, user_firebase_id):
 		ret_filtered.append(temp_event)
 	return ret_filtered
 
+def filterAccessFriendRepeatEvents(repeat_events, user_firebase_id):
+	ret_filtered = []
+	for temp_event in repeat_events:
+		whitelist = temp_event["whitelist"];
+		blacklist = temp_event["blacklist"];
+		whitelist_empty = False
+		blacklist_empty = False
+		if len(whitelist) == 0:
+			whitelist_empty = True
+		if len(blacklist) == 0:
+			blacklist_empty = True
+		if whitelist_empty and blacklist_empty == False:
+			isblacklisted = False
+			for blacklisted in blacklist:
+				if blacklisted == user_firebase_id:
+					isblacklisted = True
+					break
+			if isblacklisted:
+				hiddenstruct = genHiddenRepeatEvent(temp_event)
+				ret_filtered.append(hiddenstruct)
+				continue
+		if whitelist_empty == False and blacklist_empty:
+			iswhitelisted = False
+			for whitelisted in whitelist:
+				if whitelisted == user_firebase_id:
+					iswhitelisted = True
+					break
+			if iswhitelisted == False:
+				hiddenstruct = genHiddenRepeatEvent(temp_event)
+				ret_filtered.append(hiddenstruct)
+				continue
+		if whitelist_empty == False and blacklist_empty == False:
+			continue
+		ret_filtered.append(temp_event)
+	return ret_filtered
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
 # HEADER
@@ -230,7 +360,7 @@ def getHeaderDict(firebase_id):
 		"friend_info" :[],
 	}
 	user_firebase_id = firebase_id
-	isValid = validFirebaseId(user_firebase_id);
+	isValid = validFirebaseId(user_firebase_id)
 	if(isValid == True):
 		return retHeader
 
@@ -242,12 +372,18 @@ def getHeaderDict(firebase_id):
 		if(event_invite_ids == None):
 			event_invite_ids = []
 		for e_id in event_invite_ids:
-			curr_event_invite_data = getEventInviteData(e_id)
-			curr_event_data = getEventData(curr_event_invite_data["event_id"])
-			event_owner_data = getProfileData(curr_event_data["event_creator_firebase_id"])
-			curr_event_data["creator_data"] = event_owner_data
-			curr_event_data["invite_id"] = e_id
-			retHeader["event_invites"].append(curr_event_data)
+			curr_event_invite_data = None
+			curr_event_data = None
+			curr_owner_data = None
+			try:
+				curr_event_invite_data = getEventInviteData(e_id)
+				curr_event_data = getEventData(curr_event_invite_data["event_id"])
+				event_owner_data = getProfileData(curr_event_data["event_creator_firebase_id"])
+				curr_event_data["creator_data"] = event_owner_data
+				curr_event_data["invite_id"] = e_id
+				retHeader["event_invites"].append(curr_event_data)
+			except:
+				curr_event_invite_data = {}
 	if(contact_list["received_friend_requests"] == None):
 		retHeader["friend_requests"] = []
 	else:
@@ -500,17 +636,6 @@ class ProfileView(TemplateView):
 			return response
 		return self.dummy(request, alias)
 
-def validate_alias(request):
-	alias = request.GET.get("alias", None)
-	is_taken = (validAlias(alias) == False)
-	if(alias.lower() == "edit"):
-		is_taken = True;
-	
-	data = {
-		"is_taken" : is_taken
-	}
-	return JsonResponse(data)
-
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
 # EDIT PROFILE
@@ -562,6 +687,17 @@ class EditProfileView(TemplateView):
 			return response
 		return self.dummy(request)
 
+def validate_alias(request):
+	alias = request.GET.get("alias", None)
+	is_taken = (validAlias(alias) == False)
+	if(alias.lower() == "edit"):
+		is_taken = True;
+	
+	data = {
+		"is_taken" : is_taken
+	}
+	return JsonResponse(data)
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
 # GROUP
@@ -604,6 +740,7 @@ def getGroupForms():
 	retDict = {}
 	retDict["join_group"] = GroupJoinForm()
 	retDict["leave_group"] = GroupLeaveForm()
+	retDict["inviteMembers"] = GroupInviteMembersForm()
 	return retDict
 
 class GroupView(TemplateView):
@@ -690,16 +827,6 @@ def validate_group_name(request):
 	}
 	return JsonResponse(data)
 
-class DefaultView(TemplateView):
-	template_name = 'user_interface/default.html'
-
-	def get(self, request):
-		return render(
-			request=request,
-			template_name=self.template_name,
-			context={}
-		)
-
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 
 # SEARCH
@@ -725,12 +852,19 @@ def getSearchDict(search_term, user_firebase_id):
 	isValid = validFirebaseId(user_firebase_id)
 	if(isValid == True):
 		return retDict
-	temp_event_ids = searchEvents(search_term)
-	temp_events = []
-	for temp_id in temp_event_ids:
+	pre_temp_events = searchEvents(search_term)
+	temp_events_s = []
+	for temp_id in pre_temp_events:
 		temp_event_data = getEventData(temp_id)
 		temp_event_data["event_creator_alias"] = firebaseIdToAlias(temp_event_data["event_creator_firebase_id"])
-		temp_events.append(temp_event_data)
+		temp_events_s.append(temp_event_data)
+	filtered_events = filterAccessFriendEvents(temp_events_s, user_firebase_id)
+	temp_events = []
+	for ev in filtered_events:
+		try:
+			isHidden = ev["isHidden"]
+		except:
+			temp_events.append(ev)
 	user_contact_list = getContactListData(user_firebase_id)
 	temp_contacts = []
 	if(user_contact_list["contact_names"] != None):
@@ -739,20 +873,23 @@ def getSearchDict(search_term, user_firebase_id):
 		temp_contact["isSelf"] = False
 	temp_users_pre_filter = searchUsers(search_term)
 	temp_users = []
-	for temp_user in temp_users_pre_filter:
-		if(temp_user["firebase_id"] == user_firebase_id):
-			temp_user["isSelf"] = True
-			temp_contacts = [temp_user] + temp_contacts
-			break
+	
+	contacts_top = []
 	for temp_user in temp_users_pre_filter:
 		contains = False
 		for temp_contact in temp_contacts:
 			if(temp_user["firebase_id"] == temp_contact["firebase_id"]):
 				contains = True
+				contacts_top.append(temp_contact)
 				break
 		if(contains == False and temp_user["firebase_id"] != user_firebase_id):
 			temp_user["isSelf"] = False
 			temp_users.append(temp_user)
+	for temp_user in temp_users_pre_filter:
+		if(temp_user["firebase_id"] == user_firebase_id):
+			temp_user["isSelf"] = True
+			contacts_top = [temp_user] + contacts_top
+			break
 	sent_friend_requests = user_contact_list["sent_friend_requests"]
 	if sent_friend_requests == None:
 		sent_friend_requests = []
@@ -760,23 +897,19 @@ def getSearchDict(search_term, user_firebase_id):
 		temp_user["profile_picture"] = getProfilePictureFirebaseId(temp_user["firebase_id"])
 		is_requested = False
 		for fq in sent_friend_requests:
-				curr_fq_data = getFriendRequestData(fq)
-				if curr_fq_data["receiver_id"] == temp_user["firebase_id"]:
-					is_requested = True
-					break
+			curr_fq_data = getFriendRequestData(fq)
+			if curr_fq_data["receiver_id"] == temp_user["firebase_id"]:
+				is_requested = True
+				break
 		temp_user["isRequested"] = is_requested
-	for temp_contact in temp_contacts:
+	for temp_contact in contacts_top:
 		temp_contact["profile_picture"] = getProfilePictureFirebaseId(str(temp_contact["firebase_id"]))
 	temp_group_names = searchGroups(search_term)
 	temp_groups = []
 	for group_name in temp_group_names:
 		temp_groups.append(getGroupData(group_name))
-	# print("temp_events", temp_events)
-	# print("temp_contacts", temp_contacts)
-	# print("temp_users", temp_users)
-	# print("temp_groups", temp_groups)
 	retDict["events"] = temp_events
-	retDict["friends"] = temp_contacts
+	retDict["friends"] = contacts_top
 	retDict["users"] = temp_users
 	retDict["groups"] = temp_groups
 	retDict["search_term"] = search_term
@@ -893,8 +1026,23 @@ def formController(request):
 		if(res != None):
 			return res
 	elif(switchType == "SubmitEditEvent"):
-		submitEditEvent(request)
+		res = submitEditEvent(request)
+		if(res != None):
+			return res
 		return HttpResponseRedirect("/profile/")
+	elif(switchType == "SubmitEditRepeatEvent"):
+		res = submitEditRepeatEvent(request)
+		if(res != None):
+			return res
+		return HttpResponseRedirect("/profile/")
+	elif(switchType == "GroupInvite"):
+		group_invite_form = GroupInviteMembersForm(request.POST)
+		print(group_invite_form)
+		group_name = group_invite_form["GIname"].value()
+		res = submitInvitesGroup(request)
+		if(res != None):
+			return res
+		return HttpResponseRedirect("/group/" + group_name)
 
 def respondFriend(request):
 	friend_response_form = FriendRespondRequest(request.POST)
@@ -971,7 +1119,8 @@ def submitEvent(request):
 
 	if(len(invite_ids) > 0 and event_form['EIinvite'].value() != None):
 		print("sendEventInvites(", user_firebase_id, invite_ids, event_id)
-		sendEventInvites(user_firebase_id, invite_ids, event_id)
+		for invite_id in invite_ids:
+			sendEventInvites(user_firebase_id, [invite_id], event_id)
 
 def submitEditEvent(request):
 	edit_event_form = EditEventForm(request.POST)
@@ -1007,9 +1156,40 @@ def submitEditEvent(request):
 	if(auth_result == False):
 		return redir403(request)
 
-
-
 	editEventData(event_id, event_name, event_desc, participating_users, event_admins, whitelist, blacklist, event_start, event_end)
+
+def submitEditRepeatEvent(request):
+	#Stuff
+	edit_repeat_event_form = EditRepeatEventForm(request.POST)
+	print(edit_repeat_event_form)
+	event_id = edit_repeat_event_form["EIeditrepeateventid"].value()
+	event_name = edit_repeat_event_form["EIeditrepeatname"].value()
+	event_desc = edit_repeat_event_form["EIeditrepeatdescription"].value()
+	event_start = edit_repeat_event_form["EIeditrepeatstart"].value()
+	event_end = edit_repeat_event_form["EIeditrepeatend"].value()
+	repeat_pattern = edit_repeat_event_form["EIeditrepeat_pattern"].value()
+
+	repeat_event = None
+	try:
+		repeat_event = RepeatEvent.objects.filter(event_id=event_id).values()[0]
+	except:
+		return redir404(request)
+	rep_event_id = repeat_event["rep_event_id"]
+	participating_users = repeat_event["participating_users"]
+	event_admins = repeat_event["event_admins"]
+	whitelist = repeat_event["whitelist"]
+	blacklist = repeat_event["blacklist"]
+	rep_type = repeat_event["rep_type"]
+
+	# print("rep_selected", repeat_event)
+	# def editRepeatEventData(event_id, rep_event_id, event_title, description, participating_users, 
+	# event_admins, whitelist,
+	# blacklist, start_date, end_date, rep_type, week_arr, start_time, end_time):
+	editRepeatEventData(event_id, rep_event_id, event_name, event_desc, participating_users,
+		event_admins, whitelist, blacklist, event_start, event_end, rep_type, 
+		repeat_pattern, event_start, event_end)
+
+
 
 
 def respondEvent(request):
@@ -1201,6 +1381,50 @@ def createGroupLocal(request):
 		if(auth_result == False):
 			return redir403(request)
 		sendGroupInvites(group_name, [inv])
+
+def submitInvitesGroup(request):
+	firebase_id = getCurrentFirebaseId(request)
+	group_invite_form = GroupInviteMembersForm(request.POST)
+	group_name = group_invite_form["GIname"].value()
+	group_invites = []
+	if(group_invite_form["GIinvite_members"].value() != "" and group_invite_form["GIinvite_members"].value() != None ):
+		group_invites = group_invite_form["GIinvite_members"].value().split(",")
+	group = None
+	try:
+		group = Group.objects.get(group_name=group_name)
+	except:
+		return redir404(request)
+
+
+
+	for inv in group_invites:
+		user = None
+		try:
+			user = get_user_model().objects.get(username=inv)
+		except get_user_model().DoesNotExist:
+			return redir404(request)
+		auth_result = authorization.api.authorize(
+			request,
+			action=authorization.api.actions.group.invite.SendGroupInvite,
+			resource= user,
+			context=group,
+			redirect_403=False
+		)
+		if(auth_result == False):
+			# Already in group
+			continue
+		contact_list = getContactListData(inv)
+		group_invite_names = contact_list["received_group_invites"]
+		if(group_invite_names == None):
+			group_invite_names = []
+		contains = False
+		for g_name in group_invite_names:
+			request_data = getGroupInviteData(g_name)
+			if(request_data["group_name"] == group_name):
+				contains = True
+				break
+		if (contains == False):
+			sendGroupInvites(group_name, [inv])
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -#
 

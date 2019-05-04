@@ -1,4 +1,6 @@
 import authorization.api
+
+# MyAlmanack database (Justin's subsystem)
 from database.models import Profile
 
 # Django
@@ -13,12 +15,14 @@ def profile(request, uid):
     except Profile.DoesNotExist:
         raise Http404
     
-    # Check authorization.
-    authorization.api.authorize(
-        request,
+    # Check authorization using the short-hand HTTP request authorize() method.
+    authorization.api.authorize(request,
         action=authorization.api.actions.user.profile.ViewUserProfile,
-        resource=profile
+        resource=profile,
+        redirect_403=True
     )
+    # If the authorization request is denied, the user will be redirected to the
+    #     403 forbidden page.
     
     # Render the profile page.
     return render(request, "authorization/profile.html", context={

@@ -431,7 +431,7 @@ def getEventData(event_id):
 
 # Get repeat-event data based on event_id.
 def getRepeatEventData(event_id):
-	repeat_event_data = RepeatEvent.objects.filter(pk=event_id).values()[0]
+	repeat_event_data = RepeatEvent.objects.filter(event_id=event_id).values()[0]
 	# Return dictionary containing repeat-event data information.
 	return repeat_event_data
 

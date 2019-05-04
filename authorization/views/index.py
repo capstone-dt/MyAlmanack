@@ -6,11 +6,11 @@ from django.utils.html import escape
 
 
 def index(request):
+    # Construct an authorization request using the AuthorizationRequest class.
     authorization_request = authorization.api.AuthorizationRequest(
         subject=request.user,
         action=authorization.api.actions.user.profile.EditUserProfile,
-        resource=request.user,
-        context=request
+        resource=request.user
     )
     
     return render(request, "authorization/index.html", context={

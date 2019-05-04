@@ -1,17 +1,20 @@
+from ..enforcement import AuthorizationRequest, AuthorizationResult
 from ..attributes.action import Action
-from ..enforcement.authorization_result import AuthorizationResult
 from ..utilities.reflection import assert_subclass
 
 # Python
-import traceback
+from traceback import print_tb as print_traceback
 
 
+# The decision authority serves as the central evaluator of authorization
+#     requests and their bound attributes, and ultimately decides whether to
+#     grant or deny them.
 class DecisionAuthority:
-    @classmethod
-    def authorize(cls, request):
-        # Make sure that the authorization request's action is an Action class.
+    @staticmethod
+    def authorize(request):
+        # Make sure that the given request is correctly constructed.
+        assert_subclass(request, AuthorizationRequest)
         assert_subclass(request.action, Action)
-        
         print("Action:", request.action)
         print("Policies:", request.action.policies)
         
@@ -25,10 +28,8 @@ class DecisionAuthority:
                 else:
                     all_inapplicable = False
             except Exception as error:
-                print(
-                    "Inapplicable policy: %s %s" % (type(error), error)
-                )
-                traceback.print_tb(error.__traceback__)
+                print("Inapplicable policy: %s %s" % (type(error), error))
+                print_traceback(error.__traceback__)
         
         # If we get to this point, then none of the policies evaluated to true.
         if all_inapplicable:

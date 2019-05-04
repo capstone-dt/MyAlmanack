@@ -5,6 +5,9 @@ from authorization.utilities.decorators import classproperty
 from database.models import Invite as _Invite
 
 
+# The Request model wrapper class encapsulates a part of the database model for
+#     Invite.
+# See the Invite model wrapper for the other part.
 class Request(ModelWrapper):
     """
     Wrapper-related

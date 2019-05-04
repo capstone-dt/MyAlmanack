@@ -138,7 +138,7 @@ LOGOUT_REDIRECT_URL = "/"
 
 INSTALLED_APPS += ["authorization.App"]
 
-# MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
+MIDDLEWARE += ["authorization.middleware.AuthorizationMiddleware"]
 
 
 # Override default settings with local settings for development environments

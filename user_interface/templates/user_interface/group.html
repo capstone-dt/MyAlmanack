@@ -1,260 +1,185 @@
 {% extends "user_interface/header.html"%}
 
 {% block content %}
-	<div class="container">
-		<div class="container" style="padding-top:20px;">
-			<div class="row">
-				<div class="col-8">
-	    			<div class="group-head" id="groupNameDisplay"> Group Name </div>
-	    		</div>
-	    		<div class="col-4">
-	    			<button class="joinGroupButton" style="display: none;" onclick="joinGroupClicked();" id="joinGroupButton"> Join Group </button>
-	    			<form action="/profile/" method="post">
-						{% csrf_token %}
-						{{ group_forms.join_group.as_ul }}
-						<input type="hidden" name="formType" value="JoinGroup">
-						<input type="submit" style="display: none;" id="submitJoinGroup">
-			    	</form>
-			    	<button class="leaveGroupButton" style="display: none;"  onclick="leaveGroupClicked();" id="leaveGroupButton"> Leave Group </button>
-	    			<form action="/profile/" method="post">
-						{% csrf_token %}
-						{{ group_forms.leave_group.as_ul }}
-						<input type="hidden" name="formType" value="LeaveGroup">
-						<input type="submit" style="display: none;" id="submitLeaveGroup">
-			    	</form>
-			    	<script type="text/javascript">
-			    		function joinGroupClicked(){
-			    			var join_group_input = document.getElementById("id_GIreqname");
-			    			join_group_input.value = group_dict.group_name;
-			    			var join_submit = document.getElementById("submitJoinGroup");
-			    			join_submit.click();
-			    		}
-						function leaveGroupClicked(){
-							var leave_group_input = document.getElementById("id_GIremname");
-			    			leave_group_input.value = group_dict.group_name;
-			    			var leave_submit = document.getElementById("submitLeaveGroup");
-			    			leave_submit.click();
-			    		}
 
-			    	</script>
-	    		</div>
-	    	</div>
-	    </div>
-	  	<hr>
+<!-- @Author: Michael Resnik, Mark Bures (design) -->
+<!-- @see: user_interface/profile.html -->
+
+<div class="container">
+	<div class="container" style="padding-top:20px;">
 		<div class="row">
-	      <div class="container">
-	        <h3>Description</h3>
-		    <div class="col" id="groupDescDisplay">
-		    </div>
+			<div class="col-8">
+				<div class="group-head" id="groupNameDisplay"> Group Name </div>
+			</div>
+			<div class="col-4">
+				<button class="joinGroupButton" style="display: none;" onclick="joinGroupClicked();" id="joinGroupButton"> Join Group </button>
+				<form action="/profile/" method="post">
+					{% csrf_token %}
+					{{ group_forms.join_group.as_ul }}
+					<input type="hidden" name="formType" value="JoinGroup">
+					<input type="submit" style="display: none;" id="submitJoinGroup">
+				</form>
+				<button class="leaveGroupButton" style="display: none;"  onclick="leaveGroupClicked();" id="leaveGroupButton"> Leave Group </button>
+				<form action="/profile/" method="post">
+					{% csrf_token %}
+					{{ group_forms.leave_group.as_ul }}
+					<input type="hidden" name="formType" value="LeaveGroup">
+					<input type="submit" style="display: none;" id="submitLeaveGroup">
+				</form>
+			</div>
 		</div>
-	  	</div>
-	  </br>
-	  	<hr>
-	  </br>
-	  	<div class="row">
-	      <div class="container">
-	        <h3>Admins</h3>
-		    <div class="container-fluid admin">
-			    <div class="row flex-row flex-nowrap" id="admin_cont_div">
-			    </div>
-			</div>
-			</div>
-		</div>
-		<div class="row">
-	      <div class="container">
-	        <h3>Members</h3>
-		    <div class="container-fluid admin">
-			    <div class="row flex-row flex-nowrap" id="member_cont_div">
-			    </div>
-			</div>
-			</div>
-	  	</div>
+	</div>
 	<hr>
+	<div class="row">
+		<div class="container">
+			<h3>Description</h3>
+			<div class="col" id="groupDescDisplay">
+			</div>
+		</div>
+	</div>
+	</br>
+	<hr>
+	</br>
+	<div class="row">
+		<div class="container">
+		<h3>Admins</h3>
+		<div class="container-fluid admin">
+			<div class="row flex-row flex-nowrap" id="admin_cont_div">
+			</div>
+		</div>
+		</div>
 	</div>
 
-    <div id="calendarLoc">
-    	{% with calendarFrame as sub_template %}
-    		{% include calendarFrame %}
-    	{% endwith %}
-    </div>
-	<style type="text/css">
-		.joinGroupButton{
-			background-color:  #93A7FF;
-			border: none;
-			color: white;
-			padding: 15px 32px;
-			text-align: center;
-			text-decoration: none;
-			display: inline-block;
-			font-size: 16px;
-			margin: 4px 2px;
-			cursor: pointer;
-		}
-		.joinGroupButton:hover{
-			background-color: #728AFF;
-		}
-		.leaveGroupButton{
-			background-color:  #FF9999;
-			border: none;
-			color: white;
-			padding: 15px 32px;
-			text-align: center;
-			text-decoration: none;
-			display: inline-block;
-			font-size: 16px;
-			margin: 4px 2px;
-			cursor: pointer;
-		}
-		.leaveGroupButton:hover{
-			background-color: #E57575;
-		}
-		.card-block{
-			height: 100%;
-			width: 200px;
-		}
-		.admin{
-			height:175px;
-			padding-top: 20px;
-			padding-bottom: 20px;
-			overflow-x: scroll;
-			border-color: black; border-style: solid;
-			border-width: 0.5px; 
-			z-index: 5;
-		}
-		.group-head{
-			font-size: 50px;
-		}
-		.reqField:before{
-			content:"*" ;
-     		color:red;
-		}
-		</style>
+	<div class="row">
+		<div class="container">
+		<h3>Members <i class="addMember material-icons right" id="addMemberID" style="display:none;" href="#" data-toggle="modal" data-target="#inviteMemberModal">add_circle_outline</i></h3>
+		<div class="container-fluid admin">
+			<div class="row flex-row flex-nowrap" id="member_cont_div">
+			</div>
+		</div>
+		</div>
+	</div>
+	<hr>
+</div>
+
+
+<div class="modal fade" id="inviteMemberModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+			<h5 class="modal-title" id="inviteMemberModalLongTitle">Invite Members</h5>
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group">
+					<label for="groupMemberInvites_select_dropdown_button">Invites</label>
+					<div class="dropdown" >
+						<button class="btn btn-secondary dropdown-toggle" type="button" id="groupMemberInvites_select_dropdown_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: black;">
+							<div id="groupMemberInviteNameId" style="color:black;">
+								Select members to invite...
+							</div>
+						</button>
+						<div class="dropdown-menu friendsSelectDropdown overAll" aria-labelledby="groupMemberInvites_select_dropdown_button"
+							style="position:absolute; z-index: 20;" id="groupMemberInvites_select_dropdown">
+						</div>
+					</div>
+				</div>
+				<input type="button" class="confirmButton" style="width:100%; height:50px;" value="Send Invites" onclick="updateAndClickGroupMembers();">
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--  FORMS -->
+<form action="/profile/" method="post">
+	{% csrf_token %}
+	{{ group_forms.inviteMembers.as_ul }}
 	<script type="text/javascript">
-		// var group_data = parseQuotesJson("{{group_data}}");
-		// console.log("group_data", group_data);
-		var group_dict = parseQuotesJson("{{group_dict}}");
-		console.log("group_dict", group_dict);
-
-		function updateGroupDataVisual(){
-			var group_name_div = document.getElementById("groupNameDisplay");
-			group_name_div.innerHTML = "Group : " + group_dict.group_name;
-			var group_desc_div = document.getElementById("groupDescDisplay");
-			group_desc_div.innerText = group_dict.group_desc;
-			if(group_dict.group_desc == ""){
-				group_desc_div.innerText = "No description has been provided."
-				group_desc_div.style.color = "grey";
-			}
-			if(group_dict.status == "MEMBER" || group_dict.status == "ADMIN"){
-				var leaveGroupButton = document.getElementById("leaveGroupButton");
-				leaveGroupButton.style.display = "block";
-				var joinGroupButton = document.getElementById("joinGroupButton");
-				joinGroupButton.style.display = "none";
-			}else{
-				var joinGroupButton = document.getElementById("joinGroupButton");
-				joinGroupButton.style.display = "block";
-				var leaveGroupButton = document.getElementById("leaveGroupButton");
-				leaveGroupButton.style.display = "none";
-			}
-		}
-		var card_picture_dim = 80;
-		function updateAdminCards(){
-			var admin_cont_div = document.getElementById("admin_cont_div");
-			for(var i = 0; i < group_dict.admins.length; i++){
-				var curr_admin = group_dict.admins[i];
-				var col_div = document.createElement("div");
-				col_div.className = "col card-col";
-				var card_div = document.createElement("div");
-				card_div.className = "card pr-0";
-
-				var row_div = document.createElement("div");
-				row_div.className = "row";
-				row_div.style = "padding-left:20px; padding-top:10px;"
-
-				var image_div = document.createElement("div");
-				var def_image = base64ToImage(curr_admin.profile_picture);
-				def_image.setAttribute("width", card_picture_dim + "px");
-				def_image.setAttribute("height", card_picture_dim + "px");
-				image_div.className = "float-left";
-				image_div.appendChild(def_image);
-
-
-				var user_text_div = document.createElement("div");
-				user_text_div.innerHTML = curr_admin.first_name + " " + curr_admin.last_name + "<br>";
-				var alias_div = document.createElement('a');
-				alias_div.href = "javascript:redir('redirfb/" + curr_admin.firebase_id + "');";
-				alias_div.innerText = "@" + curr_admin.alias;
-				user_text_div.style ="display:inline; font-size:20px; padding-left:10px;";
-				user_text_div.className = "float-left";
-				user_text_div.appendChild(alias_div);
-
-
-				row_div.appendChild(image_div);
-				row_div.appendChild(user_text_div);
-				card_div.appendChild(row_div);
-				col_div.appendChild(card_div);
-				admin_cont_div.appendChild(col_div);
-				card_div.setAttribute("width", (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px");
-				card_div.setAttribute("height", "120px");
-				col_div.setAttribute("height", "120px");
-			}
-		}
-		function updateMemberCards(){
-			var member_cont_div = document.getElementById("member_cont_div");
-			for(var i = 0; i < group_dict.members.length; i++){
-				var curr_member = group_dict.members[i];
-				var isAdmin = false;
-				for(var j = 0; j < group_dict.admins.length; j++){
-					var curr_admin = group_dict.admins[j];
-					if(curr_member.firebase_id == curr_admin.firebase_id){
-						isAdmin = true;
-						break;
-					}
-				}
-				if(isAdmin){
-					continue;
-				}
-				var col_div = document.createElement("div");
-				col_div.className = "col card-col";
-				var card_div = document.createElement("div");
-				card_div.className = "card pr-0";
-
-				var row_div = document.createElement("div");
-				row_div.className = "row";
-				row_div.style = "padding-left:20px; padding-top:10px;"
-
-				var image_div = document.createElement("div");
-				var def_image = base64ToImage(curr_member.profile_picture);
-				def_image.setAttribute("width", card_picture_dim + "px");
-				def_image.setAttribute("height", card_picture_dim + "px");
-				image_div.className = "float-left";
-				image_div.appendChild(def_image);
-
-
-				var user_text_div = document.createElement("div");
-				user_text_div.innerHTML = curr_member.first_name + " " + curr_member.last_name + "<br>";
-				var alias_div = document.createElement('a');
-				alias_div.href = "javascript:redir('redirfb/" + curr_member.firebase_id + "');";
-				alias_div.innerText = "@" + curr_member.alias;
-				user_text_div.style ="display:inline; font-size:20px; padding-left:10px;";
-				user_text_div.className = "float-left";
-				user_text_div.appendChild(alias_div);
-
-
-				row_div.appendChild(image_div);
-				row_div.appendChild(user_text_div);
-				card_div.appendChild(row_div);
-				col_div.appendChild(card_div);
-				member_cont_div.appendChild(col_div);
-				card_div.setAttribute("width", (user_text_div.getBoundingClientRect().width + card_picture_dim + 20) + "px");
-				card_div.setAttribute("height", "120px");
-				col_div.setAttribute("height", "120px");
-			}
-		}
-
-		updateGroupDataVisual();
-		updateAdminCards();
-		updateMemberCards();
-		loadCalendarIfNonNull();
+		console.log("group_forms", "{{ group_forms}}");
 	</script>
+	<input type="hidden" name="formType" value="GroupInvite">
+	<input type="submit" style="display: none;" id="submitInviteMembers">
+</form>
+
+<!-- @see: sub_templates/calendarFrame.html -->
+<div id="calendarLoc">
+	{% with calendarFrame as sub_template %}
+		{% include calendarFrame %}
+	{% endwith %}
+</div>
+
+<style type="text/css">
+	.joinGroupButton{
+		background-color:  #93A7FF;
+		border: none;
+		color: white;
+		padding: 15px 32px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		margin: 4px 2px;
+		cursor: pointer;
+	}
+	.joinGroupButton:hover{
+		background-color: #728AFF;
+	}
+	.leaveGroupButton{
+		background-color:  #FF9999;
+		border: none;
+		color: white;
+		padding: 15px 32px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		margin: 4px 2px;
+		cursor: pointer;
+	}
+	.leaveGroupButton:hover{
+		background-color: #E57575;
+	}
+	.card-block{
+		height: 100%;
+		width: 200px;
+	}
+	.admin{
+		height:175px;
+		padding-top: 20px;
+		padding-bottom: 20px;
+		overflow-x: scroll;
+		border-color: black; border-style: solid;
+		border-width: 0.5px; 
+		z-index: 5;
+	}
+	.group-head{
+		font-size: 50px;
+	}
+	.reqField:before{
+		content:"*" ;
+		color:red;
+	}
+	.cust-card{
+		width: 250px;
+	}
+	.addMember{
+		cursor: pointer;
+	}
+</style>
+
+{% load static %}
+<script src="{% static 'user_interface/js/group.js' %}"> </script>
+<script type="text/javascript">
+
+	var group_dict = parseQuotesJson("{{group_dict}}");
+	console.log("group_dict", group_dict);
+
+	updateGroupDataVisual();
+	updateAdminCards();
+	updateMemberCards();
+	loadCalendarIfNonNull();
+</script>
 
 {% endblock %}
